@@ -1,17 +1,25 @@
 package frc.robot.util;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.generated.TunerConstants;
 
 public class PositionMath {
 
     private final Supplier<Pose2d> drivetrainPose;
     private final Supplier<Double> drivetrainVelocityX;
     private final Supplier<Double> drivetrainVelocityY;
+
+    // Speed of robot at controller max
+    private final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+    // Rotation rate of robot at controller max (in radians per second)
+    private final double maxAngularRate = 2 * Math.PI;
 
     public PositionMath(Supplier<Pose2d> drivetrainPoseSupplier, Supplier<Double> drivetrainVelocityXSupplier, Supplier<Double> drivetrainVelocityYSupplier) {
         this.drivetrainPose = drivetrainPoseSupplier;
@@ -41,22 +49,22 @@ public class PositionMath {
      * Math for modifying driver joystick input to robot
      * 
      * @param controllerInput the controller input for drivetrain x/y movement
-     * @return the controller output to the drivetrain
+     * @return the velocity output to the drivetrain
      */
     public double driveJoystickMath(double controllerInput) {
         // invert controllerInput (because the default controller direction is stupid)
-        return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband) * this.driveSpeedMultiplier();
+        return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband) * this.driveSpeedMultiplier() * this.maxSpeed;
     }
 
     /**
      * The drivetrain rotation amount
      * 
      * @param controllerInput the controller input for drivetrain rotation
-     * @return the controller amount for drivetrain rotation
+     * @return the rotation rate for drivetrain rotation
      */
     public double drivetrainRotationAmount(double controllerInput) {
         // invert controllerInput (because the default controller direction is stupid)
-        return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband);
+        return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband) * this.maxAngularRate;
     }
 
     /**
