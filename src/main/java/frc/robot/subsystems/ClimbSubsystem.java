@@ -1,0 +1,30 @@
+package frc.robot.subsystems;
+
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
+
+public class ClimbSubsystem extends SubsystemBase {
+    // Instance variables go here
+    
+    public ClimbSubsystem() {
+
+
+        SendableRegistry.add(this, "Climber");
+        SmartDashboard.putData(this);
+    }
+
+    // Other methods go here
+
+
+    @Override
+    public void periodic() {
+
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        
+    }
+}
