@@ -70,7 +70,7 @@ public class TurretSubsystem extends SubsystemBase {
         double currentPos = turretMotor.getPosition().getValueAsDouble();
         double encoderPos = m_encoder.getDistance();
         turretTargetPosition = -encoderPos; //negative since spin wrong direction
-        turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition).withSlot(0));
+        turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition * TurretConstants.gear_ratio_on_drive_ring).withSlot(0));
         // check if motor reached the target within tolerance
         SmartDashboard.putNumber("rotations", currentPos);
         SmartDashboard.putNumber("traget", turretTargetPosition);
@@ -79,6 +79,6 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        
+        //rotation angle, 
     }
 }
