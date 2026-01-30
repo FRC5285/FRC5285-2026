@@ -13,7 +13,11 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.LedSubsystem;
 import frc.robot.util.PositionMath;
+
+import static frc.robot.Constants.LEDConstants.*;
+
 
 public class RobotContainer {
 
@@ -24,6 +28,8 @@ public class RobotContainer {
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+        private final LedSubsystem LED = new LedSubsystem();
 
     public RobotContainer() {
         this.configureDrivetrainBinding();
