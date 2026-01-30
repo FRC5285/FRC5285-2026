@@ -12,6 +12,11 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 
+import edu.wpi.first.units.measure.Angle;
+
+import static edu.wpi.first.units.Units.Rotations;
+
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -20,6 +25,9 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import yams.units.EasyCRT;
+import yams.units.EasyCRTConfig;
+
 
 public class TurretSubsystem extends SubsystemBase {
     // Instance variables go here
@@ -27,7 +35,31 @@ public class TurretSubsystem extends SubsystemBase {
     private final TalonFX turretMotor = new TalonFX(TurretConstants.motorCanId); 
     private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
     public double turretTargetPosition = 0;
-    Encoder m_encoder = new Encoder(TurretConstants.channel_a, TurretConstants.channel_b);
+    Encoder encoder = new Encoder(TurretConstants.channel_a, TurretConstants.channel_b);
+    Encoder encoder_1 = new Encoder(TurretConstants.channel_a_a, TurretConstants.channel_b_b);
+
+    Supplier<Angle> enc1 = () -> { return Rotations.of(encoder.get()); };
+    Supplier<Angle> enc2 = () -> { return Rotations.of(encoder.get()); };
+
+    EasyCRTConfig easyCrt =
+        new EasyCRTConfig(enc1, enc2)
+            .withCommonDriveGear(
+                /* commonRatio (mech:drive) */ 12.0,
+                /* driveGearTeeth */ 200,
+                /* encoder1Pinion */ 19,
+                /* encoder2Pinion */ 21)
+            .withAbsoluteEncoderOffsets(Rotations.of(0.0), Rotations.of(0.0)) // set after mechanical zero
+            .withMechanismRange(Rotations.of(-1.0), Rotations.of(2.0)) // -360 deg to +720 deg
+            .withMatchTolerance(Rotations.of(0.06)) // ~1.08 deg at encoder2 for the example ratio
+            .withAbsoluteEncoderInversions(false, false)
+            .withCrtGearRecommendationConstraints(
+                /* coverageMargin */ 1.2,
+                /* minTeeth */ 15,
+                /* maxTeeth */ 45,
+                /* maxIterations */ 30);
+
+    EasyCRT easyCrtSolver = new EasyCRT(easyCrt);
+
 
     public TurretSubsystem() {
 
@@ -51,12 +83,16 @@ public class TurretSubsystem extends SubsystemBase {
         turretMotor.setPosition(0);
         turretMotor.getConfigurator().apply(configs);
 
-        m_encoder.reset();
-        m_encoder.setDistancePerPulse(0.5 / TurretConstants.m_steps); //m_steps should be 2048 but im lazy
-        
+        encoder.reset();
+        encoder_1.reset();
+
+        encoder.setDistancePerPulse(0.5 / TurretConstants.m_steps); //m_steps should be 2048 but im lazy
+        encoder_1.setDistancePerPulse(0.5 / TurretConstants.m_steps); //m_steps should be 2048 but im lazy
 
         SendableRegistry.add(this, "Turret");
         SmartDashboard.putData(this);
+
+
     }
 
     // Other methods go here
@@ -68,7 +104,7 @@ public class TurretSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         double currentPos = turretMotor.getPosition().getValueAsDouble();
-        double encoderPos = m_encoder.getDistance();
+        double encoderPos = encoder.getDistance();
         turretTargetPosition = -encoderPos; //negative since spin wrong direction
         turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition * TurretConstants.gear_ratio_on_drive_ring).withSlot(0));
         // check if motor reached the target within tolerance
