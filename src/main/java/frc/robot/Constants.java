@@ -22,7 +22,25 @@ public final class Constants {
 
     /** Constants for turret */
     public static class TurretConstants {
+        public static final double CruiseVelocity = 80;
+        public static final double ACceleration = 160;
+        public static final double Jerk = 1600;
 
+
+        public static final double kS = 0.25;
+        public static final double kV = 0.2;
+        public static final double kA = 0.01;
+        public static final double kp = 4.8;
+        public static final double ki = 0.05;
+        public static final double kd = 0.1;
+        /** The CAN ID for the motor */
+        public static final int motorCanId = 0;
+        public static final double tolerance = 0.025;
+
+        public static final double m_steps = 1024.0;
+
+        public static final int channel_a = 0;
+        public static final int channel_b = 1;
     }
 
     /** Constants for intake */
