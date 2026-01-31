@@ -26,14 +26,18 @@ public class ClimbSubsystem extends SubsystemBase {
     //private TalonFX climbMotor1;
     //private TalonFX climbMotor2;
     //private ProfiledPIDController climbPID = new ProfiledPIDController(0, 0, 0, null);
+    //Encoder m_encoder = new Encoder(0,1);
 
     
     public ClimbSubsystem() {
 
+        
         //climbMotor1 = new TalonFX(ClimbConstants.motorID);
         //climbMotor2 = new TalonFX(ClimbConstants.motorID);
         //climbMotor1.setPosition(0,0);
         //climbMotor2.setPosition(0,0);
+        //m_encoder.setDistancePerPulse(0.04/256/16);
+        
 
         SendableRegistry.add(this, "Climber");
         SmartDashboard.putData(this);
@@ -49,6 +53,11 @@ public class ClimbSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        
+
+        /* 
+        builder.addDoubleProperty("Goal Rotations", () -> m_encoder.getDistance(), null);
+        builder.addDoubleProperty("Motor Rotations", () -> climbMotor1.getPosition().getValueAsDouble(), null);
+        builder.addDoubleProperty("Motor Rotations", () -> climbMotor2.getPosition().getValueAsDouble(), null);
+        */
     }
 }

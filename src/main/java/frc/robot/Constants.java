@@ -37,16 +37,18 @@ public final class Constants {
 
     /** Constants for climber */
     public static class ClimbConstants {
+        
         /*
         ***CLIMB CONSTANTS FROM 2025 ROBOT***
+        ---------------------------------------
         public static final int motorID = 17; // CAN
-
         public static final double climbSpeed = 0.70;
-
         public static final double climbRotations = 63.1; // 77
 
 
+
         ***ELEVATOR CONSTANTS FROM 2025 ROBOT***
+        --------------------------------------------
         public static final int elevatorMotorID = 13; // CAN
         public static final int followMotorID = 14; // CAN
         // public static final int topLimitSwitchID = 1; // DIO
