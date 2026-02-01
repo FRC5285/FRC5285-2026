@@ -13,11 +13,15 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.math.util.Units;
 
+import static edu.wpi.first.units.Units.Rotation;
 import static edu.wpi.first.units.Units.Rotations;
 
+import java.util.Optional;
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -44,7 +48,7 @@ public class TurretSubsystem extends SubsystemBase {
     EasyCRTConfig easyCrt =
         new EasyCRTConfig(enc1, enc2)
             .withCommonDriveGear(
-                /* commonRatio (mech:drive) */ 12.0,
+                /* commonRatio (mech:drive) */ 20.0,
                 /* driveGearTeeth */ 200,
                 /* encoder1Pinion */ 19,
                 /* encoder2Pinion */ 21)
@@ -60,17 +64,20 @@ public class TurretSubsystem extends SubsystemBase {
 
     EasyCRT easyCrtSolver = new EasyCRT(easyCrt);
 
-
     public TurretSubsystem() {
 
         TalonFXConfiguration configs = new TalonFXConfiguration();
+
+        FeedbackConfigs fdb = configs.Feedback;
+        fdb.SensorToMechanismRatio = 20.0;
+
         MotionMagicConfigs mm = new MotionMagicConfigs();
         mm.MotionMagicCruiseVelocity = TurretConstants.CruiseVelocity;   
         mm.MotionMagicAcceleration = TurretConstants.ACceleration;    
         mm.MotionMagicJerk = TurretConstants.Jerk;
         configs.MotionMagic = mm;
 
-        Slot0Configs slot0 =configs.Slot0;
+        Slot0Configs slot0 = configs.Slot0;
         slot0.kS = TurretConstants.kS;
         slot0.kV = TurretConstants.kV;
         slot0.kA = TurretConstants.kA;
@@ -103,12 +110,17 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        
+        easyCrtSolver.getAngleOptional().ifPresent(mechAngle -> {
+            double easyCRTrotations = mechAngle.in(Rotations);
+            turretMotor.setPosition(easyCRTrotations);
+        });
+        
         double currentPos = turretMotor.getPosition().getValueAsDouble();
-        double encoderPos = encoder.getDistance();
-        turretTargetPosition = -encoderPos; //negative since spin wrong direction
+
         turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition * TurretConstants.gear_ratio_on_drive_ring).withSlot(0));
         // check if motor reached the target within tolerance
-        SmartDashboard.putNumber("rotations", currentPos);
+        SmartDashboard.putNumber("angles", currentPos);
         SmartDashboard.putNumber("traget", turretTargetPosition);
         SmartDashboard.putNumber("error", (currentPos-turretTargetPosition));
     }
