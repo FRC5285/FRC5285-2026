@@ -23,6 +23,7 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -39,6 +40,9 @@ import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
  */
 public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Subsystem, Sendable {
     private final Field2d field2d = new Field2d();
+
+    // Used for sim
+    private double lastSimTime;
 
     /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
     private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -63,6 +67,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     public CommandSwerveDrivetrain(SwerveDrivetrainConstants drivetrainConstants, SwerveModuleConstants<?, ?, ?>... modules) {
         super(drivetrainConstants, modules);
 
+        // simulation timer
+        this.lastSimTime = Utils.getCurrentTimeSeconds();
+
         this.configureAutoBuilder();
 
         SendableRegistry.add(this, "Drivetrain");
@@ -84,9 +91,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         try {
             var config = RobotConfig.fromGUISettings();
             AutoBuilder.configure(
-                () -> getState().Pose,   // Supplier of current robot pose
+                this::getPose,   // Supplier of current robot pose
                 this::resetPose,         // Consumer for seeding pose against auto
-                () -> getState().Speeds, // Supplier of current robot speeds
+                () -> this.getState().Speeds, // Supplier of current robot speeds
                 // Consumer of ChassisSpeeds and feedforwards to drive the robot
                 (speeds, feedforwards) -> setControl(
                     m_pathApplyRobotSpeeds.withSpeeds(ChassisSpeeds.discretize(speeds, 0.020))
@@ -130,7 +137,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (!this.m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
             this.resetSide();
         }
-        this.field2d.setRobotPose(getState().Pose);
+        this.field2d.setRobotPose(this.getPose());
+    }
+
+    @Override
+    public void simulationPeriodic() {
+        this.updateSimState(Utils.getCurrentTimeSeconds() - this.lastSimTime, RobotController.getBatteryVoltage());
+        this.lastSimTime = Utils.getCurrentTimeSeconds();
+    }
+
+    public Pose2d getPose() {
+        return this.getState().Pose;
     }
 
     /** Returns X velocity of robot, in meters per second */

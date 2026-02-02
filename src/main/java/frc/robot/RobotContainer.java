@@ -13,13 +13,16 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.util.PositionMath;
 
 public class RobotContainer {
 
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    private final PositionMath positionMath = new PositionMath(() -> this.drivetrain.getState().Pose, () -> this.drivetrain.getVelocityX(), () -> this.drivetrain.getVelocityY());
+    private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose());
+
+    private final PositionMath positionMath = new PositionMath(() -> this.drivetrain.getPose(), () -> this.drivetrain.getVelocityX(), () -> this.drivetrain.getVelocityY());
 
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
@@ -50,6 +53,8 @@ public class RobotContainer {
     public void resetSide() {
         this.drivetrain.resetSide();
         this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition());
+
+        this.visionSubsystem.resetSimPose(this.drivetrain.getPose());
     }
 
     /** Resets the PIDs */
