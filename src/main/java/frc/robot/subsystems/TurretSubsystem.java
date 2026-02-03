@@ -27,10 +27,10 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
+import frc.robot.util.PositionMath;
 
 
 public class TurretSubsystem extends SubsystemBase {
@@ -42,34 +42,13 @@ public class TurretSubsystem extends SubsystemBase {
     Encoder encoder = new Encoder(TurretConstants.channel_a, TurretConstants.channel_b);
     Encoder encoder_1 = new Encoder(TurretConstants.channel_a_a, TurretConstants.channel_b_b);
 
-    Supplier<Angle> enc1 = () -> { return Rotations.of(encoder.get()); };
-    Supplier<Angle> enc2 = () -> { return Rotations.of(encoder.get()); };
-
-    EasyCRTConfig easyCrt =
-        new EasyCRTConfig(enc1, enc2)
-            .withCommonDriveGear(
-                /* commonRatio (mech:drive) */ 20.0,
-                /* driveGearTeeth */ 200,
-                /* encoder1Pinion */ 19,
-                /* encoder2Pinion */ 21)
-            .withAbsoluteEncoderOffsets(Rotations.of(0.0), Rotations.of(0.0)) // set after mechanical zero
-            .withMechanismRange(Rotations.of(-1.0), Rotations.of(2.0)) // -360 deg to +720 deg
-            .withMatchTolerance(Rotations.of(0.06)) // ~1.08 deg at encoder2 for the example ratio
-            .withAbsoluteEncoderInversions(false, false)
-            .withCrtGearRecommendationConstraints(
-                /* coverageMargin */ 1.2,
-                /* minTeeth */ 15,
-                /* maxTeeth */ 45,
-                /* maxIterations */ 30);
-
-    EasyCRT easyCrtSolver = new EasyCRT(easyCrt);
-
     public TurretSubsystem() {
 
         TalonFXConfiguration configs = new TalonFXConfiguration();
 
         FeedbackConfigs fdb = configs.Feedback;
-        fdb.SensorToMechanismRatio = 20.0;
+        fdb.SensorToMechanismRatio = 90.0; //from motor to gear box to ring
+
 
         MotionMagicConfigs mm = new MotionMagicConfigs();
         mm.MotionMagicCruiseVelocity = TurretConstants.CruiseVelocity;   
@@ -111,12 +90,10 @@ public class TurretSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         
-        easyCrtSolver.getAngleOptional().ifPresent(mechAngle -> {
-            double easyCRTrotations = mechAngle.in(Rotations);
-            turretMotor.setPosition(easyCRTrotations);
-        });
-        
-        double currentPos = turretMotor.getPosition().getValueAsDouble();
+        PositionMath positionMath = new PositionMath(null, null, null);
+        turretTargetPosition = positionMath.getTurretRotationTarget();
+
+        double currentPos = 0; //replace with supplier from position math
 
         turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition * TurretConstants.gear_ratio_on_drive_ring).withSlot(0));
         // check if motor reached the target within tolerance
