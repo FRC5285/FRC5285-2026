@@ -35,6 +35,7 @@ public final class Constants {
         public static final double kd = 0.1;
         /** The CAN ID for the motor */
         public static final int motorCanId = 0;
+        public static final int ShooterMotorCanId = 1;
         public static final double tolerance = 0.025;
 
         public static final double m_steps = 1024.0;
