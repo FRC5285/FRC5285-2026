@@ -55,9 +55,9 @@ public class TurretSubsystem extends SubsystemBase {
         TalonFXConfiguration ShooterConfigs = new TalonFXConfiguration();
 
         FeedbackConfigs fdb_shooter = ShooterConfigs.Feedback;
-        fdb_shooter.SensorToMechanismRatio = 1.0; //shooter motor, 1:1
+        fdb_shooter.SensorToMechanismRatio = TurretConstants.shooter_ratio; //shooter motor, 1:1
         FeedbackConfigs fdb = configs.Feedback;
-        fdb.SensorToMechanismRatio = 90.0; //from motor to gear box to ring
+        fdb.SensorToMechanismRatio = TurretConstants.gear_ratio_on_drive_ring; //from motor to gear box to ring
 
 
         MotionMagicConfigs mm = new MotionMagicConfigs();
@@ -80,16 +80,16 @@ public class TurretSubsystem extends SubsystemBase {
         turretMotor.getConfigurator().apply(configs);
 /////////////////////////////////////////////////////////////
         MotionMagicConfigs mm_s = new MotionMagicConfigs();
-        mm_s.MotionMagicAcceleration = 320.0;
-        mm_s.MotionMagicJerk = 3200;
+        mm_s.MotionMagicAcceleration = TurretConstants.S_ACceleration;
+        mm_s.MotionMagicJerk = TurretConstants.S_Jerk;
 
         Slot1Configs slot1 = ShooterConfigs.Slot1;
-        slot0.kS = TurretConstants.kS;
-        slot0.kV = TurretConstants.kV;
-        slot0.kA = TurretConstants.kA;
-        slot0.kP = TurretConstants.kp;
-        slot0.kI = TurretConstants.ki;
-        slot0.kD = TurretConstants.kd;
+        slot0.kS = TurretConstants.S_kS;
+        slot0.kV = TurretConstants.S_kV;
+        slot0.kA = TurretConstants.S_kA;
+        slot0.kP = TurretConstants.S_kp;
+        slot0.kI = TurretConstants.S_ki;
+        slot0.kD = TurretConstants.S_kd;
         ShooterConfigs.Slot1 = slot1;
 
         ShooterConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -116,15 +116,17 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+
+        turretMotor.setPosition(0); //replace 0 with the supplier to get the position from easyCRT
         
         PositionMath positionMath = new PositionMath(null, null, null);
         turretTargetPosition = positionMath.getTurretRotationTarget();
 
         shooterTargetRPS = positionMath.getFlywheelSpeedTarget();
 
-        double currentPos = 0; //rmotionMagicRequesteplace with supplier from position math
+        double currentPos = 0; //replace 0 with the supplier to get the position from easyCRT
 
-        turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition * TurretConstants.gear_ratio_on_drive_ring).withSlot(0));
+        turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition).withSlot(0));
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(shooterTargetRPS));
         // check if motor reached the target within tolerance
         SmartDashboard.putNumber("angles", currentPos);
