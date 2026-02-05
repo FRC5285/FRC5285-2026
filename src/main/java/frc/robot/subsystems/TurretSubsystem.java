@@ -18,6 +18,7 @@ import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
+import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -37,12 +38,15 @@ public class TurretSubsystem extends SubsystemBase {
     
     private final TalonFX turretMotor = new TalonFX(TurretConstants.motorCanId); 
     private final TalonFX shooterMotor = new TalonFX(TurretConstants.ShooterMotorCanId); 
+    private final TalonFX turretAngleMotor = new TalonFX(TurretConstants.turretAngleCanId);
 
     private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
     private final MotionMagicVelocityVoltage motionMagicRequestShoooter = new MotionMagicVelocityVoltage(0);
+    private final MotionMagicVoltage motionMagicRequestTurretAngle = new MotionMagicVoltage(0);
 
     public double turretTargetPosition = 0;
     public double shooterTargetRPS = 0;
+    public double turretAngleTarget = 0;
     Encoder encoder = new Encoder(TurretConstants.channel_a, TurretConstants.channel_b);
     Encoder encoder_1 = new Encoder(TurretConstants.channel_a_a, TurretConstants.channel_b_b);
 
@@ -74,11 +78,15 @@ public class TurretSubsystem extends SubsystemBase {
 
         TalonFXConfiguration configs = new TalonFXConfiguration();
         TalonFXConfiguration ShooterConfigs = new TalonFXConfiguration();
+        TalonFXConfiguration turretAngleConfig = new TalonFXConfiguration();
+        
 
         FeedbackConfigs fdb_shooter = ShooterConfigs.Feedback;
         fdb_shooter.SensorToMechanismRatio = TurretConstants.shooter_ratio; //shooter motor, 1:1
         FeedbackConfigs fdb = configs.Feedback;
         fdb.SensorToMechanismRatio = TurretConstants.gear_ratio_on_drive_ring; //from motor to gear box to ring
+        FeedbackConfigs fdb_turretAngle = turretAngleConfig.Feedback;
+        fdb_turretAngle.SensorToMechanismRatio = TurretConstants.turret_angle_ratio; //from motor to gear box to ring
 
 
         MotionMagicConfigs mm = new MotionMagicConfigs();
@@ -105,17 +113,35 @@ public class TurretSubsystem extends SubsystemBase {
         mm_s.MotionMagicJerk = TurretConstants.S_Jerk;
 
         Slot1Configs slot1 = ShooterConfigs.Slot1;
-        slot0.kS = TurretConstants.S_kS;
-        slot0.kV = TurretConstants.S_kV;
-        slot0.kA = TurretConstants.S_kA;
-        slot0.kP = TurretConstants.S_kp;
-        slot0.kI = TurretConstants.S_ki;
-        slot0.kD = TurretConstants.S_kd;
+        slot1.kS = TurretConstants.S_kS;
+        slot1.kV = TurretConstants.S_kV;
+        slot1.kA = TurretConstants.S_kA;
+        slot1.kP = TurretConstants.S_kp;
+        slot1.kI = TurretConstants.S_ki;
+        slot1.kD = TurretConstants.S_kd;
         ShooterConfigs.Slot1 = slot1;
 
         ShooterConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         shooterMotor.setPosition(0);
         shooterMotor.getConfigurator().apply(ShooterConfigs);
+//////////////////////////////////////////////////////////////
+        MotionMagicConfigs mm_turret_angle = new MotionMagicConfigs();
+        mm_turret_angle.MotionMagicCruiseVelocity = TurretConstants.A_CruiseVelocity;
+        mm_turret_angle.MotionMagicAcceleration = TurretConstants.A_ACceleration;
+        mm_turret_angle.MotionMagicJerk = TurretConstants.A_Jerk;
+
+        Slot2Configs slot2 = turretAngleConfig.Slot2;
+        slot2.kS = TurretConstants.A_kS;
+        slot2.kV = TurretConstants.A_kV;
+        slot2.kA = TurretConstants.A_kA;
+        slot2.kP = TurretConstants.A_kp;
+        slot2.kI = TurretConstants.A_ki;
+        slot2.kD = TurretConstants.A_kd;
+        turretAngleConfig.Slot2 = slot2;
+
+        turretAngleConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        turretAngleMotor.setPosition(0);
+        turretAngleMotor.getConfigurator().apply(turretAngleConfig);
 
         encoder.reset();
         encoder_1.reset();
@@ -150,21 +176,26 @@ public class TurretSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-
         turretAngle();
         
         PositionMath positionMath = new PositionMath(null, null, null);
         turretTargetPosition = positionMath.getTurretRotationTarget()/TurretConstants.convert_to_rotations_from_radians; 
+        turretAngleTarget = positionMath.getTurretAngleTarget()*TurretConstants.convert_to_rotations_from_radians;
         shooterTargetRPS = positionMath.getFlywheelSpeedTarget();
+        if (shooterTargetRPS > 100) {
+            shooterTargetRPS = 100;
+        }
 
         double currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
 
-        turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition).withSlot(0));
+        turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition));
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(shooterTargetRPS));
+        turretAngleMotor.setControl(motionMagicRequestTurretAngle.withPosition(turretAngleTarget));
         // check if motor reached the target within tolerance
-        SmartDashboard.putNumber("angles", currentPos);
-        SmartDashboard.putNumber("traget", turretTargetPosition);
-        SmartDashboard.putNumber("error", (currentPos-turretTargetPosition));
+        SmartDashboard.putNumber("turret base angle", currentPos);
+        SmartDashboard.putNumber("turret base target", turretTargetPosition);
+        SmartDashboard.putNumber("radians per second", shooterMotor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("turret base error", (currentPos-turretTargetPosition));
     }
 
     @Override
