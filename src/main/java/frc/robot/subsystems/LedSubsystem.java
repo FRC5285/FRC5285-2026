@@ -18,8 +18,20 @@ public class LedSubsystem extends SubsystemBase {
     public long[] ledPatternState = null;
     public double[] currentPattern = null;
     private double currentValue = 0.0;
-    
 
+    @Override
+    public void periodic() {
+        if (currentPattern != null) {
+            ledPattern(currentPattern);
+            LED.set(currentValue);
+        }
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addBooleanProperty("Can score", ()->ShiftUtil.canScore(), null);
+        builder.addDoubleArrayProperty("Current pattern", ()->this.currentPattern, null);
+    }
 
     public void ledPattern(double[] arr) {
         if (arr == null || arr.length < 2) return;
@@ -53,16 +65,4 @@ public class LedSubsystem extends SubsystemBase {
         return runOnce(() -> LED.stopMotor());
     }
 
-    @Override
-    public void periodic() {
-        if (currentPattern != null) {
-            ledPattern(currentPattern);
-            LED.set(currentValue);
-        }
-    }
-
-    @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addBooleanProperty("Can score", ()->ShiftUtil.canScore(), null);
-    }
 }
