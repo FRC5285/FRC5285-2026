@@ -1,5 +1,6 @@
 package frc.robot.subsystems;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -11,6 +12,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 
+import java.util.function.Supplier;
 
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
@@ -24,6 +26,7 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.util.PositionMath;
+import static edu.wpi.first.units.Units.Rotations;
 
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
@@ -42,6 +45,30 @@ public class TurretSubsystem extends SubsystemBase {
     public double shooterTargetRPS = 0;
     Encoder encoder = new Encoder(TurretConstants.channel_a, TurretConstants.channel_b);
     Encoder encoder_1 = new Encoder(TurretConstants.channel_a_a, TurretConstants.channel_b_b);
+
+////////////////////////////////////////////////
+/// 
+    Supplier<Angle> enc1 = () -> { return Rotations.of(encoder.get()); };
+    Supplier<Angle> enc2 = () -> { return Rotations.of(encoder.get()); };
+
+    EasyCRTConfig easyCrt =
+        new EasyCRTConfig(enc1, enc2)
+            .withCommonDriveGear(
+                /* commonRatio (mech:drive) */ 20.0,
+                /* driveGearTeeth */ 200,
+                /* encoder1Pinion */ 19,
+                /* encoder2Pinion */ 21)
+            .withAbsoluteEncoderOffsets(Rotations.of(0.0), Rotations.of(0.0)) // set after mechanical zero
+            .withMechanismRange(Rotations.of(-2.0), Rotations.of(3.0)) // -360 deg to +720 deg
+            .withMatchTolerance(Rotations.of(0.06)) // ~1.08 deg at encoder2 for the example ratio
+            .withAbsoluteEncoderInversions(false, false)
+            .withCrtGearRecommendationConstraints(
+                /* coverageMargin */ 1.2,
+                /* minTeeth */ 15,
+                /* maxTeeth */ 45,
+                /* maxIterations */ 30);
+
+    EasyCRT easyCrtSolver = new EasyCRT(easyCrt);
 
     public TurretSubsystem() {
 
@@ -109,27 +136,28 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     /**
-     * The current turret angle, in radians
+     * The current turret angle, in rotations
      * 
-     * @return the current turret angle, in radians
+     * @return the current turret angle, in rotations
      */
     public double turretAngle() {
-
+        easyCrtSolver.getAngleOptional().ifPresent(mechAngle -> {
+            double easyCRTrotations = mechAngle.in(Rotations);
+            turretMotor.setPosition(easyCRTrotations);
+        });
         return 0.0;
     }
 
     @Override
     public void periodic() {
 
-        turretMotor.setPosition(0); //replace 0 with the supplier to get the position from easyCRT
+        turretAngle();
         
         PositionMath positionMath = new PositionMath(null, null, null);
-        turretTargetPosition = positionMath.getTurretRotationTarget()/TurretConstants.convert_to_rotations_from_radians;
-        double turretCurrentPosition = turretAngle()/TurretConstants.convert_to_rotations_from_radians; 
+        turretTargetPosition = positionMath.getTurretRotationTarget()/TurretConstants.convert_to_rotations_from_radians; 
         shooterTargetRPS = positionMath.getFlywheelSpeedTarget();
 
-        double currentPos = turretCurrentPosition; //very shitty 
-        turretMotor.setPosition(currentPos); //set turret encoder position to the current position
+        double currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
 
         turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition).withSlot(0));
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(shooterTargetRPS));
