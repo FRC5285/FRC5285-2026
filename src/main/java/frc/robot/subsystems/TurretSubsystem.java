@@ -25,6 +25,9 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.util.PositionMath;
 
+import yams.units.EasyCRT;
+import yams.units.EasyCRTConfig;
+
 
 public class TurretSubsystem extends SubsystemBase {
     // Instance variables go here
@@ -105,17 +108,28 @@ public class TurretSubsystem extends SubsystemBase {
         return runOnce(() -> turretMotor.stopMotor());
     }
 
+    /**
+     * The current turret angle, in radians
+     * 
+     * @return the current turret angle, in radians
+     */
+    public double turretAngle() {
+
+        return 0.0;
+    }
+
     @Override
     public void periodic() {
 
         turretMotor.setPosition(0); //replace 0 with the supplier to get the position from easyCRT
         
         PositionMath positionMath = new PositionMath(null, null, null);
-        turretTargetPosition = positionMath.getTurretRotationTarget();
-
+        turretTargetPosition = positionMath.getTurretRotationTarget()/TurretConstants.convert_to_rotations_from_radians;
+        double turretCurrentPosition = turretAngle()/TurretConstants.convert_to_rotations_from_radians; 
         shooterTargetRPS = positionMath.getFlywheelSpeedTarget();
 
-        double currentPos = 0; //replace 0 with the supplier to get the position from easyCRT
+        double currentPos = turretCurrentPosition; //very shitty 
+        turretMotor.setPosition(currentPos); //set turret encoder position to the current position
 
         turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition).withSlot(0));
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(shooterTargetRPS));

@@ -59,6 +59,7 @@ public final class Constants {
         public static final int gear_ratio_on_drive_ring = 90;
         public static final double shooter_ratio = 1.0;
 
+        public static final double convert_to_rotations_from_radians = 6.28318530718;
     }
 
     /** Constants for intake */
