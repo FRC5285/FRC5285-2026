@@ -22,26 +22,26 @@ public class LedSubsystem extends SubsystemBase {
 
 
     public void ledPattern(double[] arr) {
-    if (arr == null || arr.length < 2) return;
+        if (arr == null || arr.length < 2) return;
 
-    long now = System.currentTimeMillis();
+        long now = System.currentTimeMillis();
 
-    if (ledPatternState == null) {
-        ledPatternState = new long[]{now, 1, (long)(1000 / arr[0])};
-        currentPattern = arr;
-        currentValue = arr[1];
-        return;
+        if (ledPatternState == null) {
+            ledPatternState = new long[]{now, 1, (long)(1000 / arr[0])};
+            currentPattern = arr;
+            currentValue = arr[1];
+            return;
+        }
+
+        if (now - ledPatternState[0] >= ledPatternState[2]) {
+            int index = (int) ledPatternState[1] + 1;
+            if (index >= arr.length) index = 1;
+
+            currentValue = arr[index];
+            ledPatternState[0] = now;
+            ledPatternState[1] = index;
+        }
     }
-
-    if (now - ledPatternState[0] >= ledPatternState[2]) {
-        int index = (int) ledPatternState[1] + 1;
-        if (index >= arr.length) index = 1;
-
-        currentValue = arr[index];
-        ledPatternState[0] = now;
-        ledPatternState[1] = index;
-    }
-}
 
     // Other methods go here
     public void setPattern(double[] pattern) {
@@ -58,7 +58,7 @@ public class LedSubsystem extends SubsystemBase {
         if (currentPattern != null) {
             ledPattern(currentPattern);
             LED.set(currentValue);
-    }
+        }
     }
 
     @Override
