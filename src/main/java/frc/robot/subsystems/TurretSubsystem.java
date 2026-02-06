@@ -14,6 +14,8 @@ import frc.robot.Constants.TurretConstants;
 
 import java.util.function.Supplier;
 
+import org.opencv.core.Mat;
+
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -35,6 +37,8 @@ import yams.units.EasyCRTConfig;
 
 public class TurretSubsystem extends SubsystemBase {
     // Instance variables go here
+
+    private final PositionMath positionMath;
     
     private final TalonFX turretMotor = new TalonFX(TurretConstants.motorCanId); 
     private final TalonFX shooterMotor = new TalonFX(TurretConstants.ShooterMotorCanId); 
@@ -74,7 +78,9 @@ public class TurretSubsystem extends SubsystemBase {
 
     EasyCRT easyCrtSolver = new EasyCRT(easyCrt);
 
-    public TurretSubsystem() {
+    public TurretSubsystem(PositionMath positionMath) {
+
+        this.positionMath = positionMath;
 
         TalonFXConfiguration configs = new TalonFXConfiguration();
         TalonFXConfiguration ShooterConfigs = new TalonFXConfiguration();
@@ -121,7 +127,7 @@ public class TurretSubsystem extends SubsystemBase {
         slot1.kD = TurretConstants.S_kd;
         ShooterConfigs.Slot1 = slot1;
 
-        ShooterConfigs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        ShooterConfigs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         shooterMotor.setPosition(0);
         shooterMotor.getConfigurator().apply(ShooterConfigs);
 //////////////////////////////////////////////////////////////
@@ -178,13 +184,10 @@ public class TurretSubsystem extends SubsystemBase {
     public void periodic() {
         turretAngle();
         
-        PositionMath positionMath = new PositionMath(null, null, null);
         turretTargetPosition = positionMath.getTurretRotationTarget()/TurretConstants.convert_to_rotations_from_radians; 
         turretAngleTarget = positionMath.getTurretAngleTarget()*TurretConstants.convert_to_rotations_from_radians;
         shooterTargetRPS = positionMath.getFlywheelSpeedTarget();
-        if (shooterTargetRPS > 100) {
-            shooterTargetRPS = 100;
-        }
+        shooterTargetRPS = Math.min(shooterTargetRPS, 100);
 
         double currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
 

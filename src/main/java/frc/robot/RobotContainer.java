@@ -14,6 +14,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.util.PositionMath;
+import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
 
@@ -24,6 +25,8 @@ public class RobotContainer {
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+
+    private final TurretSubsystem turret = new TurretSubsystem(positionMath);
 
     public RobotContainer() {
         this.configureDrivetrainBinding();
