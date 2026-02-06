@@ -33,6 +33,8 @@ public class LedSubsystem extends SubsystemBase {
         builder.addDoubleArrayProperty("Current pattern", ()->this.currentPattern, null);
     }
 
+    // ----------------------------------------------------------------------------------------------- //
+
     public void ledPattern(double[] arr) {
         if (arr == null || arr.length < 2) return;
 
