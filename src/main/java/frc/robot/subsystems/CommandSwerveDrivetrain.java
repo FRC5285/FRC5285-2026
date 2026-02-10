@@ -150,14 +150,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return this.getState().Pose;
     }
 
-    /** Returns X velocity of robot, in meters per second */
+    /** Returns X velocity of robot, Field-Centric, in meters per second */
     public double getVelocityX() {
-        return this.getState().Speeds.vxMetersPerSecond;
+        // return this.getState().Speeds.vxMetersPerSecond;
+        return this.getState().Speeds.vxMetersPerSecond * this.getPose().getRotation().getCos()
+            - this.getState().Speeds.vyMetersPerSecond * this.getPose().getRotation().getSin();
     }
 
-    /** Returns Y velocity of robot, in meters per second */
+    /** Returns Y velocity of robot, Field-Centric, in meters per second */
     public double getVelocityY() {
-        return this.getState().Speeds.vyMetersPerSecond;
+        // return this.getState().Speeds.vyMetersPerSecond;
+        return this.getState().Speeds.vxMetersPerSecond * this.getPose().getRotation().getSin()
+            + this.getState().Speeds.vyMetersPerSecond * this.getPose().getRotation().getCos();
     }
 
     public void resetSide() {

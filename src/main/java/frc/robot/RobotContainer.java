@@ -7,40 +7,71 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
+import edu.wpi.first.util.sendable.Sendable;
+import edu.wpi.first.util.sendable.SendableBuilder;
+import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.util.PositionMath;
 
-public class RobotContainer {
+public class RobotContainer implements Sendable {
 
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose());
 
+    /** Handles most of the math for the robot. Do not create new instances in a subsystem, instead import this specific object in the constructor. */
     private final PositionMath positionMath = new PositionMath(() -> this.drivetrain.getPose(), () -> this.drivetrain.getVelocityX(), () -> this.drivetrain.getVelocityY());
 
+    /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+    /** Drive with controller joystick rotation */
+    private final SwerveRequest.FieldCentric driveFree = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+    
+    /** Drive with automatic rotation */
+    private final SwerveRequest.FieldCentricFacingAngle drive = new SwerveRequest.FieldCentricFacingAngle()
+        .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
+        .withHeadingPID(OperatorConstants.rotationP, OperatorConstants.rotationI, OperatorConstants.rotationD);
 
     public RobotContainer() {
         this.configureDrivetrainBinding();
         this.configureBindings();
+
+        SendableRegistry.add(this, "RobotContainer");
+        SmartDashboard.putData(this);
     }
 
-    /** Configures the drivetrain drive command */
+    /** Configures the drivetrain drive commands */
     private void configureDrivetrainBinding() {
+        // Default command (auto rotation)
         this.drivetrain.setDefaultCommand(
             this.drivetrain.applyRequest(() ->
-                this.drive.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY()))
-                    .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX()))
-                    .withRotationalRate(this.positionMath.drivetrainRotationAmount(driverController.getRightX()))
+                this.drive.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
+                    .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
+                    .withTargetDirection(this.positionMath.drivetrainRotationAmount())
             )
+        );
+
+        // Manual rotation when not over bump and with right bumper button down
+        new Trigger(() -> !this.positionMath.bumpTurn() && this.driverController.rightBumper().getAsBoolean()).whileTrue(
+            this.drivetrain.applyRequest(() ->
+                this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
+                    .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
+                    .withRotationalRate(this.positionMath.driveRotationMath(driverController.getRightX(), driverController.getLeftTriggerAxis()))
+            )
+        );
+
+        // Use auto rotation
+        this.driverController.rightBumper().onFalse(
+            this.drivetrain.getDefaultCommand()
         );
     }
 
@@ -59,10 +90,16 @@ public class RobotContainer {
 
     /** Resets the PIDs */
     public void resetPIDs() {
-
+        this.drive.HeadingController.reset();
     }
 
     public Command getAutonomousCommand() {
         return Commands.print("No autonomous command configured");
+    }
+
+    @Override
+    public void initSendable(SendableBuilder builder) {
+        builder.addDoubleProperty("PID Goal", () -> this.drive.HeadingController.getSetpoint(), null);
+        builder.addDoubleProperty("Robot Heading", () -> this.drivetrain.getPose().getRotation().getRadians(), null);
     }
 }
