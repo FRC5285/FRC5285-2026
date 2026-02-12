@@ -27,7 +27,20 @@ public final class Constants {
 
     /** Constants for intake */
     public static class IntakeConstants {
+        public static final int motorCanId = 1; // change later
 
+        // arbitrary values (for now)
+        public static final double kS = 0.25;
+        public static final double kV = 0.12;
+        public static final double kA = 0.01;
+        public static final double kP = 4.8;
+        public static final double kI = 0;
+        public static final double kD = 0.1;
+
+        // motion magic settings
+        public static final double cruiseVelocity = 80;
+        public static final double acceleration = 160;
+        public static final double jerk = 1600; // goon
     }
 
     /** Constants for storage rollers */
