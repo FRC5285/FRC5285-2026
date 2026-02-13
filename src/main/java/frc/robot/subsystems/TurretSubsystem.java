@@ -57,6 +57,7 @@ public class TurretSubsystem extends SubsystemBase {
     public double turretTargetPosition = 0;
     public double shooterTargetRPS = 0;
     public double currentPos;
+    public double turret_base_eror;
     Encoder encoder = new Encoder(TurretConstants.channel_a, TurretConstants.channel_b);
     Encoder encoder_1 = new Encoder(TurretConstants.channel_a_a, TurretConstants.channel_b_b);
 
@@ -186,13 +187,19 @@ public class TurretSubsystem extends SubsystemBase {
 
         turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition));
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(shooterTargetRPS));
+
+        turret_base_eror = currentPos-turretTargetPosition;
         // check if motor reached the target within tolerance
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        SmartDashboard.putNumber("turret base target", turretTargetPosition);
-        SmartDashboard.putNumber("radians per second", shooterMotor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("turret base error", (currentPos-turretTargetPosition)); 
+
+        builder.addDoubleProperty("turret target base angle", () -> this.turretTargetPosition, null);
+        builder.addDoubleProperty("shooter m_1 current radians/second", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null);
+        builder.addDoubleProperty("shooter m_2 current radians/second", () -> this.shooterMotor2.getVelocity().getValueAsDouble(), null);
+        builder.addDoubleProperty("turret base error", () -> this.turret_base_eror, null);
+
+
     }
 }
