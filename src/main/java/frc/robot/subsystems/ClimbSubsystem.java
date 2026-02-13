@@ -27,6 +27,11 @@ import com.revrobotics.Rev2mDistanceSensor.Unit;
  * then with the distance, use that value to determine the motor PID (climbPID) for that height
  * 
  * one motor & one lidar will be used (no encoder)
+ * 
+ * i need two distances for when robot is fully climbed (on the ladder) and not climbed (on the ground)
+ * set pid to climb value
+ * motor will go to that climb value
+ * will use the lidar value
  */
 
 public class ClimbSubsystem extends SubsystemBase {
@@ -42,95 +47,52 @@ public class ClimbSubsystem extends SubsystemBase {
 
     climbMotor = new TalonFX(ClimbConstants.motorID);
     climbMotor.setPosition(0,0);
+
     climbPID = new ProfiledPIDController(ClimbConstants.kP, ClimbConstants.kI, ClimbConstants.kD, new TrapezoidProfile.Constraints(ClimbConstants.maxA, ClimbConstants.maxV));
-    
+    climbPID.setGoal(/*max distance to the rung (a constant value from the Constants class)*/);
     climbPID.setTolerance(ClimbConstants.lidarDistanceTolerance);
+
     lidarSensor.setAutomaticMode(true);
   }
 
-  /*****************************************************************************
-   (get lidar distance value -> fine tune pid to achieve that distance/height)
-  *****************************************************************************/
+  //starting at the ground
+  public Command climb() {
+    return runOnce(() -> {
+      climbPID.setGoal(/*max distance to the rung (a constant value from the Constants class)*/);
+    });
+  }
 
-  /* 
-  public Command fineTunePID(Pose2d goHere, DrivetrainAligningTo whatAligningTo, double distFromObject, boolean doNormalPid, double lidarTime, double lidarTolerance) {
-        return runOnce(() -> {
-            this.xPID.reset(this.getState().Pose.getX());
-            this.yPID.reset(this.getState().Pose.getY());
-            this.rPID.reset(this.getState().Pose.getRotation().getRadians());
-            this.rPID.enableContinuousInput(0.0, 2 * Math.PI);
-            this.xPID.setGoal(goHere.getX());
-            this.yPID.setGoal(goHere.getY());
-            this.rPID.setGoal(goHere.getRotation().getRadians());
-            this.thingAligningTo = whatAligningTo;
-        })
-        .andThen(
-            run(() -> {
-                this.setControl(
-                    drivePID.withVelocityX(this.xPID.calculate(this.getState().Pose.getX()) * invertMult)
-                    .withVelocityY(this.yPID.calculate(this.getState().Pose.getY()) * invertMult)
-                    .withRotationalRate(this.rPID.calculate(this.getState().Pose.getRotation().getRadians()))
-                );
-            })
-            .until(() -> this.xPID.atGoal() && this.yPID.atGoal() && this.rPID.atGoal())
-            .withTimeout(AutoConstants.fineTuneMaxTime)
-            .onlyIf(() -> doNormalPid)
-        )
-        .andThen(
-            runOnce(() -> {
-                this.lidarPID.reset(this.getLidarMeters());
-                this.lidarPID.setTolerance(lidarTolerance);
-                this.lidarPID.setGoal(distFromObject + RobotConstantsMeters.lidarBumperDistance);
-                this.lidarGoal = distFromObject + RobotConstantsMeters.lidarBumperDistance;
-                this.lidarOn = true;
-            })
-        )
-        .andThen(
-            run(() -> {
-                this.setControl(
-                    lidarDrive.withVelocityX(-this.lidarPID.calculate(this.getLidarMeters()))
-                    .withVelocityY(0.0)
-                    .withRotationalRate(0.0)
-                );
-            })
-            .onlyIf(() -> distFromObject >= 0.0 && this.getLidarMeters() >= RobotConstantsMeters.lidarBumperDistance)
-            .until(() -> this.getLidarMeters() < RobotConstantsMeters.lidarBumperDistance || this.lidarPID.atGoal())
-            .withTimeout(lidarTime)
-        )
-        .andThen(() -> {
-            this.setControl(lidarDrive.withVelocityX(0).withVelocityY(0).withRotationalRate(0));
-            this.lidarOn = false;
-        });
-    }
+  //on the ladder
+  public Command Unclimb() {
+    return runOnce(() -> {
+      climbPID.setGoal(0.0);
+    });
+  }
 
-    public Command moveBack() {
-        return runOnce(() -> {
-            this.setControl(
-                lidarDrive.withVelocityX(AutoConstants.algaeMoveBackSpeedMPS).withVelocityY(0).withRotationalRate(0.0)
-            );
-        })
-        .andThen(new WaitCommand(AutoConstants.algaeMoveBackSeconds))
-        .andThen(
-            runOnce(() -> {
-                this.setControl(lidarDrive.withVelocityX(AutoConstants.algaeMoveBackSpeedMPS).withVelocityY(0).withRotationalRate(AutoConstants.algaeRotateSpeed));
-            })
-        )
-        .andThen(new WaitCommand(AutoConstants.algaeRotateSeconds))
-        .andThen(
-            runOnce(() -> {
-                this.setControl(lidarDrive.withVelocityX(0).withVelocityY(0).withRotationalRate(0));
-            })
-        );
-    }
-    */ 
+  //**DONE** -- reset the "I" value for the motor PID 
+  public Command resetPID() {
+    double lidarPosition = getLidarMeters();
+    climbPID.reset(lidarPosition);
+  }
 
+  //set PID to certain value
+  public Command setPID() {
+
+  }
+
+  //**DONE** -- gets the lidar distance
   public double getLidarMeters() {
     return lidarSensor.getRange() / 1000.0 - ClimbConstants.lidarOffset;
   }
 
+  //**DONE (for now)** -- might have to invert 
   @Override
   public void periodic() {
+    climbPID.setGoal(getLidarMeters());
 
+    double lidarPosition = getLidarMeters();
+    double newMotorSpeed = climbPID.calculate(lidarPosition);
+    climbMotor.setVoltage(newMotorSpeed);
   }
 
     @Override 
