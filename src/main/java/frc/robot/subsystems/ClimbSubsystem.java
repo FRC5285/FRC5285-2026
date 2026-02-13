@@ -49,7 +49,7 @@ public class ClimbSubsystem extends SubsystemBase {
     climbMotor.setPosition(0,0);
 
     climbPID = new ProfiledPIDController(ClimbConstants.kP, ClimbConstants.kI, ClimbConstants.kD, new TrapezoidProfile.Constraints(ClimbConstants.maxA, ClimbConstants.maxV));
-    climbPID.setGoal(/*max distance to the rung (a constant value from the Constants class)*/);
+    climbPID.setGoal(ClimbConstants.maxExtension);
     climbPID.setTolerance(ClimbConstants.lidarDistanceTolerance);
 
     lidarSensor.setAutomaticMode(true);
@@ -58,14 +58,14 @@ public class ClimbSubsystem extends SubsystemBase {
   //starting at the ground
   public Command climb() {
     return runOnce(() -> {
-      climbPID.setGoal(/*max distance to the rung (a constant value from the Constants class)*/);
+      climbPID.setGoal(ClimbConstants.minExtension); //set goal to max extension toward the ladder/rung away from the ground
     });
   }
 
   //on the ladder
   public Command Unclimb() {
     return runOnce(() -> {
-      climbPID.setGoal(0.0);
+      climbPID.setGoal(ClimbConstants.maxExtension); //set goal to max extension toward the ground away from the ladder/rung
     });
   }
 
@@ -76,9 +76,9 @@ public class ClimbSubsystem extends SubsystemBase {
   }
 
   //set PID to certain value
-  public Command setPID() {
+  /*public Command setPID() {
 
-  }
+  }*/
 
   //**DONE** -- gets the lidar distance
   public double getLidarMeters() {
@@ -98,8 +98,7 @@ public class ClimbSubsystem extends SubsystemBase {
     @Override 
     public void initSendable(SendableBuilder builder){
       builder.addDoubleProperty("Lidar Distance", () -> this.getLidarMeters(), null);
-      builder.addDoubleProperty("Lidar Goal", () -> this.lidarGoal, null);
-      builder.addBooleanProperty("Lidar On", () -> this.lidarOn, null);
+      builder.addDoubleProperty("Lidar Goal", () -> this.lidarGoal, null);//set to pid goal
       builder.addDoubleProperty("Motor Rotations", () -> climbMotor.getPosition().getValueAsDouble(), null);
     }
   }
