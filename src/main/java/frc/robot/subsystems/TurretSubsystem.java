@@ -56,6 +56,7 @@ public class TurretSubsystem extends SubsystemBase {
     
     public double turretTargetPosition = 0;
     public double shooterTargetRPS = 0;
+    public double currentPos;
     Encoder encoder = new Encoder(TurretConstants.channel_a, TurretConstants.channel_b);
     Encoder encoder_1 = new Encoder(TurretConstants.channel_a_a, TurretConstants.channel_b_b);
 
@@ -170,7 +171,7 @@ public class TurretSubsystem extends SubsystemBase {
             double easyCRTrotations = mechAngle.in(Rotations);
             turretMotor.setPosition(easyCRTrotations);
         });
-        return 0.0;
+        return turretMotor.getPosition().getValueAsDouble();
     }
 
     @Override
@@ -181,18 +182,17 @@ public class TurretSubsystem extends SubsystemBase {
         shooterTargetRPS = positionMath.getFlywheelSpeedTarget();
         shooterTargetRPS = Math.min(shooterTargetRPS, 100);
 
-        double currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
+        currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
 
         turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition));
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(shooterTargetRPS));
         // check if motor reached the target within tolerance
-        SmartDashboard.putNumber("turret base target", turretTargetPosition);
-        SmartDashboard.putNumber("radians per second", shooterMotor.getVelocity().getValueAsDouble());
-        SmartDashboard.putNumber("turret base error", (currentPos-turretTargetPosition));
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        //rotation angle, 
+        SmartDashboard.putNumber("turret base target", turretTargetPosition);
+        SmartDashboard.putNumber("radians per second", shooterMotor.getVelocity().getValueAsDouble());
+        SmartDashboard.putNumber("turret base error", (currentPos-turretTargetPosition)); 
     }
 }
