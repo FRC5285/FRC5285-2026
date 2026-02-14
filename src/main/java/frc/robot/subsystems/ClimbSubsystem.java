@@ -57,6 +57,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
   //starting at the ground
   public Command climb() {
+
     return runOnce(() -> {
       climbPID.setGoal(ClimbConstants.minExtension); //set goal to max extension toward the ladder/rung away from the ground
     });
@@ -64,6 +65,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
   //on the ladder
   public Command Unclimb() {
+
     return runOnce(() -> {
       climbPID.setGoal(ClimbConstants.maxExtension); //set goal to max extension toward the ground away from the ladder/rung
     });
@@ -71,6 +73,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
   //**DONE** -- reset the "I" value for the motor PID 
   public Command resetPID() {
+
     double lidarPosition = getLidarMeters();
     climbPID.reset(lidarPosition);
   }
@@ -82,12 +85,14 @@ public class ClimbSubsystem extends SubsystemBase {
 
   //**DONE** -- gets the lidar distance
   public double getLidarMeters() {
+
     return lidarSensor.getRange() / 1000.0 - ClimbConstants.lidarOffset;
   }
 
   //**DONE (for now)** -- might have to invert 
   @Override
   public void periodic() {
+
     climbPID.setGoal(getLidarMeters());
 
     double lidarPosition = getLidarMeters();
@@ -95,10 +100,10 @@ public class ClimbSubsystem extends SubsystemBase {
     climbMotor.setVoltage(newMotorSpeed);
   }
 
-    @Override 
-    public void initSendable(SendableBuilder builder){
-      builder.addDoubleProperty("Lidar Distance", () -> this.getLidarMeters(), null);
-      builder.addDoubleProperty("Lidar Goal", () -> this.lidarGoal, null);//set to pid goal
-      builder.addDoubleProperty("Motor Rotations", () -> climbMotor.getPosition().getValueAsDouble(), null);
-    }
+  @Override 
+  public void initSendable(SendableBuilder builder){
+    builder.addDoubleProperty("Lidar Distance", () -> getLidarMeters(), null);
+    builder.addDoubleProperty("PID Goal", () -> this.climbPID.getGoal().position, null);
+    builder.addDoubleProperty("Motor Rotations", () -> climbMotor.getPosition().getValueAsDouble(), null);
   }
+}
