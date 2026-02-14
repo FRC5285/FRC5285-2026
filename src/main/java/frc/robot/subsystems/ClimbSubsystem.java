@@ -43,6 +43,8 @@ public class ClimbSubsystem extends SubsystemBase {
   private double lidarGoal = 0.0;
   private boolean lidarOn = false;
 
+
+  
   public ClimbSubsystem() {
 
     climbMotor = new TalonFX(ClimbConstants.motorID);

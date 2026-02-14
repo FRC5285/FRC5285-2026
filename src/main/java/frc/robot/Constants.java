@@ -39,21 +39,21 @@ public final class Constants {
     public static class ClimbConstants {
         
         //MOTOR CONSTANTS
-        public static final int motorID = 17; // CAN
+        public static final int motorID = 17; //need to adjust
 
-        public static final double kP = 6.0; //4.0
-        public static final double kI = 0.0;
-        public static final double kD = 0.0;
+        public static final double kP = 6.0; //need to adjust
+        public static final double kI = 0.0; //need to adjust
+        public static final double kD = 0.0; //need to adjust
 
-        public static final double maxV = 3.5; // Max velocity, 2.5
-        public static final double maxA = 2.5; // Max acceleration
+        public static final double maxV = 3.5; //need to adjust
+        public static final double maxA = 2.5; //need to adjust
 
         //LIDAR CONSTANTS
         public static final double maxExtension = 0.307975; //12.125 inches -- //distance between sensor and plate (meters)
 
         public static final double minExtension = 0.1143; //4.5 inches -- //distance between sensor and plate (meters)
 
-        public static final double lidarOffset = 0.010; // Distance of lidar measurement - real measurement // 0.025
+        public static final double lidarOffset = 0.010; //need to adjust -- Distance of lidar measurement - real measurement // 0.025
 
     }
 
