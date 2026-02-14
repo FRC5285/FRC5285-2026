@@ -56,10 +56,10 @@ public class ClimbSubsystem extends SubsystemBase {
   }
 
   //starting at the ground
-  public Command climb() {
+  public Command Climb() {
 
     return runOnce(() -> {
-      climbPID.setGoal(ClimbConstants.minExtension); //set goal to max extension toward the ladder/rung away from the ground
+      climbPID.setGoal(ClimbConstants.minExtension); 
     });
   }
 
@@ -67,7 +67,7 @@ public class ClimbSubsystem extends SubsystemBase {
   public Command Unclimb() {
 
     return runOnce(() -> {
-      climbPID.setGoal(ClimbConstants.maxExtension); //set goal to max extension toward the ground away from the ladder/rung
+      climbPID.setGoal(ClimbConstants.maxExtension);
     });
   }
 
