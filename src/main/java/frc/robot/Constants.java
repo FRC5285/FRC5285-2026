@@ -49,9 +49,9 @@ public final class Constants {
         public static final double maxA = 2.5; // Max acceleration
 
         //LIDAR CONSTANTS
-        public static final double maxExtension = 0.0; //distance between sensor and plate (meters)
+        public static final double maxExtension = 0.307975; //12.125 inches -- //distance between sensor and plate (meters)
 
-        public static final double minExtension = 0.0; //distance between sensor and plate (meters)
+        public static final double minExtension = 0.1143; //4.5 inches -- //distance between sensor and plate (meters)
 
         public static final double lidarOffset = 0.010; // Distance of lidar measurement - real measurement // 0.025
 
