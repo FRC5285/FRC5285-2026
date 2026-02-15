@@ -53,11 +53,18 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     // Other methods go here
+    public void beginIntake(double radiansPerSecond) {
+        motor.setControl(motionMagicRequest.withVelocity(radiansPerSecond).withSlot(0));
+    }
+
+    public void endIntake() {
+        motor.stopMotor();
+    }
 
 
     @Override
     public void periodic() {
-        motor.setControl(motionMagicRequest.withVelocity(160).withSlot(0));
+
     }
 
     @Override
