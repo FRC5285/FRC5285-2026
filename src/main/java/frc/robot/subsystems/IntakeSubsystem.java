@@ -2,26 +2,28 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+//import com.ctre.phoenix6.controls.MotionMagicVoltage;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.IntakeConstants;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+// import com.ctre.phoenix6.configs.MotionMagicConfigs;
+// import com.ctre.phoenix6.configs.Slot0Configs;
+// import com.ctre.phoenix6.configs.TalonFXConfiguration;
+// import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class IntakeSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(IntakeConstants.motorCanId);
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
-    private double targetPosition = 0;
+
+    double intakeSpeed = 160; // radians per sec
 
     public IntakeSubsystem() {
         TalonFXConfiguration configs = new TalonFXConfiguration();
@@ -53,22 +55,26 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     // Other methods go here
-    public void beginIntake(double radiansPerSecond) {
-        motor.setControl(motionMagicRequest.withVelocity(radiansPerSecond).withSlot(0));
+    public Command beginIntake() {
+        return run(() -> {
+            motor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
+        });
     }
 
-    public void endIntake() {
-        motor.stopMotor();
+    public Command endIntake() {
+        return runOnce(() -> {
+            motor.stopMotor();
+        });
     }
-
 
     @Override
     public void periodic() {
-
+        beginIntake();
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        
+        builder.addDoubleProperty("Rotations per second", () -> this.motor.getVelocity().getValueAsDouble(), null);
+        builder.addDoubleProperty("Radians Per Second", () -> this.motor.getVelocity().getValueAsDouble() * 2 * 3.1415, null);
     }
 }
