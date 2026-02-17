@@ -5,22 +5,74 @@ import java.util.function.Supplier;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.LookupTableConstants;
 import frc.robot.Constants.OperatorConstants;
+import frc.robot.Constants.RobotConstants;
 
 public class PositionMath {
 
-    private final Supplier<Pose2d> drivetrainPose;
-    private final Supplier<Double> drivetrainVelocityX;
-    private final Supplier<Double> drivetrainVelocityY;
-    private Rotation2d lastRotation;
+    private final LookupTable speedTable;
+    private final LookupTable timeOfFlightTable;
 
-    public PositionMath(Supplier<Pose2d> drivetrainPoseSupplier, Supplier<Double> drivetrainVelocityXSupplier, Supplier<Double> drivetrainVelocityYSupplier) {
+    private Supplier<Pose2d> drivetrainPose;
+    private Supplier<Double> drivetrainVelocityX;
+    private Supplier<Double> drivetrainVelocityY;
+    private Supplier<Double> drivetrainVelocityRotation;
+    private Supplier<Double> turretRotation;
+
+    private Rotation2d lastRotation;
+    private Pose2d hubPose;
+    private Translation2d shootVector;
+
+    private Pose2d lastCalcPose;
+
+    public PositionMath() {
+        this.speedTable = new LookupTable(LookupTableConstants.distanceSpeedTable, "Speed Table");
+        this.timeOfFlightTable = new LookupTable(LookupTableConstants.distanceTimeOfFlightTable, "Time of Flight Table");
+
+        this.resetSide();
+
+        // Placeholders
+        this.drivetrainPose = () -> this.drivetrainStartPosition();
+        this.drivetrainVelocityX = () -> 0.0;
+        this.drivetrainVelocityY = () -> 0.0;
+        this.drivetrainVelocityRotation = () -> 0.0;
+        this.turretRotation = () -> 0.0;
+
+        // Set previous drivetrain rotation target
+        this.lastRotation = this.drivetrainPose.get().getRotation();
+
+        this.lastCalcPose = new Pose2d();
+        this.calculateShootVector();
+    }
+
+    /**
+     * Sets the suppliers
+     * 
+     * @param drivetrainPoseSupplier Supplier for the drivetrain pose
+     * @param drivetrainVelocityXSupplier Supplier for the drivetrain Field-Centric X velocity
+     * @param drivetrainVelocityYSupplier Supplier for the drivetrain Field-Centric Y velocity
+     * @param drivetrainVelocityRotationSupplier Supplier for the drivetrain angular velocity
+     * @param turretRotationSupplier Supplier for the raw turret rotation, in rotations
+     */
+    public void setSuppliers(
+        Supplier<Pose2d> drivetrainPoseSupplier,
+        Supplier<Double> drivetrainVelocityXSupplier,
+        Supplier<Double> drivetrainVelocityYSupplier,
+        Supplier<Double> drivetrainVelocityRotationSupplier,
+        Supplier<Double> turretRotationSupplier
+    ) {
+        // Set suppliers
         this.drivetrainPose = drivetrainPoseSupplier;
         this.drivetrainVelocityX = drivetrainVelocityXSupplier;
         this.drivetrainVelocityY = drivetrainVelocityYSupplier;
-
-        this.lastRotation = this.drivetrainPose.get().getRotation();
+        this.drivetrainVelocityRotation = drivetrainVelocityRotationSupplier;
+        this.turretRotation = turretRotationSupplier;
     }
 
     /**
@@ -108,7 +160,104 @@ public class PositionMath {
      * @return The target flywheel speed, in rotations per second
      */
     public double getFlywheelSpeedTarget() {
-        return 0.0;
+        // Save compute
+        if (!this.lastCalcPose.equals(this.drivetrainPose.get())) {
+            this.calculateShootVector();
+        }
+
+        double dist = this.shootVector.getNorm();
+
+        return this.speedTable.getOutput(dist);
+    }
+
+    /**
+     * If shooting is a good idea
+     * 
+     * @return if the error for the shoot on the move calculation is greater than acceptable
+     */
+    public boolean shouldShoot() {
+        return this.timeOfFlightTable.getCalcError() > LookupTableConstants.acceptableError;
+    }
+
+    /**
+     * The pose of the turret, Field-Centric
+     * 
+     * @return the turret pose
+     */
+    public Pose2d getTurretPose() {
+        Pose2d currentPose = this.drivetrainPose.get();
+        return new Pose2d(
+            currentPose.getX() + currentPose.getRotation().getCos() * RobotConstants.turretOffsetX - currentPose.getRotation().getSin() * RobotConstants.turretOffsetY,
+            currentPose.getY() + currentPose.getRotation().getSin() * RobotConstants.turretOffsetX + currentPose.getRotation().getCos() * RobotConstants.turretOffsetY,
+            this.getTurretRotation()
+        );
+    }
+
+    /**
+     * The current rotation of the turret, Field-Centric
+     * 
+     * @return the current turret rotation
+     */
+    public Rotation2d getTurretRotation() {
+        double currentRotation = this.drivetrainPose.get().getRotation().getRotations();
+        double r = currentRotation + RobotConstants.turretAddedRotations + this.turretRotation.get();
+
+        return new Rotation2d(r * 2 * Math.PI);
+    }
+
+    /** The turret X velocity, Field-Centric */
+    public double getTurretXVelocity() {
+        Transform2d turretPoseDiff = this.getTurretPose().minus(this.drivetrainPose.get());
+        return this.drivetrainVelocityX.get() - turretPoseDiff.getY() * this.drivetrainVelocityRotation.get();
+    }
+
+    /** The turret Y velocity, Field-Centric */
+    public double getTurretYVelocity() {
+        Transform2d turretPoseDiff = this.getTurretPose().minus(this.drivetrainPose.get());
+        return this.drivetrainVelocityY.get() + turretPoseDiff.getX() * this.drivetrainVelocityRotation.get();
+    }
+
+    /** The field-centric turret velocity as a vector represented by a Translation2d */
+    public Translation2d getTurretVelocityVector() {
+        Transform2d turretPoseDiff = this.getTurretPose().minus(this.drivetrainPose.get());
+        double rotationVelocity = this.drivetrainVelocityRotation.get();
+        return new Translation2d(
+            this.drivetrainVelocityX.get() - turretPoseDiff.getY() * rotationVelocity,
+            this.drivetrainVelocityY.get() + turretPoseDiff.getX() * rotationVelocity
+        );
+    }
+
+    /**
+     * Whether the robot is in its alliance zone
+     * 
+     * @return Whether the robot is in its alliance zone
+     */
+    public boolean inAllianceZone() {
+        Alliance currentAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        if (currentAlliance == Alliance.Blue && this.drivetrainPose.get().getX() < FieldConstants.blueHubCenterX) {
+            return true;
+        }
+        if (currentAlliance == Alliance.Red && this.drivetrainPose.get().getX() > FieldConstants.redHubCenterX) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * The X coordinate of the middle of the hub
+     * 
+     * @return the X coordinate
+     */
+    public double getAllianceLineX() {
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+            return FieldConstants.blueHubCenterX;
+        }
+        return FieldConstants.redHubCenterX;
+    }
+
+    /** Resets the robot alliance according to driver station data. Runs whenever robot is enabled. */
+    public void resetSide() {
+        this.hubPose = new Pose2d(this.getAllianceLineX(), FieldConstants.midLineY, new Rotation2d());
     }
 
     /**
@@ -117,6 +266,29 @@ public class PositionMath {
      * @return The turret rotation target, in radians
      */
     public double getTurretRotationTarget() {
-        return 0.0;
+        // Save compute
+        if (!this.lastCalcPose.equals(this.drivetrainPose.get())) {
+            this.calculateShootVector();
+        }
+
+        double currentRotation = this.drivetrainPose.get().getRotation().getRotations();
+        double r = this.shootVector.getAngle().getRotations() - (currentRotation + RobotConstants.turretAddedRotations);
+
+        return r * 2 * Math.PI;
+    }
+
+    public Translation2d calculateShootVector() {
+        this.lastCalcPose = this.drivetrainPose.get();
+        Translation2d dRH;
+
+        if (this.inAllianceZone()) {
+            dRH = this.hubPose.getTranslation().minus(this.drivetrainPose.get().getTranslation());
+        } else {
+            dRH = new Translation2d(this.getAllianceLineX() - this.lastCalcPose.getX(), this.lastCalcPose.getY());
+        }
+
+        this.shootVector = this.timeOfFlightTable.sotmCalc(this.getTurretVelocityVector(), dRH);
+
+        return this.shootVector;
     }
 }

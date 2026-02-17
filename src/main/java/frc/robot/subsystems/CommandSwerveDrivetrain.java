@@ -164,6 +164,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             + this.getState().Speeds.vyMetersPerSecond * this.getPose().getRotation().getCos();
     }
 
+    /** Returns rotational velocity of robot, Robot-Centric, in radians per second */
+    public double getVelocityRotation() {
+        return this.getState().Speeds.omegaRadiansPerSecond;
+    }
+
     public void resetSide() {
         DriverStation.getAlliance().ifPresent(allianceColor -> {
             setOperatorPerspectiveForward(

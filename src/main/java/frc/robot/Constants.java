@@ -50,6 +50,18 @@ public final class Constants {
 
     }
 
+    /** Robot measurements, in METERS */
+    public static class RobotConstants {
+        /** X-component (robot centric) offset of the turret center from robot center */
+        public static final double turretOffsetX = -0.3;
+
+        /** Y-component (robot centric) offset of the turret center from robot center */
+        public static final double turretOffsetY = 0.0;
+
+        /** When the turret is at 0 rotations, how many rotations are added to the robot rotations to get the field-centric turret rotations */
+        public static final double turretAddedRotations = 0.0;
+    }
+
     /** Positions of stuff on the field in METERS, Welded field */
     public static class FieldConstants {
         /** Middle of the field between top and bottom, Y coordinate */
@@ -81,27 +93,56 @@ public final class Constants {
     }
 
     public static class LookupTableConstants {
+        /** Lookup table for distances (in meters) and speeds (in RPS) */
         public static final double[][] distanceSpeedTable = {
-            {1.0, 50},
-            {1.25, 50},
-            {1.5, 50},
-            {1.75, 50},
-            {2.0, 50},
-            {2.25, 50},
-            {2.5, 50},
-            {2.75, 50},
-            {3.0, 50},
-            {3.25, 50},
-            {3.5, 50},
-            {3.75, 50},
-            {4.0, 50},
-            {4.25, 50},
+            {1.0, 15},
+            {1.5, 20},
+            {2.0, 25},
+            {2.5, 30},
+            {3.0, 35},
+            {3.5, 40},
+            {4.0, 45},
             {4.5, 50},
-            {4.75, 50},
-            {5.0, 50},
-            {5.25, 50},
-            {5.5, 50}
+            {5.0, 55},
+            {5.5, 60},
+            {6.0, 65},
+            {6.5, 70},
+            {7.0, 75},
+            {7.5, 80},
+            {8.0, 85},
+            {8.5, 90},
+            {9.0, 95},
+            {9.5, 100}
         };
+
+        /** Lookup table for distances (in meters) and time of flight (in seconds) */
+        public static final double[][] distanceTimeOfFlightTable = {
+            {1.0, 1.0},
+            {1.5, 1.1},
+            {2.0, 1.2},
+            {2.5, 1.3},
+            {3.0, 1.4},
+            {3.5, 1.5},
+            {4.0, 1.6},
+            {4.5, 1.7},
+            {5.0, 1.8},
+            {5.5, 1.9},
+            {6.0, 2.0},
+            {6.5, 2.1},
+            {7.0, 2.2},
+            {7.5, 2.3},
+            {8.0, 2.4},
+            {8.5, 2.5},
+            {9.0, 2.6},
+            {9.5, 2.7},
+            {10.0, 2.8}
+        };
+
+        /** How many calculation loops to do for the shoot on the move calculation */
+        public static final int sotmCalcLoops = 10;
+
+        /** The acceptable error amount for shoot on the move calculations */
+        public static final double acceptableError = 0.3;
     }
 
     /** Constants for vision */
