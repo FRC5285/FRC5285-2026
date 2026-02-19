@@ -44,7 +44,7 @@ public class ClimbSubsystem extends SubsystemBase {
   private boolean lidarOn = false;
 
 
-  
+
   public ClimbSubsystem() {
 
     climbMotor = new TalonFX(ClimbConstants.motorID);
@@ -52,7 +52,6 @@ public class ClimbSubsystem extends SubsystemBase {
 
     climbPID = new ProfiledPIDController(ClimbConstants.kP, ClimbConstants.kI, ClimbConstants.kD, new TrapezoidProfile.Constraints(ClimbConstants.maxA, ClimbConstants.maxV));
     climbPID.setGoal(ClimbConstants.maxExtension);
-    climbPID.setTolerance(ClimbConstants.lidarDistanceTolerance);
 
     lidarSensor.setAutomaticMode(true);
   }
@@ -76,8 +75,10 @@ public class ClimbSubsystem extends SubsystemBase {
   //**DONE** -- reset the "I" value for the motor PID 
   public Command resetPID() {
 
-    double lidarPosition = getLidarMeters();
-    climbPID.reset(lidarPosition);
+    return runOnce(() -> {
+      double lidarPosition = getLidarMeters();
+      climbPID.reset(lidarPosition);
+    });
   }
 
   //set PID to certain value
