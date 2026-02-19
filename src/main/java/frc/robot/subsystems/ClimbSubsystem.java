@@ -72,13 +72,11 @@ public class ClimbSubsystem extends SubsystemBase {
     });
   }
 
-  //**DONE** -- reset the "I" value for the motor PID 
-  public Command resetPID() {
+  //reset the "I" value for the motor PID 
+  public void resetPID() {
 
-    return runOnce(() -> {
-      double lidarPosition = getLidarMeters();
-      climbPID.reset(lidarPosition);
-    });
+    double lidarPosition = getLidarMeters();
+    climbPID.reset(lidarPosition);
   }
 
   //set PID to certain value
@@ -86,13 +84,13 @@ public class ClimbSubsystem extends SubsystemBase {
 
   }*/
 
-  //**DONE** -- gets the lidar distance
+  //gets the lidar distance
   public double getLidarMeters() {
 
     return lidarSensor.getRange() / 1000.0 - ClimbConstants.lidarOffset;
   }
 
-  //**DONE (for now)** -- might have to invert 
+  //might have to invert 
   @Override
   public void periodic() {
 
