@@ -24,6 +24,7 @@ import com.revrobotics.Rev2mDistanceSensor.Unit;
 /*
  * 2/18/26
  * adjust the climb and unclimb commands to sequential commands to account for the rotating motor 
+ * can look at last year's auton code for sequential command examples
  * (may have an encoder for rotateMotor)
  * 
  * climb command:
