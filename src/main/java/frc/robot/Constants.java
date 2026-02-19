@@ -37,16 +37,26 @@ public final class Constants {
 
     /** Constants for climber */
     public static class ClimbConstants {
-        
-        //MOTOR CONSTANTS
-        public static final int motorID = 17; //need to adjust
+    
+        //CLIMB MOTOR CONSTANTS
+        public static final int climbMotorID = 17; //need to adjust
 
-        public static final double kP = 6.0; //need to adjust
-        public static final double kI = 0.0; //need to adjust
-        public static final double kD = 0.0; //need to adjust
+        public static final double ckP = 6.0; //need to adjust
+        public static final double ckI = 0.0; //need to adjust
+        public static final double ckD = 0.0; //need to adjust
 
-        public static final double maxV = 3.5; //need to adjust
-        public static final double maxA = 2.5; //need to adjust
+        public static final double cmaxV = 3.5; //need to adjust
+        public static final double cmaxA = 2.5; //need to adjust
+
+        //ROTATE MOTOR CONSTANTS
+        public static final int rotateMotorID = 16; //need to adjust
+
+        public static final double rkP = 6.0; //need to adjust
+        public static final double rkI = 0.0; //need to adjust
+        public static final double rkD = 0.0; //need to adjust
+
+        public static final double rmaxV = 3.5; //need to adjust
+        public static final double rmaxA = 2.5; //need to adjust
 
         //LIDAR CONSTANTS
         public static final double maxExtension = 0.307975; //12.125 inches -- //distance between sensor and plate (meters)
