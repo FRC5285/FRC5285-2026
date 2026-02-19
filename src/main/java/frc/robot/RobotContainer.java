@@ -26,12 +26,12 @@ public class RobotContainer implements Sendable {
 
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose());
-
     /** Handles most of the math for the robot. Do not create new instances in a subsystem, instead import this specific object in the constructor. */
     private final PositionMath positionMath = new PositionMath();
 
     private final TurretSubsystem turret = new TurretSubsystem();
+
+    private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);

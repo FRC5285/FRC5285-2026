@@ -6,6 +6,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -207,24 +208,34 @@ public class PositionMath {
 
     /** The turret X velocity, Field-Centric */
     public double getTurretXVelocity() {
-        Transform2d turretPoseDiff = this.getTurretPose().minus(this.drivetrainPose.get());
+        Translation2d turretPoseDiff = this.getTurretPose().getTranslation().minus(this.drivetrainPose.get().getTranslation());
         return this.drivetrainVelocityX.get() - turretPoseDiff.getY() * this.drivetrainVelocityRotation.get();
     }
 
     /** The turret Y velocity, Field-Centric */
     public double getTurretYVelocity() {
-        Transform2d turretPoseDiff = this.getTurretPose().minus(this.drivetrainPose.get());
+        Translation2d turretPoseDiff = this.getTurretPose().getTranslation().minus(this.drivetrainPose.get().getTranslation());
         return this.drivetrainVelocityY.get() + turretPoseDiff.getX() * this.drivetrainVelocityRotation.get();
     }
 
     /** The field-centric turret velocity as a vector represented by a Translation2d */
     public Translation2d getTurretVelocityVector() {
-        Transform2d turretPoseDiff = this.getTurretPose().minus(this.drivetrainPose.get());
+        Translation2d turretPoseDiff = this.getTurretPose().getTranslation().minus(this.drivetrainPose.get().getTranslation());
         double rotationVelocity = this.drivetrainVelocityRotation.get();
         return new Translation2d(
             this.drivetrainVelocityX.get() - turretPoseDiff.getY() * rotationVelocity,
             this.drivetrainVelocityY.get() + turretPoseDiff.getX() * rotationVelocity
         );
+    }
+
+    /**
+     * Position of camera on the turret, robot-centric
+     * 
+     * @param cameraTransform the transform of the camera relative to the turret center
+     * @return the robot-centric transform of the camera
+     */
+    public Transform3d getCameraTurretTransform(Transform3d cameraTransform) {
+        return new Transform3d(new Transform2d(RobotConstants.turretOffsetX, RobotConstants.turretOffsetY, new Rotation2d((RobotConstants.turretAddedRotations + this.turretRotation.get()) * 2 * Math.PI))).plus(cameraTransform);
     }
 
     /**
@@ -287,7 +298,7 @@ public class PositionMath {
             dRH = new Translation2d(this.getAllianceLineX() - this.lastCalcPose.getX(), this.lastCalcPose.getY());
         }
 
-        this.shootVector = this.timeOfFlightTable.sotmCalc(this.getTurretVelocityVector(), dRH);
+        this.shootVector = this.timeOfFlightTable.sotmCalc2(this.getTurretVelocityVector(), dRH);
 
         return this.shootVector;
     }

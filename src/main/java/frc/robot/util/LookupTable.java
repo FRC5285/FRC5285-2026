@@ -14,6 +14,7 @@ public class LookupTable implements Sendable {
     private int cachedInd = 0;
 
     private double calcError = 0.0;
+    private double calcDist = 0.0;
 
     public LookupTable(double[][] inputTable, String tableName) {
         this.tableX = new double[inputTable.length];
@@ -40,6 +41,9 @@ public class LookupTable implements Sendable {
             return this.linearInterpolate(this.cachedInd, inputVal);
         } else if (this.isInInd(this.cachedInd + 1, inputVal)) {
             this.cachedInd ++;
+            return this.linearInterpolate(this.cachedInd, inputVal);
+        } else if (this.isInInd(this.cachedInd - 1, inputVal)) {
+            this.cachedInd --;
             return this.linearInterpolate(this.cachedInd, inputVal);
         }
 
@@ -75,6 +79,9 @@ public class LookupTable implements Sendable {
         } else if (this.isInInd(this.cachedInd + 1, inputVal)) {
             this.cachedInd ++;
             return this.slopeAtInd(this.cachedInd);
+        } else if (this.isInInd(this.cachedInd - 1, inputVal)) {
+            this.cachedInd --;
+            return this.slopeAtInd(this.cachedInd);
         }
 
         // If input is greater than the values the table has
@@ -97,7 +104,7 @@ public class LookupTable implements Sendable {
     }
 
     /**
-     * Calculation for Shoot On The Move. Only use for the time-of-flight lookup table!
+     * Calculation for Shoot On The Move using Newton's Method. Only use for the time-of-flight lookup table!
      * 
      * @param rV the robot (specifically turret) velocity, field-centric
      * @param dRH vector representing distance from turret to hub, starting at the turret
@@ -134,6 +141,25 @@ public class LookupTable implements Sendable {
     }
 
     /**
+     * Calculation for Shoot On The Move using the converging method. Only use for the time-of-flight lookup table!
+     * 
+     * @param rV the robot (specifically turret) velocity, field-centric
+     * @param dRH vector representing distance from turret to hub, starting at the turret
+     * @return a Translation2d representing the vector of the distance and field-centric angle to use when calculating the shot
+     */
+    public Translation2d sotmCalc2(Translation2d rV, Translation2d dRH) {
+        Translation2d finalVector = new Translation2d(dRH.getX(), dRH.getY());
+
+        for (int i = 0; i < LookupTableConstants.sotmCalcLoops; i ++) {
+            finalVector = this.calcSingleDist(finalVector.getNorm(), rV, dRH);
+        }
+
+        this.calcError = this.calcSingleDist(finalVector.getNorm(), rV, dRH).minus(finalVector).getNorm();
+        this.calcDist = finalVector.getNorm();
+        return finalVector;
+    }
+
+    /**
      * Helps with calculation for Shoot On The Move
      * @param dist the distance
      * @param rV
@@ -163,7 +189,7 @@ public class LookupTable implements Sendable {
      * @return if tableX[ind] <= val <= tableX[ind + 1]
      */
     private boolean isInInd(int ind, double val) {
-        if (ind >= this.tableX.length - 1) return false;
+        if (ind >= this.tableX.length - 1 || ind < 0) return false;
         return this.tableX[ind] <= val && this.tableX[ind + 1] >= val;
     }
 
@@ -195,5 +221,6 @@ public class LookupTable implements Sendable {
         builder.addDoubleArrayProperty("Table X", () -> this.tableX, (newTableX) -> this.tableX = newTableX);
         builder.addDoubleArrayProperty("Table Y", () -> this.tableY, (newTableY) -> this.tableY = newTableY);
         builder.addDoubleProperty("Calculation Error", () -> this.getCalcError(), null);
+        builder.addDoubleProperty("Calculation Distance", () -> this.calcDist, null);
     }
 }

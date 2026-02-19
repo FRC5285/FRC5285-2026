@@ -1,6 +1,8 @@
 package frc.robot.subsystems;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
@@ -15,25 +17,33 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Constants.VisionConstants;
+import frc.robot.util.PositionMath;
 
 // "Heavy inspiration" was taken from the following source:
 // https://github.com/PhotonVision/photonvision/blob/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
 
 /** A class for the vision subsystem. Go to localhost:[camera port] for the simulated camera view. */
 public class VisionSubsystem extends SubsystemBase {
+    private final PositionMath positionMath;
+
     private final PhotonCamera[] cameras;
     private final PhotonPoseEstimator[] photonEstimators;
     private Matrix<N3, N1> curStdDevs;
+    private final Map<Integer, TimeInterpolatableBuffer<Pose3d>> camTrfMap = new HashMap<>();
 
     private final EstimateConsumer estConsumer;
     private final Supplier<Pose2d> robotPoseSupplier;
@@ -41,18 +51,21 @@ public class VisionSubsystem extends SubsystemBase {
     private VisionSystemSim visionSim;
     private PhotonCameraSim[] camerasSim;
 
-    public VisionSubsystem(EstimateConsumer estimateConsumer, Supplier<Pose2d> robotPose) {
+    public VisionSubsystem(EstimateConsumer estimateConsumer, Supplier<Pose2d> robotPose, PositionMath positionMath) {
+        this.positionMath = positionMath;
         // Add pose to drivetrain method
         this.estConsumer = estimateConsumer;
         // Robot pose supplier
         this.robotPoseSupplier = robotPose;
 
         // Sets up cameras and pose estimators
-        this.cameras = new PhotonCamera[4];
-        this.photonEstimators = new PhotonPoseEstimator[4];
-        for (int i = 0; i < 4; i ++) {
+        this.cameras = new PhotonCamera[VisionConstants.numCameras];
+        this.photonEstimators = new PhotonPoseEstimator[VisionConstants.numCameras];
+        for (int i = 0; i < VisionConstants.numCameras; i ++) {
             this.cameras[i] = new PhotonCamera(VisionConstants.cameraNames[i]);
-            this.photonEstimators[i] = new PhotonPoseEstimator(VisionConstants.kTagLayout, VisionConstants.cameraOffsets[i]);
+            this.photonEstimators[i] = new PhotonPoseEstimator(VisionConstants.kTagLayout, this.getCurrentRobotCameraTransform(i));
+            this.camTrfMap.put(i, TimeInterpolatableBuffer.createBuffer(VisionConstants.camPositionBufferTime));
+            this.camTrfMap.get(i).addSample(i, new Pose3d().plus(this.getCurrentRobotCameraTransform(i)));
         }
 
         // Simulation start code
@@ -73,14 +86,14 @@ public class VisionSubsystem extends SubsystemBase {
         // Create simulated camera properties. These can be set to mimic your actual camera.
         var cameraProp = new SimCameraProperties();
         cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
-        cameraProp.setCalibError(0.35, 0.10);
+        cameraProp.setCalibError(0.5, 0.10);
         cameraProp.setFPS(15);
         cameraProp.setAvgLatencyMs(50);
         cameraProp.setLatencyStdDevMs(15);
         // Create a PhotonCameraSim which will update the linked PhotonCamera's values with visible
         // targets.
-        this.camerasSim = new PhotonCameraSim[4];
-        for (int i = 0; i < 4; i ++) {
+        this.camerasSim = new PhotonCameraSim[VisionConstants.numCameras];
+        for (int i = 0; i < VisionConstants.numCameras; i ++) {
             this.camerasSim[i] = new PhotonCameraSim(this.cameras[i], cameraProp);
             // Add the simulated camera to view the targets on this simulated field.
             this.visionSim.addCamera(this.camerasSim[i], VisionConstants.cameraOffsets[i]);
@@ -91,13 +104,17 @@ public class VisionSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        for (int i = 0; i < 4; i ++) {
+        for (int i = 0; i < VisionConstants.numCameras; i ++) {
+            this.setRobotCameraTransform(i);
             this.updateRobotPose(i);
         }
     }
 
     @Override
     public void simulationPeriodic() {
+        for (int i = 0; i < VisionConstants.numCameras; i ++) {
+            this.simSetRobotCameraTransform(i);
+        }
         this.visionSim.update(robotPoseSupplier.get());
     }
 
@@ -108,6 +125,7 @@ public class VisionSubsystem extends SubsystemBase {
     private void updateRobotPose(int cameraIndex) {
         for (var result : this.cameras[cameraIndex].getAllUnreadResults()) {
             Optional<EstimatedRobotPose> visionEst = Optional.empty();
+            this.photonEstimators[cameraIndex].setRobotToCameraTransform(this.getRobotCameraTransform(cameraIndex, result.getTimestampSeconds()));
             // Get pose estimation (through multitag)
             visionEst = this.photonEstimators[cameraIndex].estimateCoprocMultiTagPose(result);
             // If only one tag visible
@@ -183,6 +201,43 @@ public class VisionSubsystem extends SubsystemBase {
     public Field2d getSimDebugField() {
         if (!Robot.isSimulation()) return null;
         return this.visionSim.getDebugField();
+    }
+
+    /**
+     * Gets the transform of a camera at the current time
+     * 
+     * @param cameraIndex the camera
+     * @return the transform of the camera right now
+     */
+    public Transform3d getCurrentRobotCameraTransform(int cameraIndex) {
+        if (VisionConstants.turretMounted[cameraIndex]) {
+            return this.positionMath.getCameraTurretTransform(VisionConstants.cameraOffsets[cameraIndex]);
+        }
+        return VisionConstants.cameraOffsets[cameraIndex];
+    }
+
+    /**
+     * Puts the camera transform into the interpolation buffer
+     * 
+     * @param cameraIndex the camera
+     */
+    private void setRobotCameraTransform(int cameraIndex) {
+        this.camTrfMap.get(cameraIndex).addSample(Timer.getFPGATimestamp(), new Pose3d().plus(this.getCurrentRobotCameraTransform(cameraIndex)));
+    }
+
+    /**
+     * Gets the camera transform at a timestamp
+     * 
+     * @param cameraIndex the camera
+     * @param timestampFPGA the time (FPGA time)
+     * @return the transform at the timestamp
+     */
+    public Transform3d getRobotCameraTransform(int cameraIndex, double timestampFPGA) {
+        return new Transform3d(new Pose3d(), this.camTrfMap.get(cameraIndex).getSample(timestampFPGA).orElse(new Pose3d().plus(this.getCurrentRobotCameraTransform(cameraIndex))));
+    }
+
+    private void simSetRobotCameraTransform(int cameraIndex) {
+        this.visionSim.adjustCamera(this.camerasSim[cameraIndex], this.getCurrentRobotCameraTransform(cameraIndex));
     }
 
     @Override

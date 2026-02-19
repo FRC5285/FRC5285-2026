@@ -59,7 +59,7 @@ public final class Constants {
         public static final double turretOffsetY = 0.0;
 
         /** When the turret is at 0 rotations, how many rotations are added to the robot rotations to get the field-centric turret rotations */
-        public static final double turretAddedRotations = 0.0;
+        public static final double turretAddedRotations = 0.50;
     }
 
     /** Positions of stuff on the field in METERS, Welded field */
@@ -155,6 +155,9 @@ public final class Constants {
         /** Standard deviations for when multiple tags are seen */
         public static final Matrix<N3, N1> kMultiTagStdDevs = VecBuilder.fill(0.1, 0.1, 0.2);
 
+        /** The time for the camera transform buffer */
+        public static final double camPositionBufferTime = 2.0;
+
         /** Number of cameras on the robot */
         public static final int numCameras = 4;
 
@@ -172,6 +175,14 @@ public final class Constants {
             new Transform3d(),
             new Transform3d(),
             new Transform3d()
+        };
+
+        /** If a camera is mounted on the turret - the camera offset should be relative to the turret center when turret rotation is 0 if true */
+        public static final boolean[] turretMounted = {
+            true,
+            true,
+            false,
+            false
         };
     }
 
