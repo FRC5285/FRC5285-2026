@@ -35,6 +35,7 @@ import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
  * 
  * 2/19/2026
  * look into the tolerance for both PIDs because they're different from each other
+ * enableContinuousOutput method
  * 
  */
 
@@ -57,7 +58,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
     climbPID = new ProfiledPIDController(ClimbConstants.ckP, ClimbConstants.ckI, ClimbConstants.ckD, new TrapezoidProfile.Constraints(ClimbConstants.cmaxA, ClimbConstants.cmaxV));
     climbPID.setGoal(ClimbConstants.maxExtension);
-    climbPID.setTolerance(5, 10);
+    climbPID.setTolerance(5, 0.1);
 
     goalRotations = 0.0;
 
@@ -66,7 +67,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
     rotatePID = new ProfiledPIDController(ClimbConstants.rkP, ClimbConstants.rkI, ClimbConstants.rkD, new TrapezoidProfile.Constraints(ClimbConstants.rmaxA, ClimbConstants.rmaxV));
     rotatePID.setGoal(goalRotations);
-    rotatePID.setTolerance(5, 10);
+    rotatePID.setTolerance(5, 0.1);
 
     lidarSensor.setAutomaticMode(true);
   }
