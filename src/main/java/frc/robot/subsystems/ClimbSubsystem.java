@@ -16,23 +16,25 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.ClimbConstants;
 import com.revrobotics.Rev2mDistanceSensor;
 import com.revrobotics.Rev2mDistanceSensor.Port;
 import com.revrobotics.Rev2mDistanceSensor.RangeProfile;
 import com.revrobotics.Rev2mDistanceSensor.Unit;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+
 
 /*
- * 2/18/26
- * adjust the climb and unclimb commands to sequential commands to account for the rotating motor 
- * can look at last year's auton code for sequential command examples
- * (may have an encoder for rotateMotor)
+ * CALIBRATE:
+ * PIDs and profiler for both climbMotor and rotateMotor
+ * goals for PIDs
+ * lidar offset
+ * motor tolerances
  * 
- * climb command:
- * rotateMotor first to latch onto the ladder, wait until rotatePID is within tolerance, then climbMotor to raise the robot up
  * 
- * unclimb command:
- * climbMotor to lower the robot down, wait until climbPID is within tolerance, then rotateMotor to unlatch from the ladder
+ * 2/19/2026
+ * look into the tolerance for both PIDs because they're different from each other
  * 
  */
 
@@ -76,8 +78,12 @@ public class ClimbSubsystem extends SubsystemBase {
       goalRotations = ClimbConstants.rotateGoalRotations;
       rotatePID.setGoal(goalRotations); //latch robot (rotateMotor) onto the ladder
     })
-    .andThen(TimeUnit.SECONDS.sleep(1)); //wait 1 second to make sure rotatePID is within tolerance
-    .andThen(climbPID.setGoal(ClimbConstants.minExtension)); //raise robot (climbMotor) up onto the ladder
+    .andThen(new WaitUntilCommand(() -> rotatePID.atGoal())) //wait until rotatePID is at its goal
+    .andThen(
+      runOnce(() -> {
+        climbPID.setGoal(ClimbConstants.minExtension);
+      })
+    ); //raise robot (climbMotor) up onto the ladder
   }
 
   //ladder -> ground
@@ -87,8 +93,12 @@ public class ClimbSubsystem extends SubsystemBase {
       climbPID.setGoal(ClimbConstants.maxExtension); //lower robot (climbMotor) onto the ground
       goalRotations = ClimbConstants.rotateGoalRotations * -1.0;
     })
-    .andThen(TimeUnit.SECONDS.sleep(1)); //wait 1 second to make sure climbPID is within tolerance
-    .andThen(rotatePID.setGoal(goalRotations)); //then unlatch robot (rotateMotor) from ladder
+    .andThen(new WaitUntilCommand(() -> climbPID.atGoal())) //wait until climbPID is at its goal
+    .andThen(
+      runOnce(() -> {
+        rotatePID.setGoal(goalRotations);
+      })
+    ); //then unlatch robot (rotateMotor) from ladder
   }
 
   //reset the "I" value for the motor PID 
