@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import java.util.function.DoubleSupplier;
+import java.util.concurrent.TimeUnit;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -39,14 +40,13 @@ public class ClimbSubsystem extends SubsystemBase {
 
   private TalonFX climbMotor;
   private TalonFX rotateMotor;
+
   private ProfiledPIDController climbPID;
   private ProfiledPIDController rotatePID;
 
   private double goalRotations;
 
   private Rev2mDistanceSensor lidarSensor = new Rev2mDistanceSensor(Port.kOnboard, Unit.kMillimeters, RangeProfile.kHighSpeed);
-  private double lidarGoal = 0.0;
-  private boolean lidarOn = false;
 
   public ClimbSubsystem() {
 
@@ -55,32 +55,40 @@ public class ClimbSubsystem extends SubsystemBase {
 
     climbPID = new ProfiledPIDController(ClimbConstants.ckP, ClimbConstants.ckI, ClimbConstants.ckD, new TrapezoidProfile.Constraints(ClimbConstants.cmaxA, ClimbConstants.cmaxV));
     climbPID.setGoal(ClimbConstants.maxExtension);
+    climbPID.setTolerance(5, 10);
+
+    goalRotations = 0.0;
 
     rotateMotor = new TalonFX(ClimbConstants.rotateMotorID);
     rotateMotor.setPosition(0,0);
 
-    goalRotations = 0.0;
-
     rotatePID = new ProfiledPIDController(ClimbConstants.rkP, ClimbConstants.rkI, ClimbConstants.rkD, new TrapezoidProfile.Constraints(ClimbConstants.rmaxA, ClimbConstants.rmaxV));
     rotatePID.setGoal(goalRotations);
+    rotatePID.setTolerance(5, 10);
 
     lidarSensor.setAutomaticMode(true);
   }
 
-  //starting at the ground
+  //ground -> ladder
   public Command Climb() {
 
     return runOnce(() -> {
-      climbPID.setGoal(ClimbConstants.minExtension); 
-    });
+      goalRotations = ClimbConstants.rotateGoalRotations;
+      rotatePID.setGoal(goalRotations); //latch robot (rotateMotor) onto the ladder
+    })
+    .andThen(TimeUnit.SECONDS.sleep(1)); //wait 1 second to make sure rotatePID is within tolerance
+    .andThen(climbPID.setGoal(ClimbConstants.minExtension)); //raise robot (climbMotor) up onto the ladder
   }
 
-  //on the ladder
+  //ladder -> ground
   public Command Unclimb() {
 
     return runOnce(() -> {
-      climbPID.setGoal(ClimbConstants.maxExtension);
-    });
+      climbPID.setGoal(ClimbConstants.maxExtension); //lower robot (climbMotor) onto the ground
+      goalRotations = ClimbConstants.rotateGoalRotations * -1.0;
+    })
+    .andThen(TimeUnit.SECONDS.sleep(1)); //wait 1 second to make sure climbPID is within tolerance
+    .andThen(rotatePID.setGoal(goalRotations)); //then unlatch robot (rotateMotor) from ladder
   }
 
   //reset the "I" value for the motor PID 
