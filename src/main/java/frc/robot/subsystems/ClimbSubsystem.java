@@ -23,6 +23,7 @@ import com.revrobotics.Rev2mDistanceSensor.Port;
 import com.revrobotics.Rev2mDistanceSensor.RangeProfile;
 import com.revrobotics.Rev2mDistanceSensor.Unit;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import edu.wpi.first.wpilibj.Encoder;
 
 
 /*
@@ -49,6 +50,8 @@ public class ClimbSubsystem extends SubsystemBase {
 
   private double goalRotations;
 
+  //Encoder rotateEncoder = new Encoder(0,1);
+
   private Rev2mDistanceSensor lidarSensor = new Rev2mDistanceSensor(Port.kOnboard, Unit.kMillimeters, RangeProfile.kHighSpeed);
 
   public ClimbSubsystem() {
@@ -61,6 +64,8 @@ public class ClimbSubsystem extends SubsystemBase {
     climbPID.setTolerance(5, 0.1);
 
     goalRotations = 0.0;
+
+    //rotateEncoder.setDistancePerPulse(4.0/256.0/8.0);
 
     rotateMotor = new TalonFX(ClimbConstants.rotateMotorID);
     rotateMotor.setPosition(0,0);
@@ -123,6 +128,7 @@ public class ClimbSubsystem extends SubsystemBase {
   public void periodic() {
 
     climbPID.setGoal(getLidarMeters());
+    //rotatePID.setGoal(rotateEncoder.getDistance());
 
     double lidarPosition = getLidarMeters();
     double climbNewMotorSpeed = climbPID.calculate(lidarPosition);
@@ -138,6 +144,8 @@ public class ClimbSubsystem extends SubsystemBase {
     builder.addDoubleProperty("Lidar Distance", () -> getLidarMeters(), null);
     builder.addDoubleProperty("Climb PID Goal", () -> this.climbPID.getGoal().position, null);
     builder.addDoubleProperty("Rotate PID Goal", () ->  this.rotatePID.getGoal().position, null);
-    builder.addDoubleProperty("Motor Rotations", () -> climbMotor.getPosition().getValueAsDouble(), null);
+    builder.addDoubleProperty("Rotate Motor Rotations", () -> this.goalRotations, null);
+    builder.addDoubleProperty("Climb Motor Rotations", () -> climbMotor.getPosition().getValueAsDouble(), null);
+    //builder.addDoubleProperty("Goal Rotations", () -> this.rotateEncoder.getDistance(), null);
   }
 }
