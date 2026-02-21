@@ -83,14 +83,15 @@ public class TurretIntakeSubsystem extends SubsystemBase {
         });
     }
 
-    public Command setPosition() {
+    public Command setPosition(double angle) {
         return run(() -> {
             // Trapezoid profile with max velocity 80 rps, max accel 160 rps/s
             final TrapezoidProfile m_profile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(80, 160)
             );
-            // Final target of 200 rot, 0 rps
-            TrapezoidProfile.State m_goal = new TrapezoidProfile.State(200, 0);
+
+            // Final target of angle rot, 0 rps
+            TrapezoidProfile.State m_goal = new TrapezoidProfile.State(angle * 2 * 3.14159, 0);
             TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
 
             // create a position closed-loop request, voltage output, slot 0 configs
