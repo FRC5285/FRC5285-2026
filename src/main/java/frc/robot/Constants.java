@@ -25,6 +25,11 @@ public final class Constants {
 
     }
 
+    /** Constants for turret intake */
+    public static class TurretIntakeConstants {
+        
+    }
+
     /** Constants for intake */
     public static class IntakeConstants {
 
