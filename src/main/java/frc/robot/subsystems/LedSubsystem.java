@@ -19,6 +19,31 @@ public class LedSubsystem extends SubsystemBase {
     public double[] currentPattern = null;
     private double currentValue = 0.0;
 
+    // hub active
+    // auton and aimbot 
+    // shooting failed
+
+    public Command hubActive() {
+        return runOnce(() -> {
+            // green
+            currentPattern = LEDConstants.aro_flag;
+        });
+    }
+
+    public Command auton() {
+        return runOnce(() -> {
+            // orange
+            currentPattern = LEDConstants.lesbian_flag;
+        });
+    }
+
+    public Command shootFailed() {
+        return runOnce(() -> {
+            // red
+            currentPattern = LEDConstants.queer_flag;
+        });
+    }
+
     @Override
     public void periodic() {
         if (currentPattern != null) {
