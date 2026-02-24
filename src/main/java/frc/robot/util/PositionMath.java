@@ -25,6 +25,8 @@ public class PositionMath {
     private Supplier<Double> drivetrainVelocityY;
     private Supplier<Double> drivetrainVelocityRotation;
     private Supplier<Double> turretRotation;
+    private Supplier<Boolean> shootButton;
+    private Supplier<Boolean> climbing;
 
     private Rotation2d lastRotation;
     private Pose2d hubPose;
@@ -44,9 +46,11 @@ public class PositionMath {
         this.drivetrainVelocityY = () -> 0.0;
         this.drivetrainVelocityRotation = () -> 0.0;
         this.turretRotation = () -> 0.0;
+        this.shootButton = () -> false;
+        this.climbing = () -> false;
 
         // Set previous drivetrain rotation target
-        this.lastRotation = this.drivetrainPose.get().getRotation();
+        this.resetLastRotation();
 
         this.lastCalcPose = new Pose2d();
         this.calculateShootVector();
@@ -60,13 +64,16 @@ public class PositionMath {
      * @param drivetrainVelocityYSupplier Supplier for the drivetrain Field-Centric Y velocity
      * @param drivetrainVelocityRotationSupplier Supplier for the drivetrain angular velocity
      * @param turretRotationSupplier Supplier for the raw turret rotation, in rotations
+     * @param shootButtonSupplier Supplier for the shooter button
      */
     public void setSuppliers(
         Supplier<Pose2d> drivetrainPoseSupplier,
         Supplier<Double> drivetrainVelocityXSupplier,
         Supplier<Double> drivetrainVelocityYSupplier,
         Supplier<Double> drivetrainVelocityRotationSupplier,
-        Supplier<Double> turretRotationSupplier
+        Supplier<Double> turretRotationSupplier,
+        Supplier<Boolean> shootButtonSupplier,
+        Supplier<Boolean> climbingSupplier
     ) {
         // Set suppliers
         this.drivetrainPose = drivetrainPoseSupplier;
@@ -74,15 +81,49 @@ public class PositionMath {
         this.drivetrainVelocityY = drivetrainVelocityYSupplier;
         this.drivetrainVelocityRotation = drivetrainVelocityRotationSupplier;
         this.turretRotation = turretRotationSupplier;
+        this.shootButton = shootButtonSupplier;
+        this.climbing = climbingSupplier;
     }
 
     /**
-     * The start position of the drivetrain, at enable
+     * The start position of the drivetrain, at enable, on the middle starting position
      * 
      * @return The drivetrain start position
      */
     public Pose2d drivetrainStartPosition() {
-        return new Pose2d(0.0, 0.0, new Rotation2d(0.0));
+        return this.drivetrainStartPosition(0);
+    }
+
+    /**
+     * The start position of the drivetrain, intake facing towards the drivers
+     * 
+     * @param position the start position in the range [-2, 2], -2 representing the leftmost and 2 representing the rightmost
+     * @return the Pose2d representation
+     */
+    public Pose2d drivetrainStartPosition(int position) {
+        Alliance currentAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        Rotation2d robotRotation;
+        double robotX;
+        double robotY = 0.0;
+
+        // Start position Y translation
+        if (Math.abs(position) == 1) {
+            robotY = FieldConstants.startTranslationY1 * position;
+        } else if (Math.abs(position) == 2) {
+            robotY = FieldConstants.startTranslationY2Half * position;
+        }
+
+        // Side specific transformations
+        if (currentAlliance == Alliance.Blue) {
+            robotRotation = new Rotation2d(Math.PI);
+            robotX = FieldConstants.blueStartX;
+            robotY = -robotY;
+        } else {
+            robotRotation = new Rotation2d(0);
+            robotX = FieldConstants.redStartX;
+        }
+
+        return new Pose2d(robotX, FieldConstants.midLineY + robotY, robotRotation);
     }
 
     /**
@@ -94,7 +135,8 @@ public class PositionMath {
         double robotX = this.drivetrainPose.get().getX();
         double blueRatio = Math.abs(FieldConstants.blueHubCenterX - robotX) / FieldConstants.bumpSlowdownDistance;
         double redRatio = Math.abs(FieldConstants.redHubCenterX - robotX) / FieldConstants.bumpSlowdownDistance;
-        return Math.min(1.0, OperatorConstants.robotBumpSpeed + Math.min(blueRatio, redRatio) * OperatorConstants.variableBumpSpeed);
+        double shootMult = this.shootButton.get() ? OperatorConstants.shootVelocityMultiplier : 1.0;
+        return Math.min(shootMult, OperatorConstants.robotBumpSpeed + Math.min(blueRatio, redRatio) * OperatorConstants.variableBumpSpeed);
     }
 
     /**
@@ -271,12 +313,31 @@ public class PositionMath {
         this.hubPose = new Pose2d(this.getAllianceLineX(), FieldConstants.midLineY, new Rotation2d());
     }
 
+    /** Resets the last stored robot rotation */
+    public void resetLastRotation() {
+        this.lastRotation = this.drivetrainPose.get().getRotation();
+    }
+
     /**
      * The target rotation for the turret
      * 
      * @return The turret rotation target, in radians
      */
     public double getTurretRotationTarget() {
+        if (this.climbing.get()) {
+            Translation2d toTags;
+            if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+                toTags = FieldConstants.blueTowerTags.getTranslation().minus(this.drivetrainPose.get().getTranslation());
+            } else {
+                toTags = FieldConstants.redTowerTags.getTranslation().minus(this.drivetrainPose.get().getTranslation());
+            }
+
+            double currentRotation = this.drivetrainPose.get().getRotation().getRotations();
+            double r = toTags.getAngle().getRotations() - (currentRotation + RobotConstants.turretAddedRotations);
+
+            return r * 2 * Math.PI;
+        }
+
         // Save compute
         if (!this.lastCalcPose.equals(this.drivetrainPose.get())) {
             this.calculateShootVector();

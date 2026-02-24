@@ -11,13 +11,16 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.util.FlippingUtil;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -28,7 +31,8 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
-
+import frc.robot.Constants.AutoConstants;
+import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
 
 /**
@@ -51,6 +55,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
 
+    // Stuff for final climb alignment
+    private final SwerveRequest.FieldCentric drivePID = new SwerveRequest.FieldCentric();
+    private ProfiledPIDController xPID = new ProfiledPIDController(OperatorConstants.driveP, OperatorConstants.driveI, OperatorConstants.driveD, new TrapezoidProfile.Constraints(AutoConstants.climbMaxV, AutoConstants.climbMaxA));
+    private ProfiledPIDController yPID = new ProfiledPIDController(OperatorConstants.driveP, OperatorConstants.driveI, OperatorConstants.driveD, new TrapezoidProfile.Constraints(AutoConstants.climbMaxV, AutoConstants.climbMaxA));
+    private ProfiledPIDController rPID = new ProfiledPIDController(OperatorConstants.rotationP, OperatorConstants.rotationI, OperatorConstants.rotationD, new TrapezoidProfile.Constraints(AutoConstants.climbMaxAngularV, AutoConstants.climbMaxAngularA));
+    private double invertMult = 1.0;
+
     /** Swerve request to apply during robot-centric path following */
     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
@@ -72,6 +83,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         this.configureAutoBuilder();
 
+        this.xPID.setTolerance(OperatorConstants.pidDistanceTolerance);
+        this.yPID.setTolerance(OperatorConstants.pidDistanceTolerance);
+
         SendableRegistry.add(this, "Drivetrain");
         SmartDashboard.putData(this);
         SmartDashboard.putData("Field", field2d);
@@ -85,6 +99,37 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
      */
     public Command applyRequest(Supplier<SwerveRequest> request) {
         return run(() -> this.setControl(request.get()));
+    }
+
+    /**
+     * Finetunes the robot position using a PID.
+     * 
+     * @param goalPose The pose to go to, unflipped (on blue alliance)
+     * @return Command with the PID finetuning
+     */
+    public Command fineTunePID(Pose2d goalPose) {
+        return runOnce(() -> {
+            Pose2d goHere = goalPose;
+            if (this.invertMult == -1.0) goHere = FlippingUtil.flipFieldPose(goalPose);
+            this.xPID.reset(this.getPose().getX());
+            this.yPID.reset(this.getPose().getY());
+            this.rPID.reset(this.getPose().getRotation().getRadians());
+            this.rPID.enableContinuousInput(0.0, 2 * Math.PI);
+            this.xPID.setGoal(goHere.getX());
+            this.yPID.setGoal(goHere.getY());
+            this.rPID.setGoal(goHere.getRotation().getRadians());
+        })
+        .andThen(
+            run(() -> {
+                this.setControl(
+                    this.drivePID.withVelocityX(this.xPID.calculate(this.getPose().getX()) * this.invertMult)
+                    .withVelocityY(this.yPID.calculate(this.getPose().getY()) * this.invertMult)
+                    .withRotationalRate(this.rPID.calculate(this.getPose().getRotation().getRadians()))
+                );
+            })
+            .until(() -> this.xPID.atGoal() && this.yPID.atGoal() && this.rPID.atGoal())
+            .withTimeout(AutoConstants.fineTuneMaxTime)
+        );
     }
 
     private void configureAutoBuilder() {
@@ -101,15 +146,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
                 ),
                 new PPHolonomicDriveController(
-
-                    // CHANGE THESE LATER!!!!!!!
-                    // CHANGE THESE LATER!!!!!!!
-                    // CHANGE THESE LATER!!!!!!!
-
                     // PID constants for translation
-                    new PIDConstants(10, 0, 0),
+                    new PIDConstants(OperatorConstants.driveP, OperatorConstants.driveI, OperatorConstants.driveD),
                     // PID constants for rotation
-                    new PIDConstants(7, 0, 0)
+                    new PIDConstants(OperatorConstants.rotationP, OperatorConstants.rotationI, OperatorConstants.rotationD)
                 ),
                 config,
                 // Assume the path needs to be flipped for Red vs Blue, this is normally the case
@@ -176,6 +216,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     ? kRedAlliancePerspectiveRotation
                     : kBlueAlliancePerspectiveRotation
             );
+            this.invertMult = allianceColor == Alliance.Blue ? 1.0 : -1.0;
             this.m_hasAppliedOperatorPerspective = true;
         });
     }

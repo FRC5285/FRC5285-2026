@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.AutonSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
@@ -33,6 +34,8 @@ public class RobotContainer implements Sendable {
 
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain);
+
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
@@ -46,7 +49,15 @@ public class RobotContainer implements Sendable {
 
     public RobotContainer() {
         // Set suppliers for math
-        this.positionMath.setSuppliers(() -> this.drivetrain.getPose(), () -> this.drivetrain.getVelocityX(), () -> this.drivetrain.getVelocityY(), () -> this.drivetrain.getVelocityRotation(), () -> this.turret.turretAngle());
+        this.positionMath.setSuppliers(
+            () -> this.drivetrain.getPose(),
+            () -> this.drivetrain.getVelocityX(),
+            () -> this.drivetrain.getVelocityY(),
+            () -> this.drivetrain.getVelocityRotation(),
+            () -> this.turret.turretAngle(),
+            () -> this.autonSubsystem.isShooting(),
+            () -> this.autonSubsystem.isClimbing()
+        );
 
         // Configure controller bindings
         this.configureDrivetrainBinding();
@@ -69,7 +80,7 @@ public class RobotContainer implements Sendable {
         );
 
         // Manual rotation when not over bump and with right bumper button down
-        new Trigger(() -> !this.positionMath.bumpTurn() && this.driverController.rightBumper().getAsBoolean()).whileTrue(
+        new Trigger(() -> !this.positionMath.bumpTurn() && this.driverController.leftBumper().getAsBoolean()).whileTrue(
             this.drivetrain.applyRequest(() ->
                 this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
                     .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
@@ -78,14 +89,38 @@ public class RobotContainer implements Sendable {
         );
 
         // Use auto rotation
-        this.driverController.rightBumper().onFalse(
+        this.driverController.leftBumper().onFalse(
             this.drivetrain.getDefaultCommand()
         );
     }
 
     /** Configure controller bindings */
     private void configureBindings() {
+        this.driverController.rightTrigger().onTrue(
+            this.autonSubsystem.shootingOn()
+        );
 
+        this.driverController.rightTrigger().onFalse(
+            this.autonSubsystem.shootingOff()
+        );
+
+        this.driverController.povLeft().onTrue(
+            this.autonSubsystem.climbLeft()
+            .andThen(this.drivetrain.applyRequest(() ->
+                this.driveFree.withVelocityX(0.0)
+                    .withVelocityY(0.0)
+                    .withRotationalRate(0.0)
+            ))
+        );
+
+        this.driverController.povRight().onTrue(
+            this.autonSubsystem.climbRight()
+            .andThen(this.drivetrain.applyRequest(() ->
+                this.driveFree.withVelocityX(0.0)
+                    .withVelocityY(0.0)
+                    .withRotationalRate(0.0)
+            ))
+        );
     }
 
     /** Resets the field side and pose the robot is on. Runs when robot is enabled and auton was not used. */
@@ -100,6 +135,7 @@ public class RobotContainer implements Sendable {
 
     /** Resets the PIDs. Runs when robot is enabled. */
     public void resetPIDs() {
+        this.positionMath.resetLastRotation();
         this.drive.HeadingController.reset();
     }
 
