@@ -53,10 +53,7 @@ public final class Constants {
         public static final double m_steps = 1024.0;
 
         public static final int channel_a = 0;
-        public static final int channel_b = 1;
-
-        public static final int channel_a_a = 2;
-        public static final int channel_b_b = 3;
+        public static final int channel_b = 2;
 
         public static final int gear_ratio_on_drive_ring = 90;
         public static final double shooter_ratio = 1.0;
