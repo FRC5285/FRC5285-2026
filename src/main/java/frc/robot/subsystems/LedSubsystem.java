@@ -32,7 +32,7 @@ public class LedSubsystem extends SubsystemBase {
 
     public Command auton() {
         return runOnce(() -> {
-            // orange
+            // orange0[-9ob ]
             currentPattern = LEDConstants.lesbian_flag;
         });
     }
