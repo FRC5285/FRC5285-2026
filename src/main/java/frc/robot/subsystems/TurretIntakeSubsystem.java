@@ -1,3 +1,5 @@
+// atrocious ass code
+
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -29,7 +31,12 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     private final TalonFX lower = new TalonFX(TurretIntakeConstants.lowerID);
     private final MotionMagicVoltage motionMagicRequest1 = new MotionMagicVoltage(0);
     
-    double intakeSpeed = 160; // radians per sec
+    double intakeSpeed = TurretIntakeConstants.intakeSpeed; // radians per sec
+
+    // Trapezoid profile
+    final TrapezoidProfile m_profile = new TrapezoidProfile(
+        new TrapezoidProfile.Constraints(80, 160)
+    );
 
     public TurretIntakeSubsystem() {
         TalonFXConfiguration configs = new TalonFXConfiguration();
@@ -58,11 +65,11 @@ public class TurretIntakeSubsystem extends SubsystemBase {
 
         // in init function, set slot 0 gains
         var slot0Configs1 = new Slot0Configs();
-        slot0Configs1.kS = 0.25; // Add 0.25 V output to overcome static friction
-        slot0Configs1.kV = 0.12; // A velocity target of 1 rps results in 0.12 V output
-        slot0Configs1.kP = 4.8; // A position error of 2.5 rotations results in 12 V output
-        slot0Configs1.kI = 0; // no output for integrated error
-        slot0Configs1.kD = 0.1; // A velocity error of 1 rps results in 0.1 V output
+        slot0Configs1.kS = TurretIntakeConstants.kS1;
+        slot0Configs1.kV = TurretIntakeConstants.kV1;
+        slot0Configs1.kP = TurretIntakeConstants.kP1;
+        slot0Configs1.kI = TurretIntakeConstants.kI1;
+        slot0Configs1.kD = TurretIntakeConstants.kD1;
 
         lower.getConfigurator().apply(slot0Configs1);
 
@@ -85,11 +92,6 @@ public class TurretIntakeSubsystem extends SubsystemBase {
 
     public Command setPosition(double angle) {
         return run(() -> {
-            // Trapezoid profile with max velocity 80 rps, max accel 160 rps/s
-            final TrapezoidProfile m_profile = new TrapezoidProfile(
-            new TrapezoidProfile.Constraints(80, 160)
-            );
-
             // Final target of angle rot, 0 rps
             TrapezoidProfile.State m_goal = new TrapezoidProfile.State(angle * 2 * 3.14159, 0);
             TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
