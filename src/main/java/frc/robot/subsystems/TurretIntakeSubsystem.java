@@ -108,7 +108,7 @@ public class TurretIntakeSubsystem extends SubsystemBase {
             lower.setControl(m_request);
         });
     }
-
+    //Baguette
     @Override
     public void periodic() {
         beginIntake();
@@ -116,8 +116,9 @@ public class TurretIntakeSubsystem extends SubsystemBase {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("Rotations per second", () -> this.intakeMotor.getVelocity().getValueAsDouble(), null);
-        builder.addDoubleProperty("Radians Per Second", () -> this.intakeMotor.getVelocity().getValueAsDouble() * 2 * 3.1415, null);
+        builder.addDoubleProperty("Intake Motor Rotations per second", () -> this.intakeMotor.getVelocity().getValueAsDouble(), null);
+        builder.addDoubleProperty("Intake Motor Radians Per Second", () -> this.intakeMotor.getVelocity().getValueAsDouble() * 2 * 3.1415, null);
+        builder.addDoubleProperty("Lowering Motor Rotations", () -> this.lower.getPosition().getValueAsDouble(), null);
     }
 }
 
