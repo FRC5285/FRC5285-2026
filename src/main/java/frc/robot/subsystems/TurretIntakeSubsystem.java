@@ -5,7 +5,7 @@ package frc.robot.subsystems;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+//import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -29,7 +29,7 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
     private final TalonFX lower = new TalonFX(TurretIntakeConstants.lowerID);
-    private final MotionMagicVoltage motionMagicRequest1 = new MotionMagicVoltage(0);
+    //private final MotionMagicVoltage motionMagicRequest1 = new MotionMagicVoltage(0);
     
     double intakeSpeed = TurretIntakeConstants.intakeSpeed; // radians per sec
 
