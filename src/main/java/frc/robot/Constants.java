@@ -26,7 +26,7 @@ public final class Constants {
     }
 
     /** Constants for intake */
-    public static class IntakeConstants {
+    public static class TurretIntakeConstants {
         public static final int motorCanId = 1; // change later
 
         // arbitrary values (for now)

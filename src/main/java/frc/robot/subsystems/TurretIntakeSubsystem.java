@@ -10,7 +10,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.robot.Constants.IntakeConstants;
+import frc.robot.Constants.TurretIntakeConstants;
 
 // import com.ctre.phoenix6.configs.MotionMagicConfigs;
 // import com.ctre.phoenix6.configs.Slot0Configs;
@@ -19,31 +19,31 @@ import frc.robot.Constants.IntakeConstants;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-public class IntakeSubsystem extends SubsystemBase {
-    private final TalonFX motor = new TalonFX(IntakeConstants.motorCanId);
+public class TurretIntakeSubsystem extends SubsystemBase {
+    private final TalonFX motor = new TalonFX(TurretIntakeConstants.motorCanId);
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
     double intakeSpeed = 160; // radians per sec
 
-    public IntakeSubsystem() {
+    public TurretIntakeSubsystem() {
         TalonFXConfiguration configs = new TalonFXConfiguration();
         var talonFXConfigs = new TalonFXConfiguration();
 
         // configure Motion Magic settings
         var motionMagicConfigs = talonFXConfigs.MotionMagic;
-        motionMagicConfigs.MotionMagicCruiseVelocity = IntakeConstants.cruiseVelocity;
-        motionMagicConfigs.MotionMagicAcceleration = IntakeConstants.acceleration;
-        motionMagicConfigs.MotionMagicJerk = IntakeConstants.jerk;
+        motionMagicConfigs.MotionMagicCruiseVelocity = TurretIntakeConstants.cruiseVelocity;
+        motionMagicConfigs.MotionMagicAcceleration = TurretIntakeConstants.acceleration;
+        motionMagicConfigs.MotionMagicJerk = TurretIntakeConstants.jerk;
         configs.MotionMagic = motionMagicConfigs;
 
         // set slot 0 gains
         var slot0Configs = talonFXConfigs.Slot0;
-        slot0Configs.kS = IntakeConstants.kS;
-        slot0Configs.kV = IntakeConstants.kV;
-        slot0Configs.kA = IntakeConstants.kA;
-        slot0Configs.kP = IntakeConstants.kP;
-        slot0Configs.kI = IntakeConstants.kI;
-        slot0Configs.kD = IntakeConstants.kD;
+        slot0Configs.kS = TurretIntakeConstants.kS;
+        slot0Configs.kV = TurretIntakeConstants.kV;
+        slot0Configs.kA = TurretIntakeConstants.kA;
+        slot0Configs.kP = TurretIntakeConstants.kP;
+        slot0Configs.kI = TurretIntakeConstants.kI;
+        slot0Configs.kD = TurretIntakeConstants.kD;
         configs.Slot0 = slot0Configs;
 
         configs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
