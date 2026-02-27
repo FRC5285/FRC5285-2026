@@ -17,6 +17,14 @@ public class TurretSubsystem extends SubsystemBase {
 
     // Other methods go here
 
+    /**
+     * The current turret angle, in rotations
+     * 
+     * @return the current turret angle, in rotations
+     */
+    public double turretAngle() {
+        return 0.0;
+    }
 
     @Override
     public void periodic() {
