@@ -12,7 +12,6 @@ import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
@@ -34,7 +33,7 @@ public class RobotContainer implements Sendable {
 
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
-    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain);
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -126,6 +125,7 @@ public class RobotContainer implements Sendable {
     /** Resets the field side and pose the robot is on. Runs when robot is enabled and auton was not used. */
     public void resetSide() {
         this.positionMath.resetSide();
+        this.positionMath.resetLastRotation();
 
         this.drivetrain.resetSide();
         this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition());
@@ -140,7 +140,7 @@ public class RobotContainer implements Sendable {
     }
 
     public Command getAutonomousCommand() {
-        return Commands.print("No autonomous command configured");
+        return this.autonSubsystem.autonCommand();
     }
 
     @Override

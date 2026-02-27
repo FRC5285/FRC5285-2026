@@ -61,6 +61,18 @@ public final class Constants {
 
     /** Constants for use during Auto */
     public static class AutoConstants {
+        /** Max velocity during auton */
+        public static final double maxV = 3.0;
+        
+        /** Max acceleration during auton */
+        public static final double maxA = 3.0;
+
+        /** Max angular velocity during auton, in radians */
+        public static final double maxAngularV = 2 * Math.PI;
+
+        /** Max angular acceleration during auton, in radians */
+        public static final double maxAngularA = 6 * Math.PI;
+
         /** Max velocity during climb auton */
         public static final double climbMaxV = 3.0;
         
@@ -68,13 +80,22 @@ public final class Constants {
         public static final double climbMaxA = 3.0;
 
         /** Max angular velocity during climb auton, in radians */
-        public static final double climbMaxAngularV = Math.PI;
+        public static final double climbMaxAngularV = 2 * Math.PI;
 
         /** Max angular acceleration during climb auton, in radians */
-        public static final double climbMaxAngularA = Math.PI;
+        public static final double climbMaxAngularA = 6 * Math.PI;
 
         /** Max seconds to finetune the climb */
         public static final double fineTuneMaxTime = 3.0;
+
+        /** How long to wait at the outpost */
+        public static final double outpostWaitTime = 3.0;
+
+        /** How long to shoot */
+        public static final double shootTime = 5.0;
+
+        /** How long to shoot when there is more fuel */
+        public static final double shootMoreTime = 6.0;
     }
 
     /** Robot measurements, in METERS */
@@ -145,6 +166,18 @@ public final class Constants {
         /** Half of the Y-component of the translation between the middle Y and the Y coordinate where the robot corner is aligned with the trench side wall closest to the bump */
         public static final double startTranslationY2Half = 3.165 / 2.0;
 
+        /** Pose of the center apriltag on the blue outpost */
+        public static final Pose2d blueOutpostTag = new Pose2d(0.0077469999999999995, 0.6659626, new Rotation2d());
+
+        /** Distance between the bumper and the outpost when parking during auton */
+        public static final double bumperOutpostDistance = 0.3;
+
+        /** Pose of the robot when parking in front of the outpost during auton */
+        public static final Pose2d blueOutpostParkPose = new Pose2d(blueOutpostTag.getX() + bumperOutpostDistance + (RobotConstants.robotWidthBumpers / 2.0), blueOutpostTag.getY(), new Rotation2d(Math.PI));
+
+        /** Pose of the robot when shooting after getting fuel from the blue outpost */
+        public static final Pose2d blueOutpostShootPose = new Pose2d(2.0, 2.5, new Rotation2d(Math.PI));
+
         /** The pose between the apriltags on the blue tower */
         public static final Pose2d blueTowerTags = new Pose2d(0.0080772, 3.9616126, new Rotation2d());
 
@@ -161,13 +194,13 @@ public final class Constants {
         public static final Pose2d towerLeftLatchPose = new Pose2d(blueTowerTags.getX() + 1.06108, 3.7457125999999996 + (0.479425 + hookOffset), new Rotation2d());
 
         /** Pose of the robot during the climb, right side of the blue tower, flipped automatically by pathplanner */
-        public static final Pose2d towerRightFinalPose = new Pose2d(towerRightLatchPose.getX() + RobotConstants.robotHookOffsetX, towerRightLatchPose.getY() + RobotConstants.robotHookOffsetY, new Rotation2d(0.0));
+        public static final Pose2d towerRightFinalPose = new Pose2d(towerRightLatchPose.getX() + RobotConstants.robotHookOffsetX, towerRightLatchPose.getY() + RobotConstants.robotHookOffsetY, new Rotation2d(Math.PI));
 
         /** Pose of the robot during the climb, left side of the blue tower, flipped automatically by pathplanner */
-        public static final Pose2d towerLeftFinalPose = new Pose2d(towerLeftLatchPose.getX() - RobotConstants.robotHookOffsetX, towerLeftLatchPose.getY() - RobotConstants.robotHookOffsetY, new Rotation2d(Math.PI));
+        public static final Pose2d towerLeftFinalPose = new Pose2d(towerLeftLatchPose.getX() - RobotConstants.robotHookOffsetX, towerLeftLatchPose.getY() - RobotConstants.robotHookOffsetY, new Rotation2d(0.0));
 
         /** Field-centric X translation before the robot climbs */
-        public static final double climbPrepX = 0.0635;
+        public static final double climbPrepX = 0.1016;
 
         /** Field-centric Y translation before the robot climbs */
         public static final double climbPrepY = 0.0762;

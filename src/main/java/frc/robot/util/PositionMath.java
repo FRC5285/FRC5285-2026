@@ -173,8 +173,7 @@ public class PositionMath {
      * @return the angular velocity output to the drivetrain
      */
     public double driveRotationMath(double controllerInput, double throttleAmount) {
-        // resets rotation for autorotation, weird math because it's stupid
-        this.lastRotation = new Rotation2d(this.drivetrainPose.get().getRotation().getRadians() - Math.PI);
+        this.resetLastRotation();
 
         // invert controllerInput (because the default controller direction is stupid)
         return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband)
@@ -315,7 +314,12 @@ public class PositionMath {
 
     /** Resets the last stored robot rotation */
     public void resetLastRotation() {
-        this.lastRotation = this.drivetrainPose.get().getRotation();
+        // resets rotation for autorotation, weird math because it's stupid
+        if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Blue) {
+            this.lastRotation = new Rotation2d(this.drivetrainPose.get().getRotation().getRadians());
+        } else {
+            this.lastRotation = new Rotation2d(this.drivetrainPose.get().getRotation().getRadians() - Math.PI);
+        }
     }
 
     /**
