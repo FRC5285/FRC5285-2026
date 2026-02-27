@@ -24,6 +24,8 @@ import frc.robot.Constants.TurretIntakeConstants;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.Timer;
+
 public class TurretIntakeSubsystem extends SubsystemBase {
     private final TalonFX intakeMotor = new TalonFX(TurretIntakeConstants.intakeID);
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
@@ -112,6 +114,9 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         beginIntake();
+        Timer.delay(3);
+        endIntake();
+        Timer.delay(3);
     }
 
     @Override
