@@ -34,10 +34,12 @@ public class IntakeSubsystem extends SubsystemBase {
     //private final MotionMagicVoltage motionMagicRequest1 = new MotionMagicVoltage(0);
     
     double intakeSpeed = IntakeConstants.intakeSpeed; // radians per sec
+    double toleranceSpeed = 16.0;
+    boolean stopped = false;
 
     // Trapezoid profile
     final TrapezoidProfile m_profile = new TrapezoidProfile(
-        new TrapezoidProfile.Constraints(80, 160)
+        new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc)
     );
 
     public IntakeSubsystem() {
@@ -81,13 +83,14 @@ public class IntakeSubsystem extends SubsystemBase {
 
     // Other methods go here
     public Command beginIntake() {
-        return run(() -> {
-            intakeMotor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
+        return runOnce(() -> {
+            stopped = false;
         });
     }
 
     public Command endIntake() {
         return runOnce(() -> {
+            stopped = true;
             intakeMotor.stopMotor();
         });
     }
@@ -110,20 +113,18 @@ public class IntakeSubsystem extends SubsystemBase {
             lower.setControl(m_request);
         });
     }
-    //Baguette
+    // Baguette
     @Override
     public void periodic() {
-        beginIntake();
-        Timer.delay(3);
-        endIntake();
-        Timer.delay(3);
+        if (!stopped) intakeMotor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("Intake Motor Rotations per second", () -> this.intakeMotor.getVelocity().getValueAsDouble(), null);
-        builder.addDoubleProperty("Intake Motor Radians Per Second", () -> this.intakeMotor.getVelocity().getValueAsDouble() * 2 * 3.1415, null);
+        builder.addDoubleProperty("Intake Motor Radians Per Second", () -> this.intakeMotor.getVelocity().getValueAsDouble() * 2 * Math.PI, null);
         builder.addDoubleProperty("Lowering Motor Rotations", () -> this.lower.getPosition().getValueAsDouble(), null);
+        builder.addDoubleProperty("Target Speed", () -> this.intakeSpeed, null);
     }
 }
 
