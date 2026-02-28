@@ -23,7 +23,7 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(TurretIntakeConstants.motorCanId);
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
-    double intakeSpeed = 160; // radians per sec, target speed
+    double intakeSpeed = TurretIntakeConstants.intakeSpeed; // radians per sec, target speed
     double tolerance = 1.0;
     boolean stopped = false;
 
@@ -82,7 +82,7 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("Rotations per second", () -> this.motor.getVelocity().getValueAsDouble(), null);
-        builder.addDoubleProperty("Radians Per Second", () -> this.motor.getVelocity().getValueAsDouble() * 2 * 3.1415, null);
+        builder.addDoubleProperty("Radians Per Second", () -> this.motor.getVelocity().getValueAsDouble() * 2 * Math.PI, null);
         builder.addDoubleProperty("Goal", () -> this.intakeSpeed, null);
     }
 }

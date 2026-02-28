@@ -41,6 +41,8 @@ public final class Constants {
         public static final double cruiseVelocity = 80;
         public static final double acceleration = 160;
         public static final double jerk = 1600; // goon
+
+        public static final double intakeSpeed = 160.0;
     }
 
     /** Constants for storage rollers */
