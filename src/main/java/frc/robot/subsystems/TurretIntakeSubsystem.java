@@ -23,7 +23,9 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(TurretIntakeConstants.motorCanId);
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
-    double intakeSpeed = 160; // radians per sec
+    double intakeSpeed = 160; // radians per sec, target speed
+    double tolerance = 1.0;
+    boolean stopped = false;
 
     public TurretIntakeSubsystem() {
         TalonFXConfiguration configs = new TalonFXConfiguration();
@@ -55,26 +57,32 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     }
 
     // Other methods go here
+    public boolean atTargetSpeed() {
+        return (this.motor.getVelocity().getValueAsDouble() == intakeSpeed + tolerance || this.motor.getVelocity().getValueAsDouble() == intakeSpeed - tolerance);
+    }
+
     public Command beginIntake() {
-        return run(() -> {
-            motor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
+        return runOnce(() -> {
+            stopped = false;
         });
     }
 
     public Command endIntake() {
         return runOnce(() -> {
+            stopped = true;
             motor.stopMotor();
         });
     }
 
     @Override
     public void periodic() {
-        beginIntake();
+        if (!stopped) motor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("Rotations per second", () -> this.motor.getVelocity().getValueAsDouble(), null);
         builder.addDoubleProperty("Radians Per Second", () -> this.motor.getVelocity().getValueAsDouble() * 2 * 3.1415, null);
+        builder.addDoubleProperty("Goal", () -> this.intakeSpeed, null);
     }
 }
