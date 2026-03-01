@@ -183,8 +183,8 @@ public class TurretSubsystem extends SubsystemBase {
         current_rollover = currentPos;
         double delta_rollover = current_rollover - prev_rollover;
 
-        if (delta_rollover > 0.17) delta_rollover -= 0.2;
-        else if (delta_rollover < -0.17) delta_rollover += 0.2;
+        if (delta_rollover > TurretConstants.max_range - 0.04) delta_rollover -= TurretConstants.max_range;
+        else if (delta_rollover < TurretConstants.max_range - 0.04) delta_rollover += TurretConstants.max_range;
         position_69_rollover += delta_rollover;
         prev_rollover = current_rollover;
         return position_69_rollover;
@@ -209,7 +209,7 @@ public class TurretSubsystem extends SubsystemBase {
         currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
         runOnce(() -> prev_rollover = currentPos);
 
-        turretMotor.setControl(motionMagicRequest.withPosition(rollover_math()));
+        turretMotor.setControl(motionMagicRequest.withPosition(currentPos));
         //shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(shooterTargetRPS));
 
         calculate_debug_values();

@@ -53,16 +53,16 @@ public final class Constants {
         public static final double m_steps = 1024.0;
 
         public static final int channel_a = 0;
-        public static final int channel_b = 2;
+        public static final int channel_b = 1;
 
         public static final int gear_ratio_on_drive_ring = 90;
         public static final double shooter_ratio = 1.0;
 
         public static final double convert_to_rotations_from_radians = 6.28318530718;
 
-        public static final double max_range = 2.1; //rotations
-        public static final double min_range = -2.1; //rotaitons
-        public static final double match_tolerance = 0.052; //rotations
+        public static final double max_range = 1.5; //rotations
+        public static final double min_range = -1.5; //rotaitons
+        public static final double match_tolerance = 0.03; //rotations
     }
 
     /** Constants for intake */
