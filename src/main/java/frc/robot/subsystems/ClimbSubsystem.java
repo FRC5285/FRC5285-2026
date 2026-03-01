@@ -1,7 +1,6 @@
 package frc.robot.subsystems;
 
 import java.util.function.DoubleSupplier;
-import java.util.concurrent.TimeUnit;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 
@@ -50,7 +49,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
   private double goalRotations;
 
-  //Encoder rotateEncoder = new Encoder(0,1);
+  Encoder rotateEncoder = new Encoder(0,1);
 
   private Rev2mDistanceSensor lidarSensor = new Rev2mDistanceSensor(Port.kOnboard, Unit.kMillimeters, RangeProfile.kHighSpeed);
 
@@ -63,9 +62,12 @@ public class ClimbSubsystem extends SubsystemBase {
     climbPID.setGoal(ClimbConstants.maxExtension);
     climbPID.setTolerance(5, 0.1);
 
+    SendableRegistry.add(this, "Motor");
+    SmartDashboard.putData(this);
+
     goalRotations = 0.0;
 
-    //rotateEncoder.setDistancePerPulse(4.0/256.0/8.0);
+    rotateEncoder.setDistancePerPulse(4.0/256.0/8.0);
 
     rotateMotor = new TalonFX(ClimbConstants.rotateMotorID);
     rotateMotor.setPosition(0,0);
@@ -73,6 +75,9 @@ public class ClimbSubsystem extends SubsystemBase {
     rotatePID = new ProfiledPIDController(ClimbConstants.rkP, ClimbConstants.rkI, ClimbConstants.rkD, new TrapezoidProfile.Constraints(ClimbConstants.rmaxA, ClimbConstants.rmaxV));
     rotatePID.setGoal(goalRotations);
     rotatePID.setTolerance(5, 0.1);
+
+    SendableRegistry.add(this, "Motor");
+    SmartDashboard.putData(this);
 
     lidarSensor.setAutomaticMode(true);
   }
@@ -87,9 +92,9 @@ public class ClimbSubsystem extends SubsystemBase {
     .andThen(new WaitUntilCommand(() -> rotatePID.atGoal())) //wait until rotatePID is at its goal
     .andThen(
       runOnce(() -> {
-        climbPID.setGoal(ClimbConstants.minExtension);
+        climbPID.setGoal(ClimbConstants.minExtension); //raise robot (climbMotor) up onto the ladder
       })
-    ); //raise robot (climbMotor) up onto the ladder
+    ); 
   }
 
   //ladder -> ground
@@ -102,9 +107,9 @@ public class ClimbSubsystem extends SubsystemBase {
     .andThen(new WaitUntilCommand(() -> climbPID.atGoal())) //wait until climbPID is at its goal
     .andThen(
       runOnce(() -> {
-        rotatePID.setGoal(goalRotations);
+        rotatePID.setGoal(goalRotations); //then unlatch robot (rotateMotor) from ladder
       })
-    ); //then unlatch robot (rotateMotor) from ladder
+    ); 
   }
 
   //reset the "I" value for the motor PID 
@@ -128,7 +133,7 @@ public class ClimbSubsystem extends SubsystemBase {
   public void periodic() {
 
     climbPID.setGoal(getLidarMeters());
-    //rotatePID.setGoal(rotateEncoder.getDistance());
+    rotatePID.setGoal(rotateEncoder.getDistance());
 
     double lidarPosition = getLidarMeters();
     double climbNewMotorSpeed = climbPID.calculate(lidarPosition);
@@ -146,6 +151,6 @@ public class ClimbSubsystem extends SubsystemBase {
     builder.addDoubleProperty("Rotate PID Goal", () ->  this.rotatePID.getGoal().position, null);
     builder.addDoubleProperty("Rotate Motor Rotations", () -> this.goalRotations, null);
     builder.addDoubleProperty("Climb Motor Rotations", () -> climbMotor.getPosition().getValueAsDouble(), null);
-    //builder.addDoubleProperty("Goal Rotations", () -> this.rotateEncoder.getDistance(), null);
+    builder.addDoubleProperty("Rotate Goal Rotations", () -> this.rotateEncoder.getDistance(), null);
   }
 }
