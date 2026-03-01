@@ -62,9 +62,6 @@ public class ClimbSubsystem extends SubsystemBase {
     climbPID.setGoal(ClimbConstants.maxExtension);
     climbPID.setTolerance(5, 0.1);
 
-    SendableRegistry.add(this, "Motor");
-    SmartDashboard.putData(this);
-
     goalRotations = 0.0;
 
     rotateEncoder.setDistancePerPulse(4.0/256.0/8.0);
@@ -76,10 +73,10 @@ public class ClimbSubsystem extends SubsystemBase {
     rotatePID.setGoal(goalRotations);
     rotatePID.setTolerance(5, 0.1);
 
+    lidarSensor.setAutomaticMode(true);
+
     SendableRegistry.add(this, "Motor");
     SmartDashboard.putData(this);
-
-    lidarSensor.setAutomaticMode(true);
   }
 
   //ground -> ladder
