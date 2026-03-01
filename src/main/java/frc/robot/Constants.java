@@ -41,11 +41,11 @@ public final class Constants {
         public static final double driveD = 0.0;
         
         /** The P value for the rotation PID */
-        public static final double rotationP = 8.0;
+        public static final double rotationP = 5.0;
         /** The I value for the rotation PID */
         public static final double rotationI = 0.0;
         /** The D value for the rotation PID */
-        public static final double rotationD = 0.5;
+        public static final double rotationD = 0.0;
         /** The max angular acceleration */
         public static final double rotationMaxA = maxAngularRate * 5;
 
@@ -281,7 +281,7 @@ public final class Constants {
         public static final double camPositionBufferTime = 2.0;
 
         /** Number of cameras on the robot */
-        public static final int numCameras = 4;
+        public static final int numCameras = 0;
 
         /** Camera names */
         public static final String[] cameraNames = {

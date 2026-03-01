@@ -165,7 +165,7 @@ public class PositionMath {
         // invert controllerInput (because the default controller direction is stupid)
         return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband)
                 * this.driveSpeedMultiplier() * OperatorConstants.maxSpeed
-                * (1.0 - MathUtil.applyDeadband(throttleAmount, OperatorConstants.driveDeadband) * OperatorConstants.throttleMinMultiplier);
+                * (1.0 - MathUtil.applyDeadband(throttleAmount, OperatorConstants.driveDeadband) * (1.0 - OperatorConstants.throttleMinMultiplier));
     }
 
     /**
@@ -181,7 +181,7 @@ public class PositionMath {
         // invert controllerInput (because the default controller direction is stupid)
         return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband)
                 * this.driveSpeedMultiplier() * OperatorConstants.maxAngularRate
-                * (1.0 - MathUtil.applyDeadband(throttleAmount, OperatorConstants.driveDeadband) * OperatorConstants.throttleMinMultiplier);
+                * (1.0 - MathUtil.applyDeadband(throttleAmount, OperatorConstants.driveDeadband) * (1.0 - OperatorConstants.throttleMinMultiplier));
     }
 
     /**
