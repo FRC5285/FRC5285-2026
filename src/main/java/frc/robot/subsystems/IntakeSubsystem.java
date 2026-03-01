@@ -85,13 +85,14 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command beginIntake() {
         return runOnce(() -> {
             stopped = false;
+            intakeSpeed = IntakeConstants.intakeSpeed;
         });
     }
 
     public Command endIntake() {
         return runOnce(() -> {
             stopped = true;
-            intakeMotor.stopMotor();
+            intakeSpeed = 0;
         });
     }
 
@@ -116,7 +117,11 @@ public class IntakeSubsystem extends SubsystemBase {
     // Baguette
     @Override
     public void periodic() {
-        if (!stopped) intakeMotor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
+        if (!stopped) {
+            intakeMotor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
+        } else {
+            intakeMotor.stopMotor();
+        }
     }
 
     @Override
