@@ -99,7 +99,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command setPosition(double angle) {
         return run(() -> {
             // Final target of angle rot, 0 rps
-            TrapezoidProfile.State m_goal = new TrapezoidProfile.State(angle * 2 * 3.14159, 0);
+            TrapezoidProfile.State m_goal = new TrapezoidProfile.State(angle * 2 * Math.PI, 0);
             TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
 
             // create a position closed-loop request, voltage output, slot 0 configs
