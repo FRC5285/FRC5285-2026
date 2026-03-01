@@ -65,14 +65,8 @@ public class TurretSubsystem extends SubsystemBase {
     private double prev_rollover;
     private double current_rollover;
 
-    private double min_range = -2.1;
-    private double max_range = 2.1;
-    private double matchtol = 0.052;
-
     public String getLastStatus_debug = "";
     private int getLastiterations_debug; 
-
-    private double easyCRTrotations;
 
     public double turret_base_eror;
     DutyCycleEncoder encoder = new DutyCycleEncoder(TurretConstants.channel_a);
@@ -94,8 +88,8 @@ public class TurretSubsystem extends SubsystemBase {
                 /* encoder1Pinion */ 19,
                 /* encoder2Pinion */ 21)
             .withAbsoluteEncoderOffsets(Rotations.of(0.0), Rotations.of(0.0)) // set after mechanical zero
-            .withMechanismRange(Rotations.of(min_range), Rotations.of(max_range)) // -360 deg to +720 deg
-            .withMatchTolerance(Rotations.of(matchtol)) // ~1.08 deg at encoder2 for the example ratio
+            .withMechanismRange(Rotations.of(TurretConstants.min_range), Rotations.of(TurretConstants.max_range)) // -360 deg to +720 deg
+            .withMatchTolerance(Rotations.of(TurretConstants.match_tolerance)) // ~1.08 deg at encoder2 for the example ratio
             .withAbsoluteEncoderInversions(false, false)
         ;
 
@@ -177,25 +171,36 @@ public class TurretSubsystem extends SubsystemBase {
      * 
      * @return the current turret angle, in rotations
      */
-    public double turretAngle() {
-        Optional<Angle> mechAngleOpt = easyCrtSolver.getAngleOptional();
-        if (mechAngleOpt.isPresent()) {
-            easyCRTrotations = mechAngleOpt.get().in(Rotations);
-            turretMotor.setPosition(easyCRTrotations);
-        }
-        return turretMotor.getPosition().getValueAsDouble();
-    }
 
-    public double test() {
+    public double turretAngle() {
         easyCrtSolver.getAngleOptional().ifPresent(mechAngle -> {
             turretMotor.setPosition(mechAngle);
         });
         return 0.0;
     }
 
+    public double rollover_math() {
+        current_rollover = currentPos;
+        double delta_rollover = current_rollover - prev_rollover;
+
+        if (delta_rollover > 0.17) delta_rollover -= 0.2;
+        else if (delta_rollover < -0.17) delta_rollover += 0.2;
+        position_69_rollover += delta_rollover;
+        prev_rollover = current_rollover;
+        return position_69_rollover;
+    }
+
+    public void calculate_debug_values() {
+        turret_base_eror = currentPos-turretTargetPosition;
+        encoder_1_debug = encoder.get();
+        encoder_2_debug = encoder_1.get();
+        getLastStatus_debug = easyCrtSolver.getLastStatus();
+        getLastiterations_debug = easyCrtSolver.getLastIterations();
+    }
+
     @Override
     public void periodic() {
-        test();
+        turretAngle();
         
         turretTargetPosition = positionMath.getTurretRotationTarget()/TurretConstants.convert_to_rotations_from_radians; 
         //shooterTargetRPS = positionMath.getFlywheelSpeedTarget();
@@ -203,40 +208,24 @@ public class TurretSubsystem extends SubsystemBase {
 
         currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
         runOnce(() -> prev_rollover = currentPos);
-        current_rollover = currentPos;
-        double delta_rollover = current_rollover - prev_rollover;
 
-        if (delta_rollover > 0.17) delta_rollover -= 0.2;
-        else if (delta_rollover < -0.17) delta_rollover += 0.2;
-
-        position_69_rollover += delta_rollover;
-
-        prev_rollover = current_rollover;
-
-        turretMotor.setControl(motionMagicRequest.withPosition(position_69_rollover));
+        turretMotor.setControl(motionMagicRequest.withPosition(rollover_math()));
         //shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(shooterTargetRPS));
 
-        turret_base_eror = currentPos-turretTargetPosition;
-        // check if motor reached the target within tolerance
-
-        encoder_1_debug = encoder.get();
-        encoder_2_debug = encoder_1.get();
-
-        getLastStatus_debug = easyCrtSolver.getLastStatus();
-        getLastiterations_debug = easyCrtSolver.getLastIterations();
-
+        calculate_debug_values();
 
     }
     @Override
     public void initSendable(SendableBuilder builder) {
 
         builder.addDoubleProperty("easyCRT output", () -> this.currentPos, null);
-        builder.addDoubleProperty("encoder 1", () -> this.encoder_1_debug, null);
-        builder.addDoubleProperty("encoder 2", () -> this.encoder_2_debug, null);
+        builder.addDoubleProperty("encoder 1 position", () -> this.encoder_1_debug, null);
+        builder.addDoubleProperty("encoder 2 position", () -> this.encoder_2_debug, null);
         builder.addIntegerProperty("getlastinterations", () -> this.getLastiterations_debug, null);
         builder.addStringProperty("getlaststatus", () -> this.getLastStatus_debug, null);
-        builder.addDoubleProperty("put in rotations you fucker", () -> this.position_69_rollover, null);
-        builder.addDoubleProperty("motor rotations", () -> this.turretMotor.getPosition().getValueAsDouble(), null);
-        
+        builder.addDoubleProperty("position_after_rollover", () -> this.position_69_rollover, null);
+        builder.addDoubleProperty("turret base rotations", () -> this.turretMotor.getPosition().getValueAsDouble(), null);
+        builder.addDoubleProperty("shooter target RPS", () -> this.shooterTargetRPS, null);   
+        //builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.get(), null);   
     }
 }

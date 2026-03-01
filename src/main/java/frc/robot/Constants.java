@@ -59,6 +59,10 @@ public final class Constants {
         public static final double shooter_ratio = 1.0;
 
         public static final double convert_to_rotations_from_radians = 6.28318530718;
+
+        public static final double max_range = 2.1; //rotations
+        public static final double min_range = -2.1; //rotaitons
+        public static final double match_tolerance = 0.052; //rotations
     }
 
     /** Constants for intake */
