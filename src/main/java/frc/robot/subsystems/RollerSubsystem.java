@@ -1,23 +1,24 @@
 package frc.robot.subsystems;
-
+import frc.robot.Constants.RollerConstants;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
+import edu.wpi.first.wpilibj2.command.Command;
+import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class RollerSubsystem extends SubsystemBase {
 
+
+    private final TalonFX rollerMotor; 
+    private final DutyCycleOut dutyCycle = new DutyCycleOut(0); 
+
+    private static final int ROLLER_MOTOR_ID = RollerConstants.ROLLER_MOTOR_ID; // CHANGE this to your motor’s actual CAN ID
     
-    private final TalonFX rollerMotor;
-    private final DutyCycleOut dutyCycle = new DutyCycleOut(0);
-
-    private static final int ROLLER_MOTOR_ID = 5;
-
     public RollerSubsystem() {
         rollerMotor = new TalonFX(ROLLER_MOTOR_ID);
 
-        // Motor configuration
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40;
         config.CurrentLimits.SupplyCurrentLimitEnable = true;
@@ -26,14 +27,25 @@ public class RollerSubsystem extends SubsystemBase {
     }
 
 
-    public void run() {
-        rollerMotor.setControl(dutyCycle.withOutput(0.8));
+    public void start() {
+        rollerMotor.setControl(dutyCycle.withOutput(RollerConstants.speed));
     }
 
-    
+   
     public void stop() {
         rollerMotor.setControl(dutyCycle.withOutput(0.0));
     }
+
+
+    /** Returns a command that runs start() once */
+    public Command startCommand() {
+        return runOnce(this::start);
+    }
+
+    /** Returns a command that runs stop() once */
+    public Command stopCommand() {
+        return runOnce(this::stop);
+    }
+
+
 }
-
-
