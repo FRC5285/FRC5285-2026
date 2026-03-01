@@ -29,7 +29,7 @@ public class RobotContainer implements Sendable {
     /** Handles most of the math for the robot. Do not create new instances in a subsystem, instead import this specific object in the constructor. */
     private final PositionMath positionMath = new PositionMath();
 
-    private final TurretSubsystem turret = new TurretSubsystem();
+    private final TurretSubsystem turret = new TurretSubsystem(this.positionMath);
 
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 

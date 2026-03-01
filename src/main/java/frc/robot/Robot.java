@@ -69,12 +69,13 @@ public class Robot extends TimedRobot {
     @Override
     public void teleopInit() {
         this.usedTeleop = true;
-        this.m_robotContainer.resetPIDs();
 
         // Resets robot field orientation only if Auton was not used
         if (!this.usedAuton) {
             this.m_robotContainer.resetSide();
         }
+
+        this.m_robotContainer.resetPIDs();
 
         if (this.m_autonomousCommand != null) {
             this.m_autonomousCommand.cancel();

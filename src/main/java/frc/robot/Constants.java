@@ -8,7 +8,9 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.generated.TunerConstants;
@@ -293,8 +295,8 @@ public final class Constants {
         public static final Transform3d[] cameraOffsets = {
             new Transform3d(),
             new Transform3d(),
-            new Transform3d(),
-            new Transform3d()
+            new Transform3d(new Translation3d(), new Rotation3d(new Rotation2d(-Math.PI / 4.0))),
+            new Transform3d(new Translation3d(), new Rotation3d(new Rotation2d(Math.PI / 4.0)))
         };
 
         /** If a camera is mounted on the turret - the camera offset should be relative to the turret center when turret rotation is 0 if true */
