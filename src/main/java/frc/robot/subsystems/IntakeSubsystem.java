@@ -29,16 +29,23 @@ public class IntakeSubsystem extends SubsystemBase {
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
     private final TalonFX lower = new TalonFX(IntakeConstants.lowerID);
-    //private final MotionMagicVoltage motionMagicRequest1 = new MotionMagicVoltage(0);
-    
+    // private final MotionMagicVoltage motionMagicRequest1 = new
+    // MotionMagicVoltage(0);
+
     double intakeSpeed = IntakeConstants.intakeSpeed; // radians per sec
     double toleranceSpeed = 16.0; // PID tolerance
     boolean stopped = false;
 
     // Trapezoid profile
     final TrapezoidProfile m_profile = new TrapezoidProfile(
-        new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc)
-    );
+            new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
+
+    // Final target of angle rot, 0 rps
+    TrapezoidProfile.State m_goal = new TrapezoidProfile.State(0, 0);
+    TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
+
+    // create a position closed-loop request, voltage output, slot 0 configs
+    PositionVoltage m_request = new PositionVoltage(0).withSlot(0);
 
     public IntakeSubsystem() {
         TalonFXConfiguration configs = new TalonFXConfiguration();
@@ -73,6 +80,7 @@ public class IntakeSubsystem extends SubsystemBase {
         slot0Configs1.kI = IntakeConstants.kI1;
         slot0Configs1.kD = IntakeConstants.kD1;
 
+        lower.setPosition(0);
         lower.getConfigurator().apply(slot0Configs1);
 
         SendableRegistry.add(this, "Turret Intake");
@@ -95,23 +103,16 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public Command setPosition(double angle) {
-        return run(() -> {
+        return runOnce(() -> {
             // Final target of angle rot, 0 rps
-            TrapezoidProfile.State m_goal = new TrapezoidProfile.State(angle * 2 * Math.PI, 0);
-            TrapezoidProfile.State m_setpoint = new TrapezoidProfile.State();
+            m_goal = new TrapezoidProfile.State(angle * 2 * Math.PI, 0);
+            m_setpoint = new TrapezoidProfile.State();
 
             // create a position closed-loop request, voltage output, slot 0 configs
-            final PositionVoltage m_request = new PositionVoltage(0).withSlot(0);
-
-            // calculate the next profile setpoint
-            m_setpoint = m_profile.calculate(0.020, m_setpoint, m_goal);
-
-            // send the request to the device
-            m_request.Position = m_setpoint.position;
-            m_request.Velocity = m_setpoint.velocity;
-            lower.setControl(m_request);
+            m_request = new PositionVoltage(0).withSlot(0);
         });
     }
+
     // Baguette
     @Override
     public void periodic() {
@@ -120,14 +121,23 @@ public class IntakeSubsystem extends SubsystemBase {
         } else {
             intakeMotor.stopMotor();
         }
+
+        // calculate the next profile setpoint
+        m_setpoint = m_profile.calculate(0.020, m_setpoint, m_goal);
+
+        // send the request to the device
+        m_request.Position = m_setpoint.position;
+        m_request.Velocity = m_setpoint.velocity;
+        lower.setControl(m_request);
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("Intake Motor Rotations per second", () -> this.intakeMotor.getVelocity().getValueAsDouble(), null);
-        builder.addDoubleProperty("Intake Motor Radians Per Second", () -> this.intakeMotor.getVelocity().getValueAsDouble() * 2 * Math.PI, null);
+        builder.addDoubleProperty("Intake Motor Rotations per second",
+                () -> this.intakeMotor.getVelocity().getValueAsDouble(), null);
+        builder.addDoubleProperty("Intake Motor Radians Per Second",
+                () -> this.intakeMotor.getVelocity().getValueAsDouble() * 2 * Math.PI, null);
         builder.addDoubleProperty("Lowering Motor Rotations", () -> this.lower.getPosition().getValueAsDouble(), null);
         builder.addDoubleProperty("Target Speed", () -> this.intakeSpeed, null);
     }
 }
-
