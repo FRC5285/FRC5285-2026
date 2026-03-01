@@ -32,7 +32,7 @@ public class IntakeSubsystem extends SubsystemBase {
     //private final MotionMagicVoltage motionMagicRequest1 = new MotionMagicVoltage(0);
     
     double intakeSpeed = IntakeConstants.intakeSpeed; // radians per sec
-    double toleranceSpeed = 16.0;
+    double toleranceSpeed = 16.0; // PID tolerance
     boolean stopped = false;
 
     // Trapezoid profile
