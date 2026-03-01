@@ -25,7 +25,7 @@ public final class Constants {
 
     }
 
-    /** Constants for turret intake */
+    /** Constants for intake */
     public static class IntakeConstants {
         public static final int intakeID = 1; // change later\
         public static final int lowerID = 0;
@@ -60,7 +60,7 @@ public final class Constants {
 
     }
 
-    /** Constants for intake */
+    /** Constants for turret intake */
     public static class TurretIntakeConstants {
     }
 
