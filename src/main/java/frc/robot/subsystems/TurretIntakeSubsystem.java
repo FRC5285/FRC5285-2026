@@ -64,19 +64,24 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     public Command beginIntake() {
         return runOnce(() -> {
             stopped = false;
+            intakeSpeed = TurretIntakeConstants.intakeSpeed;
         });
     }
 
     public Command endIntake() {
         return runOnce(() -> {
             stopped = true;
-            motor.stopMotor();
+            intakeSpeed = 0;
         });
     }
 
     @Override
     public void periodic() {
-        if (!stopped) motor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
+        if (!stopped) {
+            motor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
+        } else {
+            motor.stopMotor();
+        }
     }
 
     @Override
