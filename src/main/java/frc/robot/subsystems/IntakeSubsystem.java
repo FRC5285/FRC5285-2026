@@ -24,8 +24,6 @@ import frc.robot.Constants.IntakeConstants;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.wpilibj.Timer;
-
 public class IntakeSubsystem extends SubsystemBase {
     private final TalonFX intakeMotor = new TalonFX(IntakeConstants.intakeID);
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
