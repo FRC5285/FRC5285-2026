@@ -3,6 +3,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 //import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -73,15 +74,16 @@ public class IntakeSubsystem extends SubsystemBase {
         intakeMotor.getConfigurator().apply(configs);
 
         // in init function, set slot 0 gains
-        var slot0Configs1 = new Slot0Configs();
-        slot0Configs1.kS = IntakeConstants.kS1;
-        slot0Configs1.kV = IntakeConstants.kV1;
-        slot0Configs1.kP = IntakeConstants.kP1;
-        slot0Configs1.kI = IntakeConstants.kI1;
-        slot0Configs1.kD = IntakeConstants.kD1;
+        var slot1Configs = new Slot1Configs();
+        slot1Configs.kS = IntakeConstants.kS1;
+        slot1Configs.kV = IntakeConstants.kV1;
+        slot1Configs.kP = IntakeConstants.kP1;
+        slot1Configs.kI = IntakeConstants.kI1;
+        slot1Configs.kD = IntakeConstants.kD1;
+        configs.Slot1 = slot1Configs;
 
         lower.setPosition(0);
-        lower.getConfigurator().apply(slot0Configs1);
+        lower.getConfigurator().apply(configs);
 
         SendableRegistry.add(this, "Turret Intake");
         SmartDashboard.putData(this);
@@ -109,7 +111,7 @@ public class IntakeSubsystem extends SubsystemBase {
             m_setpoint = new TrapezoidProfile.State();
 
             // create a position closed-loop request, voltage output, slot 0 configs
-            m_request = new PositionVoltage(0).withSlot(0);
+            m_request = new PositionVoltage(0).withSlot(1);
         });
     }
 

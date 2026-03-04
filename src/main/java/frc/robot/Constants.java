@@ -36,24 +36,24 @@ public final class Constants {
         public static final double kS = 0.25;
         public static final double kV = 0.12;
         public static final double kA = 0.01;
-        public static final double kP = 4.8;
+        public static final double kP = 0.4;
         public static final double kI = 0;
-        public static final double kD = 0.1;
+        public static final double kD = 0.01;
 
         // lower part
         public static final double kS1 = 0.25;
         public static final double kV1 = 0.12;
         public static final double kA1 = 0.01;
-        public static final double kP1 = 4.8;
+        public static final double kP1 = 0.4;
         public static final double kI1 = 0;
-        public static final double kD1 = 0.1;
+        public static final double kD1 = 0.01;
         public static final double maxVel = 80; // for trapezoidal profile; max velocity
         public static final double maxAcc = 160; // max acceleration
 
         // motion magic settings
         public static final double cruiseVelocity = 80;
         public static final double acceleration = 160;
-        public static final double jerk = 1600; // gooner
+        public static final double jerk = 400; // gooner
 
         // turret settings
         public static final double intakeSpeed = 160; // radians per second (i think?)
