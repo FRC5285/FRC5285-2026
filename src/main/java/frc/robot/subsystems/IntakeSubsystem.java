@@ -33,11 +33,14 @@ public class IntakeSubsystem extends SubsystemBase {
     // private final MotionMagicVoltage motionMagicRequest1 = new
     // MotionMagicVoltage(0);
 
+    // add an absolute encoder
+
     double intakeSpeed = IntakeConstants.intakeSpeed; // radians per sec
     double toleranceSpeed = 16.0; // PID tolerance
     boolean stopped = false;
 
     // Trapezoid profile
+    // enable continuous input
     final TrapezoidProfile m_profile = new TrapezoidProfile(
             new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
 
@@ -125,6 +128,8 @@ public class IntakeSubsystem extends SubsystemBase {
             intakeMotor.stopMotor();
         }
 
+        // Don't use the previous setpoint, there will be an encoder
+
         // calculate the next profile setpoint
         m_setpoint = m_profile.calculate(0.020, m_setpoint, m_goal);
 
@@ -140,6 +145,7 @@ public class IntakeSubsystem extends SubsystemBase {
                 () -> this.intakeMotor.getVelocity().getValueAsDouble(), null);
         builder.addDoubleProperty("Intake Motor Radians Per Second",
                 () -> this.intakeMotor.getVelocity().getValueAsDouble() * 2 * Math.PI, null);
+        // use the encoder value
         builder.addDoubleProperty("Lowering Motor Rotations", () -> this.lower.getPosition().getValueAsDouble(), null);
         builder.addDoubleProperty("Target Speed", () -> this.intakeSpeed, null);
     }
