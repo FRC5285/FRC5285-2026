@@ -18,30 +18,24 @@ import frc.robot.subsystems.TurretSubsystem;
 
 public class RobotContainer {
 
-    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    //private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
-    private final PositionMath positionMath = new PositionMath(() -> this.drivetrain.getState().Pose, () -> this.drivetrain.getVelocityX(), () -> this.drivetrain.getVelocityY());
+    private final PositionMath positionMath = new PositionMath();
 
-    private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
+    //private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
-    private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
+    //private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
     private final TurretSubsystem turret = new TurretSubsystem(positionMath);
 
     public RobotContainer() {
-        this.configureDrivetrainBinding();
+        //this.configureDrivetrainBinding();
         this.configureBindings();
     }
 
     /** Configures the drivetrain drive command */
     private void configureDrivetrainBinding() {
-        this.drivetrain.setDefaultCommand(
-            this.drivetrain.applyRequest(() ->
-                this.drive.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY()))
-                    .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX()))
-                    .withRotationalRate(this.positionMath.drivetrainRotationAmount(driverController.getRightX()))
-            )
-        );
+        
     }
 
     /** Configure controller bindings */
@@ -51,8 +45,7 @@ public class RobotContainer {
 
     /** Resets the field side and pose the robot is on */
     public void resetSide() {
-        this.drivetrain.resetSide();
-        this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition());
+     
     }
 
     /** Resets the PIDs */

@@ -12,19 +12,14 @@ import frc.robot.generated.TunerConstants;
 
 public class PositionMath {
 
-    private final Supplier<Pose2d> drivetrainPose;
-    private final Supplier<Double> drivetrainVelocityX;
-    private final Supplier<Double> drivetrainVelocityY;
 
     // Speed of robot at controller max
     private final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
     // Rotation rate of robot at controller max (in radians per second)
     private final double maxAngularRate = 2 * Math.PI;
 
-    public PositionMath(Supplier<Pose2d> drivetrainPoseSupplier, Supplier<Double> drivetrainVelocityXSupplier, Supplier<Double> drivetrainVelocityYSupplier) {
-        this.drivetrainPose = drivetrainPoseSupplier;
-        this.drivetrainVelocityX = drivetrainVelocityXSupplier;
-        this.drivetrainVelocityY = drivetrainVelocityYSupplier;
+    public PositionMath() {
+    
     }
 
     /**

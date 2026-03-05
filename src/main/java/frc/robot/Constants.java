@@ -27,23 +27,22 @@ public final class Constants {
         public static final double Jerk = 1600;
 
         public static final double S_ACceleration = 320;
-        public static final double S_Jerk = 3200;
+        public static final double S_Jerk = 420.69;
 
 
         public static final double kS = 0.25; //turret base
         public static final double kV = 0.2;
         public static final double kA = 0.01;
-        public static final double kp = 4.8;
+        public static final double kp = 4.8; 
         public static final double ki = 0.05;
         public static final double kd = 0.1;
 
         public static final double S_kS = 0.25; //shooter
         public static final double S_kV = 0.2;
         public static final double S_kA = 0.01;
-        public static final double S_kp = 4.8;
-        public static final double S_ki = 0.05;
-        public static final double S_kd = 0.1;
-
+        public static final double S_kp = 0.1; 
+        public static final double S_ki = 0.01;                                                                                                                                                                                                                              
+        public static final double S_kd = 0.02;
         /** The CAN ID for the motor */
         public static final int motorCanId = 0;
         public static final int ShooterMotorCanId = 1;
@@ -58,7 +57,7 @@ public final class Constants {
         public static final int gear_ratio_on_drive_ring = 90;
         public static final double shooter_ratio = 1.0;
 
-        public static final double convert_to_rotations_from_radians = 6.28318530718;
+        public static final double convert_to_rotations_from_radians = 2 * Math.PI;
 
         public static final double max_range = 1.5; //rotations
         public static final double min_range = -1.5; //rotaitons
