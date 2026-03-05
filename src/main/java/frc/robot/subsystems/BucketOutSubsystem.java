@@ -26,31 +26,29 @@ public class BucketOutSubsystem extends SubsystemBase {
 
 
     public void spinForward() {
-        rollerMotor.setControl(dutyCycle.withOutput(BucketOutConstants.SPEED));
+        rollerMotor.setControl(dutyCycle.withOutput(BucketOutConstants.SPEEDForwards));
     }
 
     public void spinReverse() {
-        rollerMotor.setControl(dutyCycle.withOutput(-BucketOutConstants.SPEED));
+        rollerMotor.setControl(dutyCycle.withOutput(-BucketOutConstants.SPEEDBackwards));
     }
 
     public void stop() {
         rollerMotor.setControl(dutyCycle.withOutput(0.0));
     }
 
-   
 
-    
     public Command forwardCommand(double seconds) {
         return run(this::spinForward)
                 .withTimeout(seconds)
-                .finallyDo(interrupted -> stop());
+                .andThen(stopCommand());
     }
 
     
     public Command reverseCommand(double seconds) {
         return run(this::spinReverse)
                 .withTimeout(seconds)
-                .finallyDo(interrupted -> stop());
+                .andThen(stopCommand());
     }
 
     
@@ -58,7 +56,10 @@ public class BucketOutSubsystem extends SubsystemBase {
         return runOnce(this::stop);
     }
 
-    @Override
-    public void periodic() {
+
+    public Command startCommand() {
+        return forwardCommand(BucketOutConstants.forwardSeconds)
+        .andThen(reverseCommand(BucketOutConstants.backwardSeconds))
+        .repeatedly();
     }
 }

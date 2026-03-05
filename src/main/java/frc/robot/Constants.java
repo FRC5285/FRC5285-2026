@@ -326,7 +326,10 @@ public final class Constants {
     /** Constants for the bucket outtake */
     public static class BucketOutConstants {
     public static final int MOTOR_ID = 5;
-    public static final double SPEED = 0.6; // adjust as needed
+    public static final double SPEEDForwards = 0.6; // adjust as needed
+    public static final double SPEEDBackwards = 0.6;
+    public static final double forwardSeconds = 1.75;
+    public static final double backwardSeconds = 0.25;
 }
         
     
