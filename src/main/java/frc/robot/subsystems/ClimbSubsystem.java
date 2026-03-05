@@ -1,27 +1,20 @@
 package frc.robot.subsystems;
 
-import java.util.function.DoubleSupplier;
-
 import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.math.controller.ElevatorFeedforward;
 import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.ClimbConstants;
 import com.revrobotics.Rev2mDistanceSensor;
 import com.revrobotics.Rev2mDistanceSensor.Port;
 import com.revrobotics.Rev2mDistanceSensor.RangeProfile;
 import com.revrobotics.Rev2mDistanceSensor.Unit;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj.Encoder;
 
 
@@ -37,6 +30,8 @@ import edu.wpi.first.wpilibj.Encoder;
  * look into the tolerance for both PIDs because they're different from each other
  * enableContinuousOutput method
  * 
+ * Note from Alan: I added comments for changes to make, please make the changes
+ * thanks
  */
 
 public class ClimbSubsystem extends SubsystemBase {
@@ -49,6 +44,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
   private double goalRotations;
 
+  // Switch to DutyCycleEncoder (absolute encoder) and use constant for channel
   Encoder rotateEncoder = new Encoder(0,1);
 
   private Rev2mDistanceSensor lidarSensor = new Rev2mDistanceSensor(Port.kOnboard, Unit.kMillimeters, RangeProfile.kHighSpeed);
@@ -56,25 +52,32 @@ public class ClimbSubsystem extends SubsystemBase {
   public ClimbSubsystem() {
 
     climbMotor = new TalonFX(ClimbConstants.climbMotorID);
+    // remove line below (not needed)
     climbMotor.setPosition(0,0);
 
     climbPID = new ProfiledPIDController(ClimbConstants.ckP, ClimbConstants.ckI, ClimbConstants.ckD, new TrapezoidProfile.Constraints(ClimbConstants.cmaxA, ClimbConstants.cmaxV));
     climbPID.setGoal(ClimbConstants.maxExtension);
+    // Lower tolerance, 5 means 5 meters
     climbPID.setTolerance(5, 0.1);
 
+    // have constant for "zero" rotations, because it probably isn't zero
     goalRotations = 0.0;
 
     rotateEncoder.setDistancePerPulse(4.0/256.0/8.0);
 
     rotateMotor = new TalonFX(ClimbConstants.rotateMotorID);
+    // remove line below (not needed)
     rotateMotor.setPosition(0,0);
 
     rotatePID = new ProfiledPIDController(ClimbConstants.rkP, ClimbConstants.rkI, ClimbConstants.rkD, new TrapezoidProfile.Constraints(ClimbConstants.rmaxA, ClimbConstants.rmaxV));
     rotatePID.setGoal(goalRotations);
+    // Lower tolerance, 5 means 5 rotations of the encoder
     rotatePID.setTolerance(5, 0.1);
+    // add enablecontinuousinput for rotatePID
 
     lidarSensor.setAutomaticMode(true);
 
+    // Rename to "Climb"
     SendableRegistry.add(this, "Motor");
     SmartDashboard.putData(this);
   }
@@ -99,6 +102,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
     return runOnce(() -> {
       climbPID.setGoal(ClimbConstants.maxExtension); //lower robot (climbMotor) onto the ground
+      // Use the zero rotation constant instead
       goalRotations = ClimbConstants.rotateGoalRotations * -1.0;
     })
     .andThen(new WaitUntilCommand(() -> climbPID.atGoal())) //wait until climbPID is at its goal
@@ -112,6 +116,7 @@ public class ClimbSubsystem extends SubsystemBase {
   //reset the "I" value for the motor PID 
   public void resetPID() {
 
+    // Use the encoder position instead of the motor position
     double motorPosition = rotateMotor.getPosition().getValueAsDouble();
     rotatePID.reset(motorPosition);
 
@@ -125,10 +130,15 @@ public class ClimbSubsystem extends SubsystemBase {
     return lidarSensor.getRange() / 1000.0 - ClimbConstants.lidarOffset;
   }
 
+  // add new method "public boolean isUnclimbed()" - returns if goal positions are at unclimbed positions and pids are in tolerance
+  // this method is needed for checking if the robot should be able to move at the start of teleop
+  // otherwise the robot will start moving while it's climbed which is not good
+
   //might have to invert 
   @Override
   public void periodic() {
 
+    // Remove lower two lines
     climbPID.setGoal(getLidarMeters());
     rotatePID.setGoal(rotateEncoder.getDistance());
 
@@ -136,6 +146,7 @@ public class ClimbSubsystem extends SubsystemBase {
     double climbNewMotorSpeed = climbPID.calculate(lidarPosition);
     climbMotor.setVoltage(climbNewMotorSpeed);
 
+    // motorposition uses the encoder value
     double motorPosition = rotateMotor.getPosition().getValueAsDouble();
     double rotateNewMotorSpeed = rotatePID.calculate(motorPosition);
     rotateMotor.set(rotateNewMotorSpeed);
@@ -147,6 +158,7 @@ public class ClimbSubsystem extends SubsystemBase {
     builder.addDoubleProperty("Climb PID Goal", () -> this.climbPID.getGoal().position, null);
     builder.addDoubleProperty("Rotate PID Goal", () ->  this.rotatePID.getGoal().position, null);
     builder.addDoubleProperty("Rotate Motor Rotations", () -> this.goalRotations, null);
+    // motor rotations uses encoder value
     builder.addDoubleProperty("Climb Motor Rotations", () -> climbMotor.getPosition().getValueAsDouble(), null);
     builder.addDoubleProperty("Rotate Goal Rotations", () -> this.rotateEncoder.getDistance(), null);
   }
