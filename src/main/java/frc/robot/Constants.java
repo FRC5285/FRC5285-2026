@@ -325,9 +325,11 @@ public final class Constants {
 
     /** Constants for the bucket outtake */
     public static class BucketOutConstants {
-    
+    public static final int MOTOR_ID = 5;
+    public static final double SPEED = 0.6; // adjust as needed
+}
         
-    }
+    
 
     /** Constants for climber */
     public static class ClimbConstants {

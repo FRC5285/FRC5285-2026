@@ -15,7 +15,7 @@ public class BucketOutSubsystem extends SubsystemBase {
     private final DutyCycleOut dutyCycle = new DutyCycleOut(0); 
     
     public BucketOutSubsystem() {
-        rollerMotor = new TalonFX(); // add id
+        rollerMotor = new TalonFX(BucketOutConstants.MOTOR_ID);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40;
@@ -25,28 +25,40 @@ public class BucketOutSubsystem extends SubsystemBase {
     }
 
 
-    public void start() {
-        rollerMotor.setControl(dutyCycle.withOutput());
+    public void spinForward() {
+        rollerMotor.setControl(dutyCycle.withOutput(BucketOutConstants.SPEED));
     }
 
-   
+    public void spinReverse() {
+        rollerMotor.setControl(dutyCycle.withOutput(-BucketOutConstants.SPEED));
+    }
+
     public void stop() {
         rollerMotor.setControl(dutyCycle.withOutput(0.0));
     }
 
+   
 
-    /** Returns a command that runs start() once */
-    public Command startCommand() {
-        return runOnce(this::start);
+    
+    public Command forwardCommand(double seconds) {
+        return run(this::spinForward)
+                .withTimeout(seconds)
+                .finallyDo(interrupted -> stop());
     }
 
-    /** Returns a command that runs stop() once */
+    
+    public Command reverseCommand(double seconds) {
+        return run(this::spinReverse)
+                .withTimeout(seconds)
+                .finallyDo(interrupted -> stop());
+    }
+
+    
     public Command stopCommand() {
         return runOnce(this::stop);
     }
 
     @Override
     public void periodic() {
-        
     }
 }
