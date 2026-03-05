@@ -323,6 +323,12 @@ public final class Constants {
 
     }
 
+    /** Constants for the bucket outtake */
+    public static class BucketOutConstants {
+    
+        
+    }
+
     /** Constants for climber */
     public static class ClimbConstants {
 
