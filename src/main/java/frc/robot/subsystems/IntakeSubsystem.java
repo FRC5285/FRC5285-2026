@@ -60,7 +60,7 @@ public class IntakeSubsystem extends SubsystemBase {
         configs.MotionMagic = motionMagicConfigs;
 
         // set slot 0 gains
-        var slot0Configs = talonFXConfigs.Slot0;
+        var slot0Configs = new Slot0Configs();
         slot0Configs.kS = IntakeConstants.kS;
         slot0Configs.kV = IntakeConstants.kV;
         slot0Configs.kA = IntakeConstants.kA;
@@ -77,6 +77,7 @@ public class IntakeSubsystem extends SubsystemBase {
         var slot1Configs = new Slot1Configs();
         slot1Configs.kS = IntakeConstants.kS1;
         slot1Configs.kV = IntakeConstants.kV1;
+        slot1Configs.kA = IntakeConstants.kA1;
         slot1Configs.kP = IntakeConstants.kP1;
         slot1Configs.kI = IntakeConstants.kI1;
         slot1Configs.kD = IntakeConstants.kD1;
