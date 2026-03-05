@@ -28,6 +28,18 @@ public class LedSubsystem extends SubsystemBase {
         });
     }
 
+    public Command hubInactive() {
+        return runOnce(() -> {
+            currentPattern = LEDConstants.bisexual_flag;
+        });
+    }
+
+    public Command preHub() {
+        return runOnce(() -> {
+            currentPattern = LEDConstants.blink_orange;
+        });
+    }
+
     public Command auton() {
         return runOnce(() -> {
             // orange0[-9ob ]

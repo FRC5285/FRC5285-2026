@@ -82,6 +82,10 @@ public final class Constants {
         4.0, warning, off, warning, off
         };
 
+        public static double[] blink_orange = {
+            2.0, orange, off, orange, off
+        };
+
         //pride flag presets
         public static final double[] trans_flag = {
         2.0, skyBlue, hotPink, white, hotPink, skyBlue, off, off
