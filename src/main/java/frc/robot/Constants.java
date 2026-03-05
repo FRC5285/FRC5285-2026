@@ -41,8 +41,11 @@ public final class Constants {
     }
 
     /** Constants for LEDs */
-        public static class LEDConstants {
+    public static class LEDConstants {
         public static final int led_pin = 0;
+
+        /** The seconds before the hub activates where the leds do the warning lights */
+        public static final double shiftAlmostNum = 3.0;
 
         public static final double hotPink = 0.57; //trans flag colours
         public static final double darkred = 0.59;
@@ -207,6 +210,5 @@ public final class Constants {
         public static final double[] greyromantic_flag = {  
         2.0, darkGreen, gray, white, gray, darkGreen, off, off
         };
-
     }
 }

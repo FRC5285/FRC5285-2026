@@ -1,9 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.motorcontrol.Spark;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.util.ShiftUtil;
@@ -43,6 +41,8 @@ public class LedSubsystem extends SubsystemBase {
             currentPattern = LEDConstants.queer_flag;
         });
     }
+
+    // add two commands: one for color of inactive hub, one for just before hub turns on
 
     @Override
     public void periodic() {

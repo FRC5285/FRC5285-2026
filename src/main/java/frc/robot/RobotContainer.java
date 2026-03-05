@@ -15,9 +15,7 @@ import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LedSubsystem;
 import frc.robot.util.PositionMath;
-
-import static frc.robot.Constants.LEDConstants.*;
-
+import frc.robot.util.ShiftUtil;
 
 public class RobotContainer {
 
@@ -29,7 +27,7 @@ public class RobotContainer {
 
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
-        private final LedSubsystem LED = new LedSubsystem();
+    private final LedSubsystem LED = new LedSubsystem();
 
     public RobotContainer() {
         this.configureDrivetrainBinding();
@@ -56,6 +54,8 @@ public class RobotContainer {
     public void resetSide() {
         this.drivetrain.resetSide();
         this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition());
+
+        ShiftUtil.resetShift();
     }
 
     /** Resets the PIDs */
