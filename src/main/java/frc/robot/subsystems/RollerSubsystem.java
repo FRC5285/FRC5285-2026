@@ -5,19 +5,15 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import edu.wpi.first.wpilibj2.command.Command;
-import static edu.wpi.first.wpilibj2.command.Commands.runOnce;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 public class RollerSubsystem extends SubsystemBase {
 
-
     private final TalonFX rollerMotor; 
     private final DutyCycleOut dutyCycle = new DutyCycleOut(0); 
-
-    private static final int ROLLER_MOTOR_ID = RollerConstants.ROLLER_MOTOR_ID; // CHANGE this to your motor’s actual CAN ID
     
     public RollerSubsystem() {
-        rollerMotor = new TalonFX(ROLLER_MOTOR_ID);
+        rollerMotor = new TalonFX(RollerConstants.ROLLER_MOTOR_ID);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40;
@@ -46,6 +42,4 @@ public class RollerSubsystem extends SubsystemBase {
     public Command stopCommand() {
         return runOnce(this::stop);
     }
-
-
 }
