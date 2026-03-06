@@ -1,4 +1,4 @@
-// atrocious ass code
+// TURRET INTAKE NOT GROUND INTAKE.
 
 package frc.robot.subsystems;
 
@@ -8,6 +8,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 //import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
+
+import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -50,6 +52,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
     // create a position closed-loop request, voltage output, slot 0 configs
     PositionVoltage m_request = new PositionVoltage(0).withSlot(0);
+
+    public double encoderVal = 0;
+
+    DutyCycleEncoder encoder = new DutyCycleEncoder(IntakeConstants.encoderChannel);
 
     public IntakeSubsystem() {
         TalonFXConfiguration configs = new TalonFXConfiguration();
@@ -129,6 +135,7 @@ public class IntakeSubsystem extends SubsystemBase {
         }
 
         // Don't use the previous setpoint, there will be an encoder
+        encoderVal = encoder.get(); // rotations
 
         // calculate the next profile setpoint
         m_setpoint = m_profile.calculate(0.020, m_setpoint, m_goal);
@@ -146,6 +153,7 @@ public class IntakeSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Intake Motor Radians Per Second",
                 () -> this.intakeMotor.getVelocity().getValueAsDouble() * 2 * Math.PI, null);
         // use the encoder value
+        builder.addDoubleProperty("Encoder Value", () -> this.encoderVal, null);
         builder.addDoubleProperty("Lowering Motor Rotations", () -> this.lower.getPosition().getValueAsDouble(), null);
         builder.addDoubleProperty("Target Speed", () -> this.intakeSpeed, null);
     }

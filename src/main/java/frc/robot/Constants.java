@@ -29,6 +29,7 @@ public final class Constants {
     public static class IntakeConstants {
         public static final int intakeID = 1; // change later\
         public static final int lowerID = 0;
+        public static final int encoderChannel = 2;
 
         // arbitrary values (for now)
 
