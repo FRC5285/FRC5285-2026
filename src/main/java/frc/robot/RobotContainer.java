@@ -20,7 +20,9 @@ import frc.robot.subsystems.AutonSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
+import frc.robot.subsystems.LedSubsystem;
 import frc.robot.util.PositionMath;
+import frc.robot.util.ShiftUtil;
 
 public class RobotContainer implements Sendable {
 
@@ -35,12 +37,14 @@ public class RobotContainer implements Sendable {
 
     private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.positionMath);
 
+    private final LedSubsystem LED = new LedSubsystem();
+
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
     /** Drive with controller joystick rotation */
     private final SwerveRequest.FieldCentric driveFree = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
-    
+
     /** Drive with automatic rotation */
     private final SwerveRequest.FieldCentricFacingAngle drive = new SwerveRequest.FieldCentricFacingAngle()
         .withDriveRequestType(DriveRequestType.OpenLoopVoltage)
@@ -129,6 +133,8 @@ public class RobotContainer implements Sendable {
 
         this.drivetrain.resetSide();
         this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition());
+
+        ShiftUtil.resetShift();
 
         this.visionSubsystem.resetSimPose(this.drivetrain.getPose());
     }
