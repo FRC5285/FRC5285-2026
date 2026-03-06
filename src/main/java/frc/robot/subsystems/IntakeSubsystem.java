@@ -1,5 +1,3 @@
-// TURRET INTAKE NOT GROUND INTAKE.
-
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
@@ -141,8 +139,10 @@ public class IntakeSubsystem extends SubsystemBase {
         m_setpoint = m_profile.calculate(0.020, m_setpoint, m_goal);
 
         // send the request to the device
-        m_request.Position = m_setpoint.position;
-        m_request.Velocity = m_setpoint.velocity;
+        // m_request.Position = m_setpoint.position;
+        // m_request.Velocity = m_setpoint.velocity;
+        m_request.Position = encoderVal;
+        m_request.Velocity = lower.getRotorVelocity().getValueAsDouble() * IntakeConstants.gearRatio;
         lower.setControl(m_request);
     }
 

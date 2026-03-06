@@ -31,6 +31,8 @@ public final class Constants {
         public static final int lowerID = 0;
         public static final int encoderChannel = 2;
 
+        public static final double gearRatio = 5 / 1; // motor -> encoder
+
         // arbitrary values (for now)
 
         // roller part
