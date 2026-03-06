@@ -373,7 +373,7 @@ public final class Constants {
         4.0, warning, off, warning, off
         };
 
-        public static double[] blink_orange = {
+        public static final double[] blink_orange = {
             2.0, orange, off, orange, off
         };
 

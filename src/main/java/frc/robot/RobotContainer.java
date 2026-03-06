@@ -35,9 +35,9 @@ public class RobotContainer implements Sendable {
 
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
-    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.positionMath);
+    private final LedSubsystem ledSubsystem = new LedSubsystem();
 
-    private final LedSubsystem LED = new LedSubsystem();
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.ledSubsystem, this.positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -65,6 +65,7 @@ public class RobotContainer implements Sendable {
         // Configure controller bindings
         this.configureDrivetrainBinding();
         this.configureBindings();
+        this.configureOtherTriggers();
 
         // Telemetry
         SendableRegistry.add(this, "RobotContainer");
@@ -123,6 +124,19 @@ public class RobotContainer implements Sendable {
                     .withVelocityY(0.0)
                     .withRotationalRate(0.0)
             ))
+        );
+    }
+
+    /** Configure the other triggers */
+    public void configureOtherTriggers() {
+        new Trigger(() -> ShiftUtil.canScore()).onTrue(
+            this.ledSubsystem.hubActive()
+        ).onFalse(
+            this.ledSubsystem.hubInactive()
+        );
+
+        new Trigger(() -> ShiftUtil.beforeShooting()).onTrue(
+            this.ledSubsystem.preHub()
         );
     }
 

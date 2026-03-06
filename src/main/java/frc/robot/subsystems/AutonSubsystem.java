@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.WaitCommand;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.PositionMath;
+import frc.robot.util.ShiftUtil;
 
 /** Handles autonomous, aimbot, and other commands */
 public class AutonSubsystem extends SubsystemBase {
@@ -22,6 +23,7 @@ public class AutonSubsystem extends SubsystemBase {
     private boolean climbing = false;
 
     private final CommandSwerveDrivetrain drivetrain;
+    private final LedSubsystem ledSubsystem;
     private final PositionMath positionMath;
 
     private PathConstraints autonPathConstraints = new PathConstraints(AutoConstants.maxV, AutoConstants.maxA, AutoConstants.maxAngularV, AutoConstants.maxAngularA);
@@ -31,8 +33,9 @@ public class AutonSubsystem extends SubsystemBase {
     private SendableChooser<Supplier<Command>> collectLocation = new SendableChooser<>();
     private SendableChooser<Supplier<Command>> climbCommand = new SendableChooser<>();
 
-    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, PositionMath positionMath) {
+    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
+        this.ledSubsystem = ledSubsystem;
         this.positionMath = positionMath;
 
         // Start position
@@ -83,17 +86,39 @@ public class AutonSubsystem extends SubsystemBase {
     public Command shootingOff() {
         return runOnce(() -> {
             this.shooting = false;
-        });
+        })
+        .andThen(this.ledsCommand());
     }
 
+    /** What the LEDs should show when not trying to shoot */
+    private Command ledsCommand() {
+        if (ShiftUtil.canScore()) {
+            return this.ledSubsystem.hubActive();
+        } else if (ShiftUtil.beforeShooting()) {
+            return this.ledSubsystem.preHub();
+        }
+        return this.ledSubsystem.hubInactive();
+    }
+
+    /**
+     * The command for the auton
+     * 
+     * @return the auton command
+     */
     public Command autonCommand() {
         return runOnce(() -> {
             this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition(this.startPosition.getSelected()));
         })
+        .alongWith(this.ledSubsystem.auton())
         .andThen(this.collectLocation.getSelected().get())
         .andThen(this.climbCommand.getSelected().get());
     }
 
+    /**
+     * Auton to collect fuel from the depot and shoot it
+     * 
+     * @return A command to collect fuel from the depot and shoot it
+     */
     public Command depotCollection() {
         PathPlannerPath path;
         try {
@@ -176,12 +201,14 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.climbing = true;
         })
+        .alongWith(this.ledSubsystem.auton())
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerLeftPrepPose, this.climbPathConstraints))
         .andThen(this.drivetrain.fineTunePID(FieldConstants.towerLeftFinalPose))
         .andThen(runOnce(() -> {
             this.climbing = false;
             this.positionMath.resetLastRotation();
-        }));
+        }))
+        .andThen(this.ledsCommand());
     }
 
     /**
@@ -193,11 +220,13 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.climbing = true;
         })
+        .alongWith(this.ledSubsystem.auton())
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerRightPrepPose, this.climbPathConstraints))
         .andThen(this.drivetrain.fineTunePID(FieldConstants.towerRightFinalPose))
         .andThen(runOnce(() -> {
             this.climbing = false;
             this.positionMath.resetLastRotation();
-        }));
+        }))
+        .andThen(this.ledsCommand());
     }
 }

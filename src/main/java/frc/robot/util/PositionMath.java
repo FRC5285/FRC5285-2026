@@ -221,10 +221,10 @@ public class PositionMath {
     /**
      * If shooting is a good idea
      * 
-     * @return if the error for the shoot on the move calculation is greater than acceptable
+     * @return if the error for the shoot on the move calculation is smaller than acceptable
      */
     public boolean shouldShoot() {
-        return this.timeOfFlightTable.getCalcError() > LookupTableConstants.acceptableError;
+        return this.timeOfFlightTable.getCalcError() < LookupTableConstants.acceptableError;
     }
 
     /**

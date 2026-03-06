@@ -17,10 +17,6 @@ public class LedSubsystem extends SubsystemBase {
     public double[] currentPattern = null;
     private double currentValue = 0.0;
 
-    // hub active
-    // auton and aimbot 
-    // shooting failed
-
     public Command hubActive() {
         return runOnce(() -> {
             // green
@@ -53,8 +49,6 @@ public class LedSubsystem extends SubsystemBase {
             currentPattern = LEDConstants.queer_flag;
         });
     }
-
-    // add two commands: one for color of inactive hub, one for just before hub turns on
 
     @Override
     public void periodic() {
