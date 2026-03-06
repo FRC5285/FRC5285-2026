@@ -52,10 +52,10 @@ public final class Constants {
         public static final double pidDistanceTolerance = 0.02;
 
         /** Robot speed multiplier on middle of bump */
-        public static final double robotBumpSpeed = 0.2;
+        public static final double robotBumpSpeed = 0.15;
 
         /** Robot speed multiplier when shooting */
-        public static final double shootVelocityMultiplier = 0.4;
+        public static final double shootVelocityMultiplier = 0.2;
 
         /** Changeable speed for speed over bump */
         public static final double variableBumpSpeed = 1.0 - robotBumpSpeed;
@@ -145,10 +145,10 @@ public final class Constants {
         public static final double bumpHalfDepth = bumpDepth / 2.0;
 
         /** Distance between center of robot and center of bump where robot starts to slow down */
-        public static final double bumpSlowdownDistance = bumpHalfDepth + 0.3;
+        public static final double bumpSlowdownDistance = bumpHalfDepth + 0.5;
 
         /** Distance between center of robot and center of bump where robot starts to turn */
-        public static final double bumpTurnDistance = bumpSlowdownDistance + 0.2;
+        public static final double bumpTurnDistance = bumpSlowdownDistance + 0.0;
 
         /** X-coordinate of the center of the red hub */
         public static final double redHubCenterX = 11.915521;
@@ -265,6 +265,9 @@ public final class Constants {
 
         /** The acceptable error amount for shoot on the move calculations */
         public static final double acceptableError = 0.3;
+
+        /** Add time to the SOTM calculation */
+        public static final double addedDelay = 0.02;
     }
 
     /** Constants for vision */

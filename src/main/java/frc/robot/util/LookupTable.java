@@ -167,7 +167,7 @@ public class LookupTable implements Sendable {
      * @return the calculated distance vector
      */
     private Translation2d calcSingleDist(double dist, Translation2d rV, Translation2d dRH) {
-        Translation2d velocityVector = rV.times(this.getOutput(dist));
+        Translation2d velocityVector = rV.times(this.getOutput(dist) + LookupTableConstants.addedDelay);
         return dRH.minus(velocityVector);
     }
 
