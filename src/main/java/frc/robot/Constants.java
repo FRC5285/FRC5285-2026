@@ -27,39 +27,30 @@ public final class Constants {
 
     /** Constants for intake */
     public static class IntakeConstants {
-        public static final int intakeID = 1; // change later\
-        public static final int lowerID = 0;
+        public static final int intakeID = 21;
+        public static final int lowerID = 22;
         public static final int encoderChannel = 2;
+        
+        /** Encoder value when it is supposed to be at 0 (0 is when the intake is flat) */
+        public static final double encoderStartValue = 0.0;
 
-        public static final double gearRatio = 5 / 1; // motor -> encoder
+        public static final double intakeLoweredValue = 0.0;
 
-        // arbitrary values (for now)
+        public static final double intakeRaisedValue = 0.75 * 2.0 * Math.PI;
 
-        // roller part
-        public static final double kS = 0.25;
-        public static final double kV = 0.12;
-        public static final double kA = 0.01;
-        public static final double kP = 0.4;
-        public static final double kI = 0;
-        public static final double kD = 0.01;
+        public static final double gearRatio = 1.0 / 5.0; // motor -> encoder
 
-        // lower part
-        public static final double kS1 = 0.25;
-        public static final double kV1 = 0.12;
-        public static final double kA1 = 0.01;
-        public static final double kP1 = 0.4;
-        public static final double kI1 = 0;
-        public static final double kD1 = 0.01;
-        public static final double maxVel = 80; // for trapezoidal profile; max velocity
-        public static final double maxAcc = 160; // max acceleration
+        public static final double kS = 0.0;
+        public static final double kG = 0.0;
+        public static final double kV = 0.0;
+        public static final double kP = 8.0;
+        public static final double kI = 0.0;
+        public static final double kD = 0.0;
+        public static final double maxVel = 1.0; // for trapezoidal profile; max velocity in rotations/second
+        public static final double maxAcc = 2.0; // max acceleration in rotations/second/second
 
-        // motion magic settings
-        public static final double cruiseVelocity = 80;
-        public static final double acceleration = 160;
-        public static final double jerk = 400; // gooner
-
-        // turret settings
-        public static final double intakeSpeed = 160; // radians per second (i think?)
+        // intake settings
+        public static final double intakeVolts = 8.0;
 
     }
 
