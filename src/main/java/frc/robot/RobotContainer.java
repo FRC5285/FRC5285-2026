@@ -18,6 +18,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AutonSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.LedSubsystem;
@@ -33,11 +34,13 @@ public class RobotContainer implements Sendable {
 
     private final TurretSubsystem turret = new TurretSubsystem(this.positionMath);
 
+    private final IntakeSubsystem groundIntake = new IntakeSubsystem();
+
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
     private final LedSubsystem ledSubsystem = new LedSubsystem();
 
-    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.ledSubsystem, this.positionMath);
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.ledSubsystem, this.positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -128,14 +131,16 @@ public class RobotContainer implements Sendable {
     }
 
     /** Configure the other triggers */
-    public void configureOtherTriggers() {
-        new Trigger(() -> ShiftUtil.canScore()).onTrue(
+    private void configureOtherTriggers() {
+        new Trigger(() -> ShiftUtil.canScore() && this.ledSubsystem.getCurrentCommand() == null).onTrue(
             this.ledSubsystem.hubActive()
-        ).onFalse(
+        );
+
+        new Trigger(() -> !ShiftUtil.canScore() && this.ledSubsystem.getCurrentCommand() == null).onTrue(
             this.ledSubsystem.hubInactive()
         );
 
-        new Trigger(() -> ShiftUtil.beforeShooting()).onTrue(
+        new Trigger(() -> ShiftUtil.beforeShooting() && this.ledSubsystem.getCurrentCommand() == null).onTrue(
             this.ledSubsystem.preHub()
         );
     }
@@ -157,6 +162,7 @@ public class RobotContainer implements Sendable {
     public void resetPIDs() {
         this.positionMath.resetLastRotation();
         this.drive.HeadingController.reset();
+        this.groundIntake.resetPIDs();
     }
 
     public Command getAutonomousCommand() {

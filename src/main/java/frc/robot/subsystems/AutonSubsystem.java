@@ -23,6 +23,7 @@ public class AutonSubsystem extends SubsystemBase {
     private boolean climbing = false;
 
     private final CommandSwerveDrivetrain drivetrain;
+    private final IntakeSubsystem groundIntake;
     private final LedSubsystem ledSubsystem;
     private final PositionMath positionMath;
 
@@ -33,8 +34,9 @@ public class AutonSubsystem extends SubsystemBase {
     private SendableChooser<Supplier<Command>> collectLocation = new SendableChooser<>();
     private SendableChooser<Supplier<Command>> climbCommand = new SendableChooser<>();
 
-    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, LedSubsystem ledSubsystem, PositionMath positionMath) {
+    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
+        this.groundIntake = groundIntake;
         this.ledSubsystem = ledSubsystem;
         this.positionMath = positionMath;
 
@@ -90,6 +92,18 @@ public class AutonSubsystem extends SubsystemBase {
         .andThen(this.ledsCommand());
     }
 
+    /** Move the ground intake down (begin intaking) */
+    public Command intakeDown() {
+        return this.groundIntake.lowerIntake()
+        .andThen(this.groundIntake.beginIntake());
+    }
+
+    /** Move the ground intake up (stop intaking) */
+    public Command intakeUp() {
+        return this.groundIntake.endIntake()
+        .andThen(this.groundIntake.raiseIntake());
+    }
+
     /** What the LEDs should show when not trying to shoot */
     private Command ledsCommand() {
         if (ShiftUtil.canScore()) {
@@ -110,6 +124,7 @@ public class AutonSubsystem extends SubsystemBase {
             this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition(this.startPosition.getSelected()));
         })
         .alongWith(this.ledSubsystem.auton())
+        .alongWith(this.intakeDown())
         .andThen(this.collectLocation.getSelected().get())
         .andThen(this.climbCommand.getSelected().get());
     }
@@ -202,6 +217,7 @@ public class AutonSubsystem extends SubsystemBase {
             this.climbing = true;
         })
         .alongWith(this.ledSubsystem.auton())
+        .alongWith(this.intakeUp())
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerLeftPrepPose, this.climbPathConstraints))
         .andThen(this.drivetrain.fineTunePID(FieldConstants.towerLeftFinalPose))
         .andThen(runOnce(() -> {
@@ -221,6 +237,7 @@ public class AutonSubsystem extends SubsystemBase {
             this.climbing = true;
         })
         .alongWith(this.ledSubsystem.auton())
+        .alongWith(this.intakeUp())
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerRightPrepPose, this.climbPathConstraints))
         .andThen(this.drivetrain.fineTunePID(FieldConstants.towerRightFinalPose))
         .andThen(runOnce(() -> {
