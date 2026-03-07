@@ -72,8 +72,8 @@ public class TurretSubsystem extends SubsystemBase {
     private double error;
 
     public double turret_base_eror;
-    DutyCycleEncoder shooter_debug = new DutyCycleEncoder(3);
-    DutyCycleEncoder turret_debug = new DutyCycleEncoder(4);
+    //DutyCycleEncoder shooter_debug = new DutyCycleEncoder(3);
+    DutyCycleEncoder turret_debug = new DutyCycleEncoder(0);
     DutyCycleEncoder encoder = new DutyCycleEncoder(TurretConstants.channel_a);
     DutyCycleEncoder encoder_1 = new DutyCycleEncoder(TurretConstants.channel_b);
 
@@ -205,21 +205,21 @@ public class TurretSubsystem extends SubsystemBase {
         turretAngle();
         
         //turretTargetPosition = positionMath.getTurretRotationTarget()/TurretConstants.convert_to_rotations_from_radians; 
-        turretTargetPosition = turret_debug.get() * 1.5;
-        shooterTargetRPS = encoder.get() * 100;
-        shooterTargetRPS = Math.min(shooterTargetRPS, 10);
+        turretTargetPosition = turret_debug.get() * 0.25;
+        //shooterTargetRPS = encoder.get() * 100;
+        //shooterTargetRPS = Math.min(shooterTargetRPS, 10);
 
         currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
         runOnce(() -> prev_rollover = currentPos);
 
         turretMotor.setControl(motionMagicRequest.withPosition(currentPos));
-        shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1).withFeedForward(0.9*(shooterTargetRPS/10)));
-        shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+        //shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1).withFeedForward(0.9*(shooterTargetRPS/10)));
+        //shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));
         // Average over the last 10 samples
         
 
         calculate_debug_values();
-        error = ((-shooterTargetRPS - shooterMotor.getVelocity().getValueAsDouble()) / 10 ) * 100;
+        //error = ((-shooterTargetRPS - shooterMotor.getVelocity().getValueAsDouble()) / 10 ) * 100;
 
 
 
