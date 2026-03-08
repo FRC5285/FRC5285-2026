@@ -1,6 +1,7 @@
 package frc.robot.subsystems;
 
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.filter.MedianFilter;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.MomentOfInertia;
@@ -40,6 +41,8 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.util.PositionMath;
+
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 
 import yams.motorcontrollers.SmartMotorControllerConfig.ControlMode;
@@ -68,6 +71,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     public String getLastStatus_debug = "";
     private int getLastiterations_debug; 
+    private double easyCRT;
 
     private double error;
 
@@ -79,6 +83,7 @@ public class TurretSubsystem extends SubsystemBase {
 
     private double encoder_1_debug;
     private double encoder_2_debug;
+
 
 ////////////////////////////////////////////////
 /// 
@@ -92,7 +97,7 @@ public class TurretSubsystem extends SubsystemBase {
                 /* driveGearTeeth */ 200,
                 /* encoder1Pinion */ 19,
                 /* encoder2Pinion */ 21)
-            .withAbsoluteEncoderOffsets(Rotations.of(0.0), Rotations.of(0.0)) // set after mechanical zero
+            .withAbsoluteEncoderOffsets(Rotations.of(-0.374), Rotations.of(-0.601)) // set after mechanical zero
             .withMechanismRange(Rotations.of(TurretConstants.min_range), Rotations.of(TurretConstants.max_range)) // -360 deg to +720 deg
             .withMatchTolerance(Rotations.of(TurretConstants.match_tolerance)) // ~1.08 deg at encoder2 for the example ratio
             .withAbsoluteEncoderInversions(false, false)
@@ -106,9 +111,6 @@ public class TurretSubsystem extends SubsystemBase {
 
         TalonFXConfiguration configs = new TalonFXConfiguration();
         TalonFXConfiguration ShooterConfigs = new TalonFXConfiguration();   
-        FeedbackConfigs fdb = configs.Feedback;
-        fdb.SensorToMechanismRatio = TurretConstants.gear_ratio_on_drive_ring; //from motor to gear box to ring
-
 
         MotionMagicConfigs mm = new MotionMagicConfigs();
         mm.MotionMagicCruiseVelocity = TurretConstants.CruiseVelocity;   
@@ -125,7 +127,7 @@ public class TurretSubsystem extends SubsystemBase {
         slot0.kD = TurretConstants.kd;
         configs.Slot0 = slot0;
 
-        configs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+        configs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         turretMotor.setPosition(0);
         turretMotor.getConfigurator().apply(configs);
 /////////////////////////////////////////////////////////////
@@ -176,20 +178,12 @@ public class TurretSubsystem extends SubsystemBase {
 
     public double turretAngle() {
         easyCrtSolver.getAngleOptional().ifPresent(mechAngle -> {
-            turretMotor.setPosition(mechAngle);
+           // median_filter(mechAngle.in(Rotations));
+            //median_filter(mechAngle.in(Rotations));
+            easyCRT = mechAngle.in(Rotations);
+            turretMotor.setPosition(easyCRT);
         });
         return 0.0;
-    }
-
-    public double rollover_math() {
-        current_rollover = currentPos;
-        double delta_rollover = current_rollover - prev_rollover;
-
-        if (delta_rollover > TurretConstants.max_range - 0.04) delta_rollover -= TurretConstants.max_range;
-        else if (delta_rollover < TurretConstants.max_range - 0.04) delta_rollover += TurretConstants.max_range;
-        position_69_rollover += delta_rollover;
-        prev_rollover = current_rollover;
-        return position_69_rollover;
     }
 
     public void calculate_debug_values() {
@@ -198,6 +192,15 @@ public class TurretSubsystem extends SubsystemBase {
         encoder_2_debug = encoder_1.get();
         getLastStatus_debug = easyCrtSolver.getLastStatus();
         getLastiterations_debug = easyCrtSolver.getLastIterations();
+        currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
+
+    }
+
+    public void median_filter (double input) {
+        MedianFilter filter = new MedianFilter(5);
+        double filtered = filter.calculate(input);
+        double filtered_current_pos = filtered;
+        turretMotor.setPosition(filtered_current_pos);
     }
 
     @Override
@@ -205,20 +208,18 @@ public class TurretSubsystem extends SubsystemBase {
         turretAngle();
         
         //turretTargetPosition = positionMath.getTurretRotationTarget()/TurretConstants.convert_to_rotations_from_radians; 
-        turretTargetPosition = turret_debug.get() * 0.25;
+        turretTargetPosition = (turret_debug.get() * (TurretConstants.max_range - TurretConstants.min_range)) - TurretConstants.max_range/2;
         //shooterTargetRPS = encoder.get() * 100;
         //shooterTargetRPS = Math.min(shooterTargetRPS, 10);
-
-        currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
-        runOnce(() -> prev_rollover = currentPos);
-
-        turretMotor.setControl(motionMagicRequest.withPosition(currentPos));
+        calculate_debug_values();
+        if (getLastStatus_debug != "AMBIGUOUS") {
+            turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition).withSlot(0));
+        }
         //shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1).withFeedForward(0.9*(shooterTargetRPS/10)));
         //shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));
         // Average over the last 10 samples
         
 
-        calculate_debug_values();
         //error = ((-shooterTargetRPS - shooterMotor.getVelocity().getValueAsDouble()) / 10 ) * 100;
 
 
@@ -226,15 +227,17 @@ public class TurretSubsystem extends SubsystemBase {
     }
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("easyCRT output", () -> this.currentPos, null);
+        builder.addDoubleProperty("easycrt output", () -> this.easyCRT, null);
         builder.addIntegerProperty("getlastinterations", () -> this.getLastiterations_debug, null);
         builder.addStringProperty("getlaststatus", () -> this.getLastStatus_debug, null);
-        builder.addDoubleProperty("turret target", () -> this.position_69_rollover, null);
-        builder.addDoubleProperty("turret rotations current", () -> this.turretMotor.getPosition().getValueAsDouble(), null);
-        builder.addDoubleProperty("shooter target RPS", () -> this.shooterTargetRPS, null);   
-        builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null); 
-        builder.addDoubleProperty("encoder", () -> this.shooterTargetRPS / 100, null);
-        builder.addDoubleProperty("error", () -> this.error, null);  
+        builder.addDoubleProperty("turret target", () -> this.turretTargetPosition,null);
+        builder.addDoubleProperty("turret rotations current", () -> this.currentPos, null);
+        builder.addDoubleProperty("encoder A", () -> (this.encoder.get()), null);
+        builder.addDoubleProperty("encoder B", () -> (this.encoder_1.get()), null);
+        // builder.addDoubleProperty("shooter target RPS", () -> this.shooterTargetRPS, null);   
+        // builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null); 
+        // builder.addDoubleProperty("encoder", () -> this.shooterTargetRPS / 100, null);
+        // builder.addDoubleProperty("error", () -> this.error, null);  
         
     }
 }
