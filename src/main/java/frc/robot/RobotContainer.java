@@ -142,6 +142,14 @@ public class RobotContainer implements Sendable {
         this.secondController.leftBumper().onTrue(
             this.autonSubsystem.intakeDown()
         );
+
+        this.secondController.rightTrigger().onTrue(
+            this.autonSubsystem.regurgitate()
+        );
+        
+        this.secondController.rightTrigger().onFalse(
+            this.autonSubsystem.stopRegurgitate()
+        );
     }
 
     /** Configure the other triggers */
