@@ -30,7 +30,7 @@ public class BucketOutSubsystem extends SubsystemBase {
     }
 
     public void spinReverse() {
-        rollerMotor.setControl(dutyCycle.withOutput(-BucketOutConstants.SPEEDBackwards));
+        rollerMotor.setControl(dutyCycle.withOutput(BucketOutConstants.SPEEDBackwards));
     }
 
     public void stop() {
