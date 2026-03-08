@@ -1,51 +1,30 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.filter.MedianFilter;
-import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Mechanism;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.wpilibj.Encoder;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj.simulation.LinearSystemSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.TurretConstants;
 
-import java.security.spec.PSSParameterSpec;
-import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.opencv.core.Mat;
-
-import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.Slot1Configs;
-import com.ctre.phoenix6.configs.Slot2Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.util.PositionMath;
 
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Rotations;
 
-import yams.motorcontrollers.SmartMotorControllerConfig.ControlMode;
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
 
@@ -58,79 +37,50 @@ public class TurretSubsystem extends SubsystemBase {
     private final TalonFX shooterMotor = new TalonFX(TurretConstants.ShooterMotorCanId); 
     private final TalonFX shooterMotor2 = new TalonFX(TurretConstants.ShooterMotor2CanId);
 
-    private final MotionMagicVoltage motionMagicRequest = new MotionMagicVoltage(0);
     private final MotionMagicVelocityVoltage motionMagicRequestShoooter = new MotionMagicVelocityVoltage(0);
-    
-    public double turretTargetPosition = 0;
-    public double shooterTargetRPS = 0;
-    public double currentPos;
-    //for absolute encoder rollover next 2
-    private double position_69_rollover;
-    private double prev_rollover;
-    private double current_rollover;
 
-    public String getLastStatus_debug = "";
+    private final ProfiledPIDController turretPID = new ProfiledPIDController(TurretConstants.kp, TurretConstants.ki, TurretConstants.kd, new TrapezoidProfile.Constraints(TurretConstants.turretMaxV, TurretConstants.turretMaxA));
+    private final SimpleMotorFeedforward turretFeedforward = new SimpleMotorFeedforward(TurretConstants.kS, TurretConstants.kV);
+    
+    private double turretTargetPosition = 0;
+    private double shooterTargetRPS = 0;
+
+    private String getLastStatus_debug = "";
     private int getLastiterations_debug; 
     private double easyCRT;
 
-    private double error;
-
-    public double turret_base_eror;
     //DutyCycleEncoder shooter_debug = new DutyCycleEncoder(3);
-    DutyCycleEncoder turret_debug = new DutyCycleEncoder(0);
-    DutyCycleEncoder encoder = new DutyCycleEncoder(TurretConstants.channel_a);
-    DutyCycleEncoder encoder_1 = new DutyCycleEncoder(TurretConstants.channel_b);
+    private DutyCycleEncoder turret_debug = new DutyCycleEncoder(2);
+    private DutyCycleEncoder encoderA = new DutyCycleEncoder(TurretConstants.channel_a);
+    private DutyCycleEncoder encoderB = new DutyCycleEncoder(TurretConstants.channel_b);
 
-    private double encoder_1_debug;
-    private double encoder_2_debug;
+    private Supplier<Angle> enc1 = () -> { return Rotations.of(encoderA.get()); };
+    private Supplier<Angle> enc2 = () -> { return Rotations.of(encoderB.get()); };
 
-
-////////////////////////////////////////////////
-/// 
-    Supplier<Angle> enc1 = () -> { return Rotations.of(encoder.get()); };
-    Supplier<Angle> enc2 = () -> { return Rotations.of(encoder_1.get()); };
-
-    EasyCRTConfig easyCrt =
+    private EasyCRTConfig easyCrt =
         new EasyCRTConfig(enc1, enc2)
             .withCommonDriveGear(
-             /* commonRatio (mech:drive) */ 0.45, //90:200 ratio
+             /* commonRatio (mech:drive) */ 1.0,
                 /* driveGearTeeth */ 200,
                 /* encoder1Pinion */ 19,
                 /* encoder2Pinion */ 21)
-            .withAbsoluteEncoderOffsets(Rotations.of(-0.374), Rotations.of(-0.601)) // set after mechanical zero
-            .withMechanismRange(Rotations.of(TurretConstants.min_range), Rotations.of(TurretConstants.max_range)) // -360 deg to +720 deg
+            .withAbsoluteEncoderOffsets(Rotations.of(TurretConstants.encoderAOffset), Rotations.of(TurretConstants.encoderBOffset)) // set after mechanical zero
+            .withMechanismRange(Rotations.of(TurretConstants.min_range), Rotations.of(TurretConstants.max_range))
             .withMatchTolerance(Rotations.of(TurretConstants.match_tolerance)) // ~1.08 deg at encoder2 for the example ratio
             .withAbsoluteEncoderInversions(false, false)
-        ;
+    ;
 
-    EasyCRT easyCrtSolver = new EasyCRT(easyCrt);
+    private EasyCRT easyCrtSolver = new EasyCRT(easyCrt);
 
     public TurretSubsystem(PositionMath positionMath) {
 
         this.positionMath = positionMath;
 
-        TalonFXConfiguration configs = new TalonFXConfiguration();
         TalonFXConfiguration ShooterConfigs = new TalonFXConfiguration();   
 
-        MotionMagicConfigs mm = new MotionMagicConfigs();
-        mm.MotionMagicCruiseVelocity = TurretConstants.CruiseVelocity;   
-        mm.MotionMagicAcceleration = TurretConstants.ACceleration;    
-        mm.MotionMagicJerk = TurretConstants.Jerk;
-        configs.MotionMagic = mm;
-
-        Slot0Configs slot0 = configs.Slot0;
-        slot0.kS = TurretConstants.kS;
-        slot0.kV = TurretConstants.kV;
-        slot0.kA = TurretConstants.kA;
-        slot0.kP = TurretConstants.kp;
-        slot0.kI = TurretConstants.ki;
-        slot0.kD = TurretConstants.kd;
-        configs.Slot0 = slot0;
-
-        configs.MotorOutput.NeutralMode = NeutralModeValue.Coast;
         turretMotor.setPosition(0);
-        turretMotor.getConfigurator().apply(configs);
-/////////////////////////////////////////////////////////////
+        this.turretPID.setGoal(0.0);
+
         MotionMagicConfigs mm_s = new MotionMagicConfigs();
         mm_s.MotionMagicAcceleration = TurretConstants.S_ACceleration;
         mm_s.MotionMagicJerk = TurretConstants.S_Jerk;
@@ -152,9 +102,6 @@ public class TurretSubsystem extends SubsystemBase {
 
         shooterMotor.setPosition(0);
 
-        
-////////////////////////////////////////////////////////////
-
         shooterMotor2.setPosition(0);
         shooterMotor2.getConfigurator().apply(ShooterConfigs);
 
@@ -166,10 +113,6 @@ public class TurretSubsystem extends SubsystemBase {
 
     // Other methods go here
 
-    public Command stopTurret() {
-        return runOnce(() -> turretMotor.stopMotor());
-    }
-
     /**
      * The current turret angle, in rotations
      * 
@@ -178,66 +121,55 @@ public class TurretSubsystem extends SubsystemBase {
 
     public double turretAngle() {
         easyCrtSolver.getAngleOptional().ifPresent(mechAngle -> {
-           // median_filter(mechAngle.in(Rotations));
-            //median_filter(mechAngle.in(Rotations));
-            easyCRT = mechAngle.in(Rotations);
-            turretMotor.setPosition(easyCRT);
+            this.easyCRT = mechAngle.in(Rotations);
         });
-        return 0.0;
+        return this.easyCRT;
     }
 
-    public void calculate_debug_values() {
-        turret_base_eror = currentPos-turretTargetPosition;
-        encoder_1_debug = encoder.get();
-        encoder_2_debug = encoder_1.get();
+    private void calculate_debug_values() {
         getLastStatus_debug = easyCrtSolver.getLastStatus();
         getLastiterations_debug = easyCrtSolver.getLastIterations();
-        currentPos = turretMotor.getPosition().getValueAsDouble(); //very shitty 
-
     }
 
-    public void median_filter (double input) {
-        MedianFilter filter = new MedianFilter(5);
-        double filtered = filter.calculate(input);
-        double filtered_current_pos = filtered;
-        turretMotor.setPosition(filtered_current_pos);
+    public void resetPIDs() {
+        this.turretAngle();
+        this.turretPID.reset(this.easyCRT);
     }
 
     @Override
     public void periodic() {
         turretAngle();
-        
-        //turretTargetPosition = positionMath.getTurretRotationTarget()/TurretConstants.convert_to_rotations_from_radians; 
-        turretTargetPosition = (turret_debug.get() * (TurretConstants.max_range - TurretConstants.min_range)) - TurretConstants.max_range/2;
+
+        turretTargetPosition = (turret_debug.get() * (TurretConstants.max_range - TurretConstants.min_range)) + TurretConstants.min_range;
         //shooterTargetRPS = encoder.get() * 100;
         //shooterTargetRPS = Math.min(shooterTargetRPS, 10);
+
         calculate_debug_values();
-        if (getLastStatus_debug != "AMBIGUOUS") {
-            turretMotor.setControl(motionMagicRequest.withPosition(turretTargetPosition).withSlot(0));
-        }
+        double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
+        double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
+        turretMotor.setVoltage(turretPIDCalc + turretFFCalc);
         //shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1).withFeedForward(0.9*(shooterTargetRPS/10)));
-        //shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));
-        // Average over the last 10 samples
-        
+        //shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));        
 
         //error = ((-shooterTargetRPS - shooterMotor.getVelocity().getValueAsDouble()) / 10 ) * 100;
-
-
-
     }
+
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("easycrt output", () -> this.easyCRT, null);
         builder.addIntegerProperty("getlastinterations", () -> this.getLastiterations_debug, null);
         builder.addStringProperty("getlaststatus", () -> this.getLastStatus_debug, null);
         builder.addDoubleProperty("turret target", () -> this.turretTargetPosition,null);
-        builder.addDoubleProperty("turret rotations current", () -> this.currentPos, null);
-        builder.addDoubleProperty("encoder A", () -> (this.encoder.get()), null);
-        builder.addDoubleProperty("encoder B", () -> (this.encoder_1.get()), null);
+        builder.addDoubleProperty("encoder A", () -> (this.encoderA.get()), null);
+        builder.addDoubleProperty("encoder B", () -> (this.encoderB.get()), null);
         // builder.addDoubleProperty("shooter target RPS", () -> this.shooterTargetRPS, null);   
         // builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null); 
         // builder.addDoubleProperty("encoder", () -> this.shooterTargetRPS / 100, null);
-        // builder.addDoubleProperty("error", () -> this.error, null);  
-        
+        // builder.addDoubleProperty("error", () -> this.error, null);
+
+        builder.addDoubleProperty("kS", () -> this.turretFeedforward.getKs(), (newKs) -> {this.turretFeedforward.setKs(newKs); this.resetPIDs();});
+        builder.addDoubleProperty("kV", () -> this.turretFeedforward.getKv(), (newKv) -> {this.turretFeedforward.setKv(newKv); this.resetPIDs();});
+        builder.addDoubleProperty("kP", () -> this.turretPID.getP(), (newP) -> {this.turretPID.setP(newP); this.resetPIDs();});
+        builder.addDoubleProperty("kD", () -> this.turretPID.getD(), (newD) -> {this.turretPID.setD(newD); this.resetPIDs();});
     }
 }

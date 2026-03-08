@@ -30,20 +30,13 @@ public final class Constants {
         public static final double S_Jerk = 420.69;
 
 
-        public static final double kS = 0.25; //turret base
-        public static final double kV = 0.2;
-        public static final double kA = 0.03;
-        public static final double kp = 0.1; 
-        public static final double ki = 0.005;
-        public static final double kd = 0.005;
-
-
-
-
-
-
-
-
+        public static final double kS = 0.0; //turret base
+        public static final double kV = 0.0;
+        public static final double kp = 0.0; 
+        public static final double ki = 0.0;
+        public static final double kd = 0.0;
+        public static final double turretMaxV = 3.0;
+        public static final double turretMaxA = 5.0;
 
         public static final double S_kS = 0.25; //shooter
         public static final double S_kV = 0.8;
@@ -52,24 +45,25 @@ public final class Constants {
         public static final double S_ki = 0.0;                                                                                                                                                                                                                              
         public static final double S_kd = 0.0;
         /** The CAN ID for the motor */
-        public static final int motorCanId = 0;
-        public static final int ShooterMotorCanId = 1;
-        public static final int ShooterMotor2CanId = 2;
+        public static final int motorCanId = 15;
+        public static final int ShooterMotorCanId = 16;
+        public static final int ShooterMotor2CanId = 17;
         public static final double tolerance = 0.025;
 
         public static final double m_steps = 1024.0;
 
-        public static final int channel_a = 1;
-        public static final int channel_b = 2;
+        public static final int channel_a = 0;
+        public static final int channel_b = 1;
  
-        public static final int gear_ratio_on_drive_ring = 90;
         public static final double shooter_ratio = 1.0;
 
         public static final double convert_to_rotations_from_radians = 2 * Math.PI;
 
+        public static final double encoderAOffset = -0.374;
+        public static final double encoderBOffset = -0.601;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
-        public static final double match_tolerance = 0.03; //rotations
+        public static final double match_tolerance = 0.02; //rotations
     }
 
     /** Constants for intake */
