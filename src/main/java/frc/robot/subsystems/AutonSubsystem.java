@@ -26,6 +26,7 @@ public class AutonSubsystem extends SubsystemBase {
     private final CommandSwerveDrivetrain drivetrain;
     private final IntakeSubsystem groundIntake;
     private final TurretIntakeSubsystem turretIntake;
+    private final RollerSubsystem bucketRollers;
     private final LedSubsystem ledSubsystem;
     private final PositionMath positionMath;
 
@@ -36,10 +37,11 @@ public class AutonSubsystem extends SubsystemBase {
     private SendableChooser<Supplier<Command>> collectLocation = new SendableChooser<>();
     private SendableChooser<Supplier<Command>> climbCommand = new SendableChooser<>();
 
-    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, LedSubsystem ledSubsystem, PositionMath positionMath) {
+    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, RollerSubsystem bucketRollers, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
         this.groundIntake = groundIntake;
         this.turretIntake = turretIntake;
+        this.bucketRollers = bucketRollers;
         this.ledSubsystem = ledSubsystem;
         this.positionMath = positionMath;
 
@@ -82,7 +84,8 @@ public class AutonSubsystem extends SubsystemBase {
             this.shooting = true;
         })
         .andThen(this.turretIntake.beginIntake())
-        .andThen(new WaitUntilCommand(() -> this.turretIntake.atTargetSpeed()).withTimeout(AutoConstants.turretIntakeMaxWaitTime));
+        .andThen(new WaitUntilCommand(() -> this.turretIntake.atTargetSpeed()).withTimeout(AutoConstants.turretIntakeMaxWaitTime))
+        .andThen(this.bucketRollers.startFastCommand());
     }
 
     /**
@@ -94,29 +97,34 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.shooting = false;
         })
+        .andThen(this.bucketRollers.startCommand())
         .andThen(this.turretIntake.reverseIntake());
     }
 
     /** command to regurgitate the balls from the bucket */
     public Command regurgitate() {
         return this.turretIntake.reverseIntake()
+        .andThen(this.bucketRollers.reverseCommand())
         .andThen(this.groundIntake.reverseIntake());
     }
     
     /** command to end regurgitation */
     public Command stopRegurgitate() {
-        return this.groundIntake.beginIntake();
+        return this.groundIntake.beginIntake()
+        .andThen(this.bucketRollers.startCommand());
     }
 
     /** Move the ground intake down (begin intaking) */
     public Command intakeDown() {
         return this.groundIntake.lowerIntake()
-        .andThen(this.groundIntake.beginIntake());
+        .andThen(this.groundIntake.beginIntake())
+        .andThen(this.bucketRollers.startCommand());
     }
 
     /** Move the ground intake up (stop intaking) */
     public Command intakeUp() {
         return this.groundIntake.endIntake()
+        .andThen(this.bucketRollers.stopCommand())
         .andThen(this.groundIntake.raiseIntake());
     }
 

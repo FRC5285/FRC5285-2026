@@ -22,6 +22,7 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.LedSubsystem;
+import frc.robot.subsystems.RollerSubsystem;
 import frc.robot.subsystems.TurretIntakeSubsystem;
 import frc.robot.util.PositionMath;
 import frc.robot.util.ShiftUtil;
@@ -39,11 +40,13 @@ public class RobotContainer implements Sendable {
 
     private final TurretIntakeSubsystem turretIntake = new TurretIntakeSubsystem();
 
+    private final RollerSubsystem bucketRollers = new RollerSubsystem();
+
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
     private final LedSubsystem ledSubsystem = new LedSubsystem();
 
-    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.ledSubsystem, this.positionMath);
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketRollers, this.ledSubsystem, this.positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);

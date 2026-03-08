@@ -377,7 +377,7 @@ public final class Constants {
     /** Constants for storage rollers */
     public static class RollerConstants {
         public static final int ROLLER_MOTOR_ID=19;
-        public static final double speed=0.4;
+        public static final double speed=0.2;
         public static final double fastSpeed = 0.8;
     }
 
