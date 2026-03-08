@@ -98,6 +98,9 @@ public final class Constants {
 
         /** How long to shoot when there is more fuel */
         public static final double shootMoreTime = 6.0;
+
+        /** Max time to wait for turret intake to get up to speed */
+        public static final double turretIntakeMaxWaitTime = 1.0;
     }
 
     /** Robot measurements, in METERS */
@@ -363,7 +366,7 @@ public final class Constants {
         public static final double jerk = 1600;
 
         public static final double intakeSpeed = 160.0;
-        public static final double reverseSpeed = -40.0;
+        public static final double reverseSpeed = -10.0;
 
         public static final double speedTolerance = 16.7;
     }

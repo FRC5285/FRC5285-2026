@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
+import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.PositionMath;
@@ -24,6 +25,7 @@ public class AutonSubsystem extends SubsystemBase {
 
     private final CommandSwerveDrivetrain drivetrain;
     private final IntakeSubsystem groundIntake;
+    private final TurretIntakeSubsystem turretIntake;
     private final LedSubsystem ledSubsystem;
     private final PositionMath positionMath;
 
@@ -34,9 +36,10 @@ public class AutonSubsystem extends SubsystemBase {
     private SendableChooser<Supplier<Command>> collectLocation = new SendableChooser<>();
     private SendableChooser<Supplier<Command>> climbCommand = new SendableChooser<>();
 
-    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, LedSubsystem ledSubsystem, PositionMath positionMath) {
+    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
         this.groundIntake = groundIntake;
+        this.turretIntake = turretIntake;
         this.ledSubsystem = ledSubsystem;
         this.positionMath = positionMath;
 
@@ -77,7 +80,9 @@ public class AutonSubsystem extends SubsystemBase {
     public Command shootingOn() {
         return runOnce(() -> {
             this.shooting = true;
-        });
+        })
+        .andThen(this.turretIntake.beginIntake())
+        .andThen(new WaitUntilCommand(() -> this.turretIntake.atTargetSpeed()).withTimeout(AutoConstants.turretIntakeMaxWaitTime));
     }
 
     /**
@@ -89,7 +94,18 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.shooting = false;
         })
-        .andThen(this.ledsCommand());
+        .andThen(this.turretIntake.reverseIntake());
+    }
+
+    /** command to regurgitate the balls from the bucket */
+    public Command regurgitate() {
+        return this.turretIntake.reverseIntake()
+        .andThen(this.groundIntake.reverseIntake());
+    }
+    
+    /** command to end regurgitation */
+    public Command stopRegurgitate() {
+        return this.groundIntake.beginIntake();
     }
 
     /** Move the ground intake down (begin intaking) */
@@ -126,6 +142,7 @@ public class AutonSubsystem extends SubsystemBase {
         .alongWith(this.ledSubsystem.auton())
         .alongWith(this.intakeDown())
         .andThen(this.collectLocation.getSelected().get())
+        .andThen(this.shootingOff())
         .andThen(this.climbCommand.getSelected().get());
     }
 
@@ -142,6 +159,7 @@ public class AutonSubsystem extends SubsystemBase {
             path = null;
         }
         return AutoBuilder.pathfindThenFollowPath(path, autonPathConstraints)
+        .andThen(this.shootingOn())
         .andThen(new WaitCommand(AutoConstants.shootTime));
     }
 
@@ -154,6 +172,7 @@ public class AutonSubsystem extends SubsystemBase {
         return AutoBuilder.pathfindToPoseFlipped(FieldConstants.blueOutpostParkPose, autonPathConstraints)
         .andThen(new WaitCommand(AutoConstants.outpostWaitTime))
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.blueOutpostShootPose, autonPathConstraints))
+        .andThen(this.shootingOn())
         .andThen(new WaitCommand(AutoConstants.shootTime));
     }
 
@@ -195,6 +214,7 @@ public class AutonSubsystem extends SubsystemBase {
      */
     public Command neutralZoneCollection(PathPlannerPath path) {
         return AutoBuilder.pathfindThenFollowPath(path, autonPathConstraints)
+        .andThen(this.shootingOn())
         .andThen(new WaitCommand(AutoConstants.shootMoreTime));
     }
 

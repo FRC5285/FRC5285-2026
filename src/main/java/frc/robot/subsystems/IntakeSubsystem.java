@@ -46,6 +46,12 @@ public class IntakeSubsystem extends SubsystemBase {
         });
     }
 
+    public Command reverseIntake() {
+        return runOnce(() -> {
+            intakeMotor.setVoltage(-IntakeConstants.intakeVolts);
+        });
+    }
+
     public Command endIntake() {
         return runOnce(() -> {
             intakeMotor.stopMotor();
