@@ -27,7 +27,7 @@ public final class Constants {
 
     /** Constants for intake */
     public static class TurretIntakeConstants {
-        public static final int motorCanId = 1; // change later
+        public static final int motorCanId = 18;
 
         // arbitrary values (for now)
         public static final double kS = 0.25;
@@ -39,10 +39,13 @@ public final class Constants {
 
         // motion magic settings
         public static final double cruiseVelocity = 80;
-        public static final double acceleration = 160;
-        public static final double jerk = 1600; // goon
+        public static final double acceleration = 320;
+        public static final double jerk = 1600;
 
         public static final double intakeSpeed = 160.0;
+        public static final double reverseSpeed = -40.0;
+
+        public static final double speedTolerance = 16.7;
     }
 
     /** Constants for storage rollers */

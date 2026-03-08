@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-//import com.ctre.phoenix6.controls.MotionMagicVoltage;
 
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -12,10 +11,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.TurretIntakeConstants;
 
-// import com.ctre.phoenix6.configs.MotionMagicConfigs;
-// import com.ctre.phoenix6.configs.Slot0Configs;
-// import com.ctre.phoenix6.configs.TalonFXConfiguration;
-// import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
@@ -24,8 +19,6 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
     double intakeSpeed = TurretIntakeConstants.intakeSpeed; // radians per sec, target speed
-    double tolerance = 1.0;
-    boolean stopped = false;
 
     public TurretIntakeSubsystem() {
         TalonFXConfiguration configs = new TalonFXConfiguration();
@@ -58,30 +51,31 @@ public class TurretIntakeSubsystem extends SubsystemBase {
 
     // Other methods go here
     public boolean atTargetSpeed() {
-        return (this.motor.getVelocity().getValueAsDouble() == intakeSpeed + tolerance || this.motor.getVelocity().getValueAsDouble() == intakeSpeed - tolerance);
+        return Math.abs(this.motor.getVelocity().getValueAsDouble() - this.intakeSpeed) <= TurretIntakeConstants.speedTolerance;
     }
 
     public Command beginIntake() {
-        return runOnce(() -> {
-            stopped = false;
-            intakeSpeed = TurretIntakeConstants.intakeSpeed;
-        });
+        return this.setSpeed(TurretIntakeConstants.intakeSpeed);
+    }
+
+    public Command reverseIntake() {
+        return this.setSpeed(TurretIntakeConstants.reverseSpeed);
     }
 
     public Command endIntake() {
+        return this.setSpeed(0.0);
+    }
+
+    private Command setSpeed(double speed) {
         return runOnce(() -> {
-            stopped = true;
-            intakeSpeed = 0;
+            this.intakeSpeed = speed;
+            motor.setControl(motionMagicRequest.withVelocity(this.intakeSpeed).withSlot(0));
         });
     }
 
     @Override
     public void periodic() {
-        if (!stopped) {
-            motor.setControl(motionMagicRequest.withVelocity(intakeSpeed).withSlot(0));
-        } else {
-            motor.stopMotor();
-        }
+
     }
 
     @Override
