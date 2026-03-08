@@ -21,6 +21,9 @@ public final class Constants {
         /** The driver station port to use as the driver controller port */
         public static final int driverControllerPort = 0;
 
+        /** The port for the second controller */
+        public static final int secondControllerPort = 1;
+
         /** The deadband for the driver controller joysticks */
         public static final double driveDeadband = 0.1;
 

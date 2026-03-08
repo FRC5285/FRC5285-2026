@@ -45,6 +45,9 @@ public class RobotContainer implements Sendable {
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
+    /** The second controller */
+    private final CommandXboxController secondController = new CommandXboxController(OperatorConstants.secondControllerPort);
+
     /** Drive with controller joystick rotation */
     private final SwerveRequest.FieldCentric driveFree = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
 
@@ -127,6 +130,14 @@ public class RobotContainer implements Sendable {
                     .withVelocityY(0.0)
                     .withRotationalRate(0.0)
             ))
+        );
+
+        this.secondController.leftBumper().onTrue(
+            this.autonSubsystem.intakeUp()
+        );
+
+        this.secondController.leftBumper().onTrue(
+            this.autonSubsystem.intakeDown()
         );
     }
 
