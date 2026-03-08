@@ -127,7 +127,7 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     private void calculate_debug_values() {
-        getLastStatus_debug = easyCrtSolver.getLastStatus();
+        getLastStatus_debug = easyCrtSolver.getLastStatus().name();
         getLastiterations_debug = easyCrtSolver.getLastIterations();
     }
 
@@ -147,7 +147,7 @@ public class TurretSubsystem extends SubsystemBase {
         calculate_debug_values();
         double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
         double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
-        turretMotor.setVoltage(turretPIDCalc + turretFFCalc);
+        turretMotor.setVoltage(-(turretPIDCalc + turretFFCalc));
         //shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1).withFeedForward(0.9*(shooterTargetRPS/10)));
         //shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));        
 
@@ -162,6 +162,7 @@ public class TurretSubsystem extends SubsystemBase {
         builder.addDoubleProperty("turret target", () -> this.turretTargetPosition,null);
         builder.addDoubleProperty("encoder A", () -> (this.encoderA.get()), null);
         builder.addDoubleProperty("encoder B", () -> (this.encoderB.get()), null);
+        builder.addDoubleProperty("turret error", () -> Math.abs(this.turretTargetPosition - this.easyCRT), null);
         // builder.addDoubleProperty("shooter target RPS", () -> this.shooterTargetRPS, null);   
         // builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null); 
         // builder.addDoubleProperty("encoder", () -> this.shooterTargetRPS / 100, null);
