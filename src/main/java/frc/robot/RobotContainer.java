@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AutonSubsystem;
+import frc.robot.subsystems.BucketOutSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -42,11 +43,13 @@ public class RobotContainer implements Sendable {
 
     private final RollerSubsystem bucketRollers = new RollerSubsystem();
 
+    private final BucketOutSubsystem bucketOuttake = new BucketOutSubsystem();
+
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
     private final LedSubsystem ledSubsystem = new LedSubsystem();
 
-    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketRollers, this.ledSubsystem, this.positionMath);
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketRollers, this.bucketOuttake, this.ledSubsystem, this.positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -116,8 +119,8 @@ public class RobotContainer implements Sendable {
             this.autonSubsystem.shootingOn()
         );
 
-        this.driverController.rightTrigger().onFalse(
-            this.autonSubsystem.shootingOff()
+        this.driverController.rightTrigger().or(() -> autonSubsystem.isClimbing()).onFalse(
+            this.autonSubsystem.shootingOffFull()
         );
 
         this.driverController.povLeft().onTrue(

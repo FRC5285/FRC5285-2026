@@ -369,7 +369,7 @@ public final class Constants {
         public static final double jerk = 1600;
 
         public static final double intakeSpeed = 160.0;
-        public static final double reverseSpeed = -10.0;
+        public static final double reverseSpeed = -40.0;
 
         public static final double speedTolerance = 16.7;
     }

@@ -27,6 +27,7 @@ public class AutonSubsystem extends SubsystemBase {
     private final IntakeSubsystem groundIntake;
     private final TurretIntakeSubsystem turretIntake;
     private final RollerSubsystem bucketRollers;
+    private final BucketOutSubsystem bucketOuttake;
     private final LedSubsystem ledSubsystem;
     private final PositionMath positionMath;
 
@@ -37,11 +38,12 @@ public class AutonSubsystem extends SubsystemBase {
     private SendableChooser<Supplier<Command>> collectLocation = new SendableChooser<>();
     private SendableChooser<Supplier<Command>> climbCommand = new SendableChooser<>();
 
-    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, RollerSubsystem bucketRollers, LedSubsystem ledSubsystem, PositionMath positionMath) {
+    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, RollerSubsystem bucketRollers, BucketOutSubsystem bucketOuttake, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
         this.groundIntake = groundIntake;
         this.turretIntake = turretIntake;
         this.bucketRollers = bucketRollers;
+        this.bucketOuttake = bucketOuttake;
         this.ledSubsystem = ledSubsystem;
         this.positionMath = positionMath;
 
@@ -85,7 +87,8 @@ public class AutonSubsystem extends SubsystemBase {
         })
         .andThen(this.turretIntake.beginIntake())
         .andThen(new WaitUntilCommand(() -> this.turretIntake.atTargetSpeed()).withTimeout(AutoConstants.turretIntakeMaxWaitTime))
-        .andThen(this.bucketRollers.startFastCommand());
+        .andThen(this.bucketRollers.startFastCommand())
+        .andThen(this.bucketOuttake.startCommand()); // bucketOuttake.startCommand() runs forever
     }
 
     /**
@@ -98,12 +101,27 @@ public class AutonSubsystem extends SubsystemBase {
             this.shooting = false;
         })
         .andThen(this.bucketRollers.startCommand())
-        .andThen(this.turretIntake.reverseIntake());
+        .andThen(this.turretIntake.reverseIntake())
+        .andThen(this.bucketOuttake.setReverse());
+    }
+
+    /** Call a couple seconds after shootingOff() */
+    public Command shootingOffStop() {
+        return this.turretIntake.endIntake()
+        .andThen(this.bucketOuttake.stopCommand());
+    }
+
+    /** Full command to turn off shooting */
+    public Command shootingOffFull() {
+        return this.shootingOff()
+        .andThen(new WaitCommand(2.0))
+        .andThen(this.shootingOffStop());
     }
 
     /** command to regurgitate the balls from the bucket */
     public Command regurgitate() {
         return this.turretIntake.reverseIntake()
+        .andThen(this.bucketOuttake.setReverse())
         .andThen(this.bucketRollers.reverseCommand())
         .andThen(this.groundIntake.reverseIntake());
     }
@@ -111,6 +129,7 @@ public class AutonSubsystem extends SubsystemBase {
     /** command to end regurgitation */
     public Command stopRegurgitate() {
         return this.groundIntake.beginIntake()
+        .andThen(this.bucketOuttake.stopCommand())
         .andThen(this.bucketRollers.startCommand());
     }
 
@@ -150,7 +169,6 @@ public class AutonSubsystem extends SubsystemBase {
         .alongWith(this.ledSubsystem.auton())
         .alongWith(this.intakeDown())
         .andThen(this.collectLocation.getSelected().get())
-        .andThen(this.shootingOff())
         .andThen(this.climbCommand.getSelected().get());
     }
 
@@ -246,7 +264,9 @@ public class AutonSubsystem extends SubsystemBase {
         })
         .alongWith(this.ledSubsystem.auton())
         .alongWith(this.intakeUp())
+        .andThen(this.shootingOff())
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerLeftPrepPose, this.climbPathConstraints))
+        .andThen(this.shootingOffStop())
         .andThen(this.drivetrain.fineTunePID(FieldConstants.towerLeftFinalPose))
         .andThen(runOnce(() -> {
             this.climbing = false;
@@ -266,7 +286,9 @@ public class AutonSubsystem extends SubsystemBase {
         })
         .alongWith(this.ledSubsystem.auton())
         .alongWith(this.intakeUp())
+        .andThen(this.shootingOff())
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerRightPrepPose, this.climbPathConstraints))
+        .andThen(this.shootingOffStop())
         .andThen(this.drivetrain.fineTunePID(FieldConstants.towerRightFinalPose))
         .andThen(runOnce(() -> {
             this.climbing = false;
