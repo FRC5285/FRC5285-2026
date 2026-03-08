@@ -23,12 +23,16 @@ public class RollerSubsystem extends SubsystemBase {
     }
 
 
-    public void start() {
+    private void start() {
         rollerMotor.setControl(dutyCycle.withOutput(RollerConstants.speed));
     }
 
-   
-    public void stop() {
+    private void startFast() {
+        rollerMotor.setControl(dutyCycle.withOutput(RollerConstants.fastSpeed));
+    }
+
+
+    private void stop() {
         rollerMotor.setControl(dutyCycle.withOutput(0.0));
     }
 
@@ -36,6 +40,10 @@ public class RollerSubsystem extends SubsystemBase {
     /** Returns a command that runs start() once */
     public Command startCommand() {
         return runOnce(this::start);
+    }
+
+    public Command startFastCommand() {
+        return runOnce(this::startFast);
     }
 
     /** Returns a command that runs stop() once */
