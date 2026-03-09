@@ -38,11 +38,11 @@ public final class Constants {
         public static final double turretMaxV = 3.0;
         public static final double turretMaxA = 5.0;
 
-        public static final double S_kS = 0.25; //shooter
-        public static final double S_kV = 0.8;
-        public static final double S_kA = 0.01;
-        public static final double S_kp = 0.1; 
-        public static final double S_ki = 0.0;                                                                                                                                                                                                                              
+        public static final double S_kS = 0.0; //shooter
+        public static final double S_kV = 0.12;
+        public static final double S_kA = 0.0;
+        public static final double S_kp = 0.1;
+        public static final double S_ki = 0.0;
         public static final double S_kd = 0.0;
         /** The CAN ID for the motor */
         public static final int motorCanId = 15;
@@ -69,6 +69,29 @@ public final class Constants {
     /** Constants for intake */
     public static class IntakeConstants {
 
+    }
+
+    /** Constants for turret intake */
+    public static class TurretIntakeConstants {
+        public static final int motorCanId = 18;
+
+        // arbitrary values (for now)
+        public static final double kS = 0.0;
+        public static final double kV = 0.1;
+        public static final double kA = 0.0;
+        public static final double kP = 0.0;
+        public static final double kI = 0.0;
+        public static final double kD = 0.0;
+
+        // motion magic settings
+        public static final double cruiseVelocity = 80;
+        public static final double acceleration = 320;
+        public static final double jerk = 1600;
+
+        public static final double intakeSpeed = 120.0;
+        public static final double reverseSpeed = -40.0;
+
+        public static final double speedTolerance = 16.7;
     }
 
     /** Constants for storage rollers */
