@@ -79,6 +79,19 @@ public class ClimbSubsystem extends SubsystemBase {
     ); 
   }
 
+  // climb during auton
+  public Command AutonClimb() {
+    return runOnce(() -> {
+      rotatePID.setGoal(ClimbConstants.rotateGoalRotations); //latch robot (rotateMotor) onto the ladder
+    })
+    .andThen(new WaitUntilCommand(() -> rotatePID.atGoal())) //wait until rotatePID is at its goal
+    .andThen(
+      runOnce(() -> {
+        climbPID.setGoal(ClimbConstants.middleExtension); //raise robot (climbMotor) up onto the ladder
+      })
+    ); 
+  }
+
   //ladder -> ground
   public Command Unclimb() {
 
