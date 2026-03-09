@@ -223,47 +223,28 @@ public final class Constants {
     public static class LookupTableConstants {
         /** Lookup table for distances (in meters) and speeds (in RPS) */
         public static final double[][] distanceSpeedTable = {
-            {1.0, 15},
-            {1.5, 20},
-            {2.0, 25},
-            {2.5, 30},
-            {3.0, 35},
-            {3.5, 40},
-            {4.0, 45},
-            {4.5, 50},
-            {5.0, 55},
-            {5.5, 60},
-            {6.0, 65},
-            {6.5, 70},
-            {7.0, 75},
-            {7.5, 80},
-            {8.0, 85},
-            {8.5, 90},
-            {9.0, 95},
-            {9.5, 100}
+            {1.47, 42},
+            {2.01, 41.5},
+            {2.84, 47},
+            {3.66, 54.5},
+            {4.80, 58},
+            {5.82, 67},
+            {7.09, 75},
+            {7.87, 88},
+            {9.09, 100}
         };
 
         /** Lookup table for distances (in meters) and time of flight (in seconds) */
         public static final double[][] distanceTimeOfFlightTable = {
-            {1.0, 1.0},
-            {1.5, 1.1},
-            {2.0, 1.2},
-            {2.5, 1.3},
-            {3.0, 1.4},
-            {3.5, 1.5},
-            {4.0, 1.6},
-            {4.5, 1.7},
-            {5.0, 1.8},
-            {5.5, 1.9},
-            {6.0, 2.0},
-            {6.5, 2.1},
-            {7.0, 2.2},
-            {7.5, 2.3},
-            {8.0, 2.4},
-            {8.5, 2.5},
-            {9.0, 2.6},
-            {9.5, 2.7},
-            {10.0, 2.8}
+            {1.47, 0.96},
+            {2.01, 0.81},
+            {2.84, 0.98},
+            {3.66, 1.18},
+            {4.80, 1.24},
+            {5.82, 1.51},
+            {7.09, 1.68},
+            {7.87, 1.88},
+            {9.09, 2.04}
         };
 
         /** How many calculation loops to do for the shoot on the move calculation */
