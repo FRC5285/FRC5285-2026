@@ -18,6 +18,7 @@ import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AutonSubsystem;
 import frc.robot.subsystems.BucketOutSubsystem;
+import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -45,11 +46,13 @@ public class RobotContainer implements Sendable {
 
     private final BucketOutSubsystem bucketOuttake = new BucketOutSubsystem();
 
+    private final ClimbSubsystem climber = new ClimbSubsystem();
+
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
     private final LedSubsystem ledSubsystem = new LedSubsystem();
 
-    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketRollers, this.bucketOuttake, this.ledSubsystem, this.positionMath);
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketRollers, this.bucketOuttake, this.climber, this.ledSubsystem, this.positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -124,7 +127,7 @@ public class RobotContainer implements Sendable {
         );
 
         this.driverController.povLeft().onTrue(
-            this.autonSubsystem.climbLeft()
+            this.autonSubsystem.climbLeft(true)
             .andThen(this.drivetrain.applyRequest(() ->
                 this.driveFree.withVelocityX(0.0)
                     .withVelocityY(0.0)
@@ -133,7 +136,7 @@ public class RobotContainer implements Sendable {
         );
 
         this.driverController.povRight().onTrue(
-            this.autonSubsystem.climbRight()
+            this.autonSubsystem.climbRight(true)
             .andThen(this.drivetrain.applyRequest(() ->
                 this.driveFree.withVelocityX(0.0)
                     .withVelocityY(0.0)
@@ -191,10 +194,15 @@ public class RobotContainer implements Sendable {
         this.positionMath.resetLastRotation();
         this.drive.HeadingController.reset();
         this.groundIntake.resetPIDs();
+        this.climber.resetPID();
     }
 
     public Command getAutonomousCommand() {
         return this.autonSubsystem.autonCommand();
+    }
+
+    public Command getTeleopStartCommand() {
+        return this.autonSubsystem.teleopStartCommand();
     }
 
     @Override

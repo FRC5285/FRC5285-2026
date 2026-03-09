@@ -70,6 +70,8 @@ public class Robot extends TimedRobot {
     public void teleopInit() {
         this.usedTeleop = true;
 
+        CommandScheduler.getInstance().schedule(this.m_robotContainer.getTeleopStartCommand());
+
         // Resets robot field orientation only if Auton was not used
         if (!this.usedAuton) {
             this.m_robotContainer.resetSide();

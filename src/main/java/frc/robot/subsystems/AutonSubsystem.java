@@ -28,6 +28,7 @@ public class AutonSubsystem extends SubsystemBase {
     private final TurretIntakeSubsystem turretIntake;
     private final RollerSubsystem bucketRollers;
     private final BucketOutSubsystem bucketOuttake;
+    private final ClimbSubsystem climber;
     private final LedSubsystem ledSubsystem;
     private final PositionMath positionMath;
 
@@ -38,12 +39,13 @@ public class AutonSubsystem extends SubsystemBase {
     private SendableChooser<Supplier<Command>> collectLocation = new SendableChooser<>();
     private SendableChooser<Supplier<Command>> climbCommand = new SendableChooser<>();
 
-    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, RollerSubsystem bucketRollers, BucketOutSubsystem bucketOuttake, LedSubsystem ledSubsystem, PositionMath positionMath) {
+    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, RollerSubsystem bucketRollers, BucketOutSubsystem bucketOuttake, ClimbSubsystem climber, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
         this.groundIntake = groundIntake;
         this.turretIntake = turretIntake;
         this.bucketRollers = bucketRollers;
         this.bucketOuttake = bucketOuttake;
+        this.climber = climber;
         this.ledSubsystem = ledSubsystem;
         this.positionMath = positionMath;
 
@@ -58,8 +60,8 @@ public class AutonSubsystem extends SubsystemBase {
         this.collectLocation.addOption("Right Neutral Zone", () -> this.rightNeutralZoneCollection());
 
         // Climb location
-        this.climbCommand.setDefaultOption("Left", () -> this.climbLeft());
-        this.climbCommand.addOption("Right", () -> this.climbRight());
+        this.climbCommand.setDefaultOption("Left", () -> this.climbLeft(false));
+        this.climbCommand.addOption("Right", () -> this.climbRight(false));
 
         // Puts choosers onto dashboard
         SmartDashboard.putData("Start Position", this.startPosition);
@@ -256,9 +258,10 @@ public class AutonSubsystem extends SubsystemBase {
     /**
      * Climb the left side of the tower
      * 
+     * @param inTeleop do the teleop climb?
      * @return A command climbing the left side of the tower
      */
-    public Command climbLeft() {
+    public Command climbLeft(boolean inTeleop) {
         return runOnce(() -> {
             this.climbing = true;
         })
@@ -268,6 +271,7 @@ public class AutonSubsystem extends SubsystemBase {
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerLeftPrepPose, this.climbPathConstraints))
         .andThen(this.shootingOffStop())
         .andThen(this.drivetrain.fineTunePID(FieldConstants.towerLeftFinalPose))
+        .andThen(inTeleop ? this.climber.Climb() : this.climber.AutonClimb())
         .andThen(runOnce(() -> {
             this.climbing = false;
             this.positionMath.resetLastRotation();
@@ -278,9 +282,10 @@ public class AutonSubsystem extends SubsystemBase {
     /**
      * Climb the right side of the tower
      * 
+     * @param inTeleop do the teleop climb?
      * @return A command climbing the right side of the tower
      */
-    public Command climbRight() {
+    public Command climbRight(boolean inTeleop) {
         return runOnce(() -> {
             this.climbing = true;
         })
@@ -290,10 +295,15 @@ public class AutonSubsystem extends SubsystemBase {
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerRightPrepPose, this.climbPathConstraints))
         .andThen(this.shootingOffStop())
         .andThen(this.drivetrain.fineTunePID(FieldConstants.towerRightFinalPose))
+        .andThen(inTeleop ? this.climber.Climb() : this.climber.AutonClimb())
         .andThen(runOnce(() -> {
             this.climbing = false;
             this.positionMath.resetLastRotation();
         }))
         .andThen(this.ledsCommand());
+    }
+
+    public Command teleopStartCommand() {
+        return this.climber.Unclimb();
     }
 }
