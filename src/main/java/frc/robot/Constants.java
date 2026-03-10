@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import frc.robot.generated.TunerConstants;
@@ -109,7 +108,7 @@ public final class Constants {
     /** Robot measurements, in METERS */
     public static class RobotConstants {
         /** X-component (robot centric) offset of the turret center from robot center */
-        public static final double turretOffsetX = -0.3;
+        public static final double turretOffsetX = -0.1840732628;
 
         /** Y-component (robot centric) offset of the turret center from robot center */
         public static final double turretOffsetY = 0.0;
@@ -211,7 +210,7 @@ public final class Constants {
         public static final double climbPrepX = 0.1016;
 
         /** Field-centric Y translation before the robot climbs */
-        public static final double climbPrepY = 0.0762;
+        public static final double climbPrepY = 0.3048;
 
         /** Pose of the robot before the climb, right of the blue tower, flipped automatically by pathplanner */
         public static final Pose2d towerRightPrepPose = new Pose2d(towerRightFinalPose.getX() - climbPrepX, towerRightFinalPose.getY() - climbPrepY, towerRightFinalPose.getRotation());
@@ -271,36 +270,38 @@ public final class Constants {
         public static final double camPositionBufferTime = 2.0;
 
         /** Number of cameras on the robot */
-        public static final int numCameras = 0;
+        public static final int numCameras = 3;
 
         /** Camera names */
         public static final String[] cameraNames = {
             "Arducam_OV9281_USB1",
             "Arducam_OV9281_USB2",
-            "Arducam_OV9281_USB3",
+            // "Arducam_OV9281_USB3",
             "Arducam_OV9281_USB4"
         };
 
         /** Camera positions on the robot */
         public static final Transform3d[] cameraOffsets = {
-            new Transform3d(),
-            new Transform3d(),
-            new Transform3d(new Translation3d(), new Rotation3d(new Rotation2d(-Math.PI / 4.0))),
-            new Transform3d(new Translation3d(), new Rotation3d(new Rotation2d(Math.PI / 4.0)))
+            new Transform3d(-0.28807, -0.30565, 0.19173, new Rotation3d(0.0, -14.04 * (Math.PI / 180.0), -30.3 * (Math.PI / 180.0))),
+            new Transform3d(0.16908, 0.12833, 0.59485, new Rotation3d(0.0, 0.0, 15.0 * (Math.PI / 180.0))),
+            // new Transform3d(new Translation3d(), new Rotation3d(new Rotation2d(-Math.PI / 4.0))),
+            new Transform3d(0.17580, -0.12002, 0.61376, new Rotation3d(0.0, -17.0 * (Math.PI / 180.0), 0.0))
         };
 
         /** If a camera is mounted on the turret - the camera offset should be relative to the turret center when turret rotation is 0 if true */
         public static final boolean[] turretMounted = {
-            true,
-            true,
             false,
-            false
+            true,
+            // false,
+            true
         };
     }
 
     /** Constants for turret */
     public static class TurretConstants {
 
+        /** Tolerance of turret PID, in rotations - used to determine if shooter should shoot */
+        public static final double turretTolerance = 0.03;
     }
 
     /** Constants for intake */

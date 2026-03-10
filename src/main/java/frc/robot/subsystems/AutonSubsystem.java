@@ -227,7 +227,7 @@ public class AutonSubsystem extends SubsystemBase {
     public Command rightNeutralZoneCollection() {
         PathPlannerPath path;
         try {
-            path = PathPlannerPath.fromPathFile("Neutral Zone Right");
+            path = PathPlannerPath.fromPathFile("Neutral Zone Left").mirrorPath();
         } catch (Exception e) {
             path = null;
         }

@@ -14,6 +14,7 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.LookupTableConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.RobotConstants;
+import frc.robot.Constants.TurretConstants;
 
 public class PositionMath {
 
@@ -221,10 +222,11 @@ public class PositionMath {
     /**
      * If shooting is a good idea
      * 
-     * @return if the error for the shoot on the move calculation is smaller than acceptable
+     * @return if the error for the shoot on the move calculation is smaller than acceptable and the turret rotation is good
      */
     public boolean shouldShoot() {
-        return this.timeOfFlightTable.getCalcError() < LookupTableConstants.acceptableError;
+        return this.timeOfFlightTable.getCalcError() < LookupTableConstants.acceptableError
+        && Math.abs(this.turretRotation.get() * 2.0 * Math.PI - this.getTurretRotationTarget()) < TurretConstants.turretTolerance;
     }
 
     /**
