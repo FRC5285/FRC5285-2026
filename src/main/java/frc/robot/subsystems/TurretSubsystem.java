@@ -142,8 +142,12 @@ public class TurretSubsystem extends SubsystemBase {
     public void periodic() {
         turretAngle();
 
-        shooterTargetRPS = turret_debug.get() * 100;
+        // shooterTargetRPS = turret_debug.get() * 100;
+        shooterTargetRPS = 0.0;
         // shooterTargetRPS = Math.min(shooterTargetRPS, 10);
+        this.turretTargetPosition = turret_debug.get() - 0.5;
+
+        this.turretTargetPosition = Math.min(0.25, Math.max(-0.25, this.turretTargetPosition));
 
         calculate_debug_values();
         double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
@@ -167,9 +171,9 @@ public class TurretSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null); 
         builder.addDoubleProperty("error", () -> Math.abs(this.shooterTargetRPS + this.shooterMotor.getVelocity().getValueAsDouble()), null);
 
-        // builder.addDoubleProperty("kS", () -> this.turretFeedforward.getKs(), (newKs) -> {this.turretFeedforward.setKs(newKs); this.resetPIDs();});
-        // builder.addDoubleProperty("kV", () -> this.turretFeedforward.getKv(), (newKv) -> {this.turretFeedforward.setKv(newKv); this.resetPIDs();});
-        // builder.addDoubleProperty("kP", () -> this.turretPID.getP(), (newP) -> {this.turretPID.setP(newP); this.resetPIDs();});
-        // builder.addDoubleProperty("kD", () -> this.turretPID.getD(), (newD) -> {this.turretPID.setD(newD); this.resetPIDs();});
+        builder.addDoubleProperty("kS", () -> this.turretFeedforward.getKs(), (newKs) -> {this.turretFeedforward.setKs(newKs); this.resetPIDs();});
+        builder.addDoubleProperty("kV", () -> this.turretFeedforward.getKv(), (newKv) -> {this.turretFeedforward.setKv(newKv); this.resetPIDs();});
+        builder.addDoubleProperty("kP", () -> this.turretPID.getP(), (newP) -> {this.turretPID.setP(newP); this.resetPIDs();});
+        builder.addDoubleProperty("kD", () -> this.turretPID.getD(), (newD) -> {this.turretPID.setD(newD); this.resetPIDs();});
     }
 }

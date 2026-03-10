@@ -34,7 +34,6 @@ public class RobotContainer {
     public RobotContainer() {
         //this.configureDrivetrainBinding();
         this.configureBindings();
-        this.turretIntake.setNewSpeed(120);
     }
 
     /** Configures the drivetrain drive command */
@@ -44,10 +43,6 @@ public class RobotContainer {
 
     /** Configure controller bindings */
     private void configureBindings() {
-        this.driverController.b().onTrue(this.turretIntake.beginIntake());
-        this.driverController.b().onFalse(this.turretIntake.endIntake());
-        this.driverController.x().onTrue(this.turretIntake.reverseIntake());
-        this.driverController.x().onFalse(this.turretIntake.endIntake());
     }
 
     /** Resets the field side and pose the robot is on */
