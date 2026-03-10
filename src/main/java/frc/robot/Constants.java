@@ -405,13 +405,13 @@ public final class Constants {
 
         
         //**************LIDAR CONSTANTS************************
-        public static final double maxExtension = 0.195; //distance between sensor and plate (meters)
+        public static final double maxExtension = 0.21; //distance between sensor and plate (meters)
 
-        public static final double middleExtension = 0.080; //need to calibrate
+        public static final double middleExtension = 0.067; // auton climb distance
 
-        public static final double minExtension = 0.056; //distance between sensor and plate (meters)
+        public static final double minExtension = 0.05; //distance between sensor and plate (meters)
 
-        public static final double lidarOffset = 0.0; //need to calibrate -- Distance of lidar measurement - real measurement // 0.025
+        public static final double lidarOffset = 0.0; // Distance of lidar measurement - real measurement // 0.025
 
     }
 
