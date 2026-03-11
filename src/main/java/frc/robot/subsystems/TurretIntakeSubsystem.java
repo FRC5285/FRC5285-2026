@@ -18,7 +18,7 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(TurretIntakeConstants.motorCanId);
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
-    double intakeSpeed = TurretIntakeConstants.intakeSpeed; // radians per sec, target speed
+    double intakeSpeed = 0.0; // radians per sec, target speed
 
     public TurretIntakeSubsystem() {
         TalonFXConfiguration configs = new TalonFXConfiguration();

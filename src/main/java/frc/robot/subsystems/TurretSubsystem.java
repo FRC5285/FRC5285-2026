@@ -18,7 +18,6 @@ import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -43,16 +42,12 @@ public class TurretSubsystem extends SubsystemBase {
 
     private final ProfiledPIDController turretPID = new ProfiledPIDController(TurretConstants.kp, TurretConstants.ki, TurretConstants.kd, new TrapezoidProfile.Constraints(TurretConstants.turretMaxV, TurretConstants.turretMaxA));
     private final SimpleMotorFeedforward turretFeedforward = new SimpleMotorFeedforward(TurretConstants.kS, TurretConstants.kV);
-    
+
     private double turretTargetPosition = 0;
     private double shooterTargetRPS = 0;
 
-    private String getLastStatus_debug = "";
-    private int getLastiterations_debug; 
     private double easyCRT;
 
-    //DutyCycleEncoder shooter_debug = new DutyCycleEncoder(3);
-    private DutyCycleEncoder turret_debug = new DutyCycleEncoder(2);
     private DutyCycleEncoder encoderA = new DutyCycleEncoder(TurretConstants.channel_a);
     private DutyCycleEncoder encoderB = new DutyCycleEncoder(TurretConstants.channel_b);
 
@@ -68,7 +63,7 @@ public class TurretSubsystem extends SubsystemBase {
                 /* encoder2Pinion */ 21)
             .withAbsoluteEncoderOffsets(Rotations.of(TurretConstants.encoderAOffset), Rotations.of(TurretConstants.encoderBOffset)) // set after mechanical zero
             .withMechanismRange(Rotations.of(TurretConstants.min_range), Rotations.of(TurretConstants.max_range))
-            .withMatchTolerance(Rotations.of(TurretConstants.match_tolerance)) // ~1.08 deg at encoder2 for the example ratio
+            .withMatchTolerance(Rotations.of(TurretConstants.match_tolerance))
             .withAbsoluteEncoderInversions(false, false)
     ;
 
@@ -113,24 +108,16 @@ public class TurretSubsystem extends SubsystemBase {
         turretAngle();
     }
 
-    // Other methods go here
-
     /**
      * The current turret angle, in rotations
      * 
      * @return the current turret angle, in rotations
      */
-
     public double turretAngle() {
         easyCrtSolver.getAngleOptional().ifPresent(mechAngle -> {
             this.easyCRT = mechAngle.in(Rotations);
         });
         return this.easyCRT;
-    }
-
-    private void calculate_debug_values() {
-        getLastStatus_debug = easyCrtSolver.getLastStatus().name();
-        getLastiterations_debug = easyCrtSolver.getLastIterations();
     }
 
     public void resetPIDs() {
@@ -142,34 +129,33 @@ public class TurretSubsystem extends SubsystemBase {
     public void periodic() {
         turretAngle();
 
-        // shooterTargetRPS = turret_debug.get() * 100;
-        shooterTargetRPS = 0.0;
-        // shooterTargetRPS = Math.min(shooterTargetRPS, 10);
-        this.turretTargetPosition = turret_debug.get() - 0.5;
+        shooterTargetRPS = this.positionMath.getFlywheelSpeedTarget();
 
-        this.turretTargetPosition = Math.min(0.25, Math.max(-0.25, this.turretTargetPosition));
+        this.turretTargetPosition = this.positionMath.getTurretRotationTarget() * (180.0 / Math.PI);
+        this.turretTargetPosition = Math.min(TurretConstants.turretPIDMax, Math.max(TurretConstants.turretPIDMin, this.turretTargetPosition));
 
-        calculate_debug_values();
+        if (!this.easyCrtSolver.getLastStatus().name().equals("OK")) {
+            this.turretTargetPosition = this.easyCRT;
+        }
         double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
         double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
         turretMotor.setVoltage(-(turretPIDCalc + turretFFCalc));
+
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1));
         shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));        
     }
 
     @Override
     public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("easycrt output", () -> this.easyCRT, null);
-        builder.addIntegerProperty("getlastinterations", () -> this.getLastiterations_debug, null);
-        builder.addStringProperty("getlaststatus", () -> this.getLastStatus_debug, null);
-        builder.addDoubleProperty("turret target", () -> this.turretTargetPosition,null);
-        builder.addDoubleProperty("encoder A", () -> (this.encoderA.get()), null);
-        builder.addDoubleProperty("encoder B", () -> (this.encoderB.get()), null);
-        builder.addDoubleProperty("turret error", () -> Math.abs(this.turretTargetPosition - this.easyCRT), null);
+        builder.addDoubleProperty("Easycrt output", () -> this.easyCRT, null);
+        builder.addDoubleProperty("Turret target", () -> this.turretTargetPosition,null);
+        builder.addDoubleProperty("Encoder A", () -> (this.encoderA.get()), null);
+        builder.addDoubleProperty("Encoder B", () -> (this.encoderB.get()), null);
+        builder.addDoubleProperty("Turret error", () -> Math.abs(this.turretTargetPosition - this.easyCRT), null);
 
-        builder.addDoubleProperty("shooter target RPS", () -> this.shooterTargetRPS, null);   
+        builder.addDoubleProperty("Shooter target RPS", () -> this.shooterTargetRPS, null);   
         builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null); 
-        builder.addDoubleProperty("error", () -> Math.abs(this.shooterTargetRPS + this.shooterMotor.getVelocity().getValueAsDouble()), null);
+        builder.addDoubleProperty("Shooter error", () -> Math.abs(this.shooterTargetRPS + this.shooterMotor.getVelocity().getValueAsDouble()), null);
 
         // builder.addDoubleProperty("kS", () -> this.turretFeedforward.getKs(), (newKs) -> {this.turretFeedforward.setKs(newKs); this.resetPIDs();});
         // builder.addDoubleProperty("kV", () -> this.turretFeedforward.getKv(), (newKv) -> {this.turretFeedforward.setKv(newKv); this.resetPIDs();});

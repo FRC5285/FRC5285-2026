@@ -22,14 +22,6 @@ public final class Constants {
 
     /** Constants for turret */
     public static class TurretConstants {
-        public static final double CruiseVelocity = 80;
-        public static final double ACceleration = 160;
-        public static final double Jerk = 1600;
-
-        public static final double S_ACceleration = 320;
-        public static final double S_Jerk = 420.69;
-
-
         public static final double kS = 0.0; //turret base
         public static final double kV = 11.2;
         public static final double kp = 80.0;
@@ -37,6 +29,9 @@ public final class Constants {
         public static final double kd = 0.0;
         public static final double turretMaxV = 3.0;
         public static final double turretMaxA = 5.0;
+        
+        public static final double S_ACceleration = 320;
+        public static final double S_Jerk = 420.69;
 
         public static final double S_kS = 0.0; //shooter
         public static final double S_kV = 0.12;
@@ -48,22 +43,18 @@ public final class Constants {
         public static final int motorCanId = 15;
         public static final int ShooterMotorCanId = 16;
         public static final int ShooterMotor2CanId = 17;
-        public static final double tolerance = 0.025;
-
-        public static final double m_steps = 1024.0;
 
         public static final int channel_a = 0;
         public static final int channel_b = 1;
  
-        public static final double shooter_ratio = 1.0;
-
-        public static final double convert_to_rotations_from_radians = 2 * Math.PI;
-
         public static final double encoderAOffset = -0.746;
         public static final double encoderBOffset = -0.0439;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
         public static final double match_tolerance = 0.02; //rotations
+
+        public static final double turretPIDMin = -0.25;
+        public static final double turretPIDMax = 0.25;
     }
 
     /** Constants for intake */
