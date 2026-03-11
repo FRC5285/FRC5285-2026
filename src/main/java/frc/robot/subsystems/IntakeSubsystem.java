@@ -83,7 +83,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public void periodic() {
         double pidCalc = this.lowerPID.calculate(this.getAngleRadians());
         double ffCalc = this.intakeFeedforward.calculate(getAngleRadians(), this.lowerPID.getSetpoint().velocity);
-        this.lower.setVoltage(pidCalc + ffCalc);
+        this.lower.setVoltage(-(pidCalc + ffCalc));
     }
 
     @Override
