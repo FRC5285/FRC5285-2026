@@ -32,9 +32,9 @@ public final class Constants {
 
         public static final double kS = 0.0; //turret base
         public static final double kV = 11.2;
-        public static final double kp = 8.0; 
-        public static final double ki = 0.2;
-        public static final double kd = 1.0;
+        public static final double kp = 80.0;
+        public static final double ki = 0.0;
+        public static final double kd = 0.0;
         public static final double turretMaxV = 3.0;
         public static final double turretMaxA = 5.0;
 
@@ -59,8 +59,8 @@ public final class Constants {
 
         public static final double convert_to_rotations_from_radians = 2 * Math.PI;
 
-        public static final double encoderAOffset = -0.868;
-        public static final double encoderBOffset = -0.0497;
+        public static final double encoderAOffset = -0.746;
+        public static final double encoderBOffset = -0.0439;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
         public static final double match_tolerance = 0.02; //rotations

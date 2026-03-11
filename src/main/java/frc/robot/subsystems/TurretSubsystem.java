@@ -171,9 +171,10 @@ public class TurretSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null); 
         builder.addDoubleProperty("error", () -> Math.abs(this.shooterTargetRPS + this.shooterMotor.getVelocity().getValueAsDouble()), null);
 
-        builder.addDoubleProperty("kS", () -> this.turretFeedforward.getKs(), (newKs) -> {this.turretFeedforward.setKs(newKs); this.resetPIDs();});
-        builder.addDoubleProperty("kV", () -> this.turretFeedforward.getKv(), (newKv) -> {this.turretFeedforward.setKv(newKv); this.resetPIDs();});
-        builder.addDoubleProperty("kP", () -> this.turretPID.getP(), (newP) -> {this.turretPID.setP(newP); this.resetPIDs();});
-        builder.addDoubleProperty("kD", () -> this.turretPID.getD(), (newD) -> {this.turretPID.setD(newD); this.resetPIDs();});
+        // builder.addDoubleProperty("kS", () -> this.turretFeedforward.getKs(), (newKs) -> {this.turretFeedforward.setKs(newKs); this.resetPIDs();});
+        // builder.addDoubleProperty("kV", () -> this.turretFeedforward.getKv(), (newKv) -> {this.turretFeedforward.setKv(newKv); this.resetPIDs();});
+        // builder.addDoubleProperty("kP", () -> this.turretPID.getP(), (newP) -> {this.turretPID.setP(newP); this.resetPIDs();});
+        // builder.addDoubleProperty("kI", () -> this.turretPID.getI(), (newI) -> {this.turretPID.setI(newI); this.resetPIDs();});
+        // builder.addDoubleProperty("kD", () -> this.turretPID.getD(), (newD) -> {this.turretPID.setD(newD); this.resetPIDs();});
     }
 }
