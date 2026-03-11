@@ -359,18 +359,18 @@ public final class Constants {
     /** Constants for storage rollers */
     public static class RollerConstants {
         public static final int ROLLER_MOTOR_ID=19;
-        public static final double speed=0.2;
-        public static final double fastSpeed = 0.8;
+        public static final double speed=0.0;
+        public static final double fastSpeed = 0.2;
     }
 
     /** Constants for the bucket outtake */
     public static class BucketOutConstants {
-    public static final int MOTOR_ID = 20;
-    public static final double SPEEDForwards = 0.6; // adjust as needed
-    public static final double SPEEDBackwards = -0.6;
-    public static final double forwardSeconds = 1.75;
-    public static final double backwardSeconds = 0.25;
-}
+        public static final int MOTOR_ID = 20;
+        public static final double SPEEDForwards = -0.4; // adjust as needed
+        public static final double SPEEDBackwards = 0.4;
+        public static final double forwardSeconds = 5.5;
+        public static final double backwardSeconds = 0.0;
+    }
         
     
 
@@ -380,11 +380,11 @@ public final class Constants {
         //**************CLIMB MOTOR CONSTANTS************
         public static final int climbMotorID = 23;
 
-        public static final double ckP = 6.0; //need to calibrate
+        public static final double ckP = 40.0; //need to calibrate
         public static final double ckI = 0.0; //need to calibrate
         public static final double ckD = 0.0; //need to calibrate
 
-        public static final double cmaxV = 0.5; //need to calibrate
+        public static final double cmaxV = 1.5; //need to calibrate
         public static final double cmaxA = 0.5; //need to calibrate
 
 
@@ -393,23 +393,24 @@ public final class Constants {
 
         public static final int encoderChannel = 3;
 
-        public static final double rotateInitialRotations = 0.0; //need to calibrate
-        public static final double rotateGoalRotations = 0.25; //need to calibrate
+        public static final double encoderStartRotations = 0.867 - 0.3;
+        public static final double rotateInitialRotations = 0.3; //need to calibrate
+        public static final double rotateGoalRotations = 0.8; //need to calibrate
 
-        public static final double rkP = 6.0; //need to calibrate
+        public static final double rkP = 36.0; //need to calibrate
         public static final double rkI = 0.0; //need to calibrate
         public static final double rkD = 0.0; //need to calibrate
 
-        public static final double rmaxV = 3.5; //need to calibrate
-        public static final double rmaxA = 2.5; //need to calibrate
+        public static final double rmaxV = 4.5; //need to calibrate
+        public static final double rmaxA = 3.5; //need to calibrate
 
         
         //**************LIDAR CONSTANTS************************
         public static final double maxExtension = 0.21; //distance between sensor and plate (meters)
 
-        public static final double middleExtension = 0.067; // auton climb distance
+        public static final double middleExtension = 0.06; // auton climb distance
 
-        public static final double minExtension = 0.05; //distance between sensor and plate (meters)
+        public static final double minExtension = 0.045; //distance between sensor and plate (meters)
 
         public static final double lidarOffset = 0.0; // Distance of lidar measurement - real measurement // 0.025
 

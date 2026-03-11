@@ -41,7 +41,7 @@ public class ClimbSubsystem extends SubsystemBase {
   private ProfiledPIDController rotatePID;
 
 
-  DutyCycleEncoder rotateEncoder = new DutyCycleEncoder(ClimbConstants.encoderChannel);
+  DutyCycleEncoder rotateEncoder = new DutyCycleEncoder(ClimbConstants.encoderChannel, 1.0, ClimbConstants.encoderStartRotations);
 
   private Rev2mDistanceSensor lidarSensor = new Rev2mDistanceSensor(Port.kMXP, Unit.kMillimeters, RangeProfile.kHighSpeed);
 
@@ -58,7 +58,7 @@ public class ClimbSubsystem extends SubsystemBase {
     rotatePID = new ProfiledPIDController(ClimbConstants.rkP, ClimbConstants.rkI, ClimbConstants.rkD, new TrapezoidProfile.Constraints(ClimbConstants.rmaxA, ClimbConstants.rmaxV));
     rotatePID.setGoal(ClimbConstants.rotateInitialRotations);
     rotatePID.setTolerance(0.075);
-    rotatePID.enableContinuousInput(0.0, 1.0);
+    // rotatePID.enableContinuousInput(0.0, 1.0);
 
     lidarSensor.setAutomaticMode(true);
 
@@ -140,7 +140,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
     double motorPosition = rotateEncoder.get();
     double rotateNewMotorSpeed = rotatePID.calculate(motorPosition);
-    rotateMotor.set(rotateNewMotorSpeed);
+    rotateMotor.setVoltage(rotateNewMotorSpeed);
   }
 
   @Override 
@@ -149,7 +149,5 @@ public class ClimbSubsystem extends SubsystemBase {
     builder.addDoubleProperty("Climb PID Goal", () -> this.climbPID.getGoal().position, null);
     builder.addDoubleProperty("Rotate PID Goal", () ->  this.rotatePID.getGoal().position, null);
     builder.addDoubleProperty("Rotate Motor Rotations", () -> this.rotateEncoder.get(), null);
-    builder.addDoubleProperty("Climb Motor Rotations", () -> this.rotateEncoder.get(), null);
-    builder.addDoubleProperty("Rotate Goal Rotations", () -> this.rotatePID.getGoal().position, null);
   }
 }
