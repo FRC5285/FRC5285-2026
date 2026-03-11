@@ -90,7 +90,7 @@ public class AutonSubsystem extends SubsystemBase {
         .andThen(this.turretIntake.beginIntake())
         .andThen(new WaitUntilCommand(() -> this.turretIntake.atTargetSpeed()).withTimeout(AutoConstants.turretIntakeMaxWaitTime))
         .andThen(this.bucketRollers.startFastCommand())
-        .andThen(this.bucketOuttake.startCommand()); // bucketOuttake.startCommand() runs forever
+        .andThen(this.bucketOuttake.startCommand());
     }
 
     /**

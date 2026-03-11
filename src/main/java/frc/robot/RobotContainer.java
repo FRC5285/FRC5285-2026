@@ -31,7 +31,7 @@ import frc.robot.util.ShiftUtil;
 
 public class RobotContainer implements Sendable {
 
-    //private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
+    private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
     /** Handles most of the math for the robot. Do not create new instances in a subsystem, instead import this specific object in the constructor. */
     private final PositionMath positionMath = new PositionMath();
@@ -44,7 +44,7 @@ public class RobotContainer implements Sendable {
 
     private final RollerSubsystem bucketRollers = new RollerSubsystem();
 
-    private final BucketOutSubsystem bucketOuttake = new BucketOutSubsystem();
+    private final BucketOutSubsystem bucketOuttake = new BucketOutSubsystem(this.positionMath);
 
     private final ClimbSubsystem climber = new ClimbSubsystem();
 
@@ -195,6 +195,7 @@ public class RobotContainer implements Sendable {
         this.drive.HeadingController.reset();
         this.groundIntake.resetPIDs();
         this.climber.resetPID();
+        this.turret.resetPIDs();
     }
 
     public Command getAutonomousCommand() {

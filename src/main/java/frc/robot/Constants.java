@@ -333,6 +333,9 @@ public final class Constants {
         public static final double turretPIDMin = -0.25;
         public static final double turretPIDMax = 0.25;
 
+        public static final double shooterMaxSpeed = 100.0;
+        public static final double shooterMinSpeed = 0.0;
+
         /** Tolerance of turret PID, in rotations - used to determine if shooter should shoot */
         public static final double turretTolerance = 0.03;
     }

@@ -129,7 +129,8 @@ public class TurretSubsystem extends SubsystemBase {
     public void periodic() {
         turretAngle();
 
-        shooterTargetRPS = this.positionMath.getFlywheelSpeedTarget();
+        this.shooterTargetRPS = this.positionMath.getFlywheelSpeedTarget();
+        this.shooterTargetRPS = Math.min(TurretConstants.shooterMaxSpeed, Math.max(TurretConstants.shooterMinSpeed, this.shooterTargetRPS));
 
         this.turretTargetPosition = this.positionMath.getTurretRotationTarget() * (180.0 / Math.PI);
         this.turretTargetPosition = Math.min(TurretConstants.turretPIDMax, Math.max(TurretConstants.turretPIDMin, this.turretTargetPosition));

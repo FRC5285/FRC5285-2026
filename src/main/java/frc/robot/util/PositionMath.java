@@ -26,7 +26,7 @@ public class PositionMath {
     private Supplier<Double> drivetrainVelocityY;
     private Supplier<Double> drivetrainVelocityRotation;
     private Supplier<Double> turretRotation;
-    private Supplier<Boolean> shootButton;
+    private Supplier<Boolean> robotShooting;
     private Supplier<Boolean> climbing;
 
     private Alliance robotAlliance;
@@ -48,7 +48,7 @@ public class PositionMath {
         this.drivetrainVelocityY = () -> 0.0;
         this.drivetrainVelocityRotation = () -> 0.0;
         this.turretRotation = () -> 0.0;
-        this.shootButton = () -> false;
+        this.robotShooting = () -> false;
         this.climbing = () -> false;
 
         // Set previous drivetrain rotation target
@@ -66,7 +66,8 @@ public class PositionMath {
      * @param drivetrainVelocityYSupplier Supplier for the drivetrain Field-Centric Y velocity
      * @param drivetrainVelocityRotationSupplier Supplier for the drivetrain angular velocity
      * @param turretRotationSupplier Supplier for the raw turret rotation, in rotations
-     * @param shootButtonSupplier Supplier for the shooter button
+     * @param shootingSupplier Supplier for if the robot is trying to shoot
+     * @param climbingSupplier Supplier for if the robot is climbing
      */
     public void setSuppliers(
         Supplier<Pose2d> drivetrainPoseSupplier,
@@ -74,7 +75,7 @@ public class PositionMath {
         Supplier<Double> drivetrainVelocityYSupplier,
         Supplier<Double> drivetrainVelocityRotationSupplier,
         Supplier<Double> turretRotationSupplier,
-        Supplier<Boolean> shootButtonSupplier,
+        Supplier<Boolean> shootingSupplier,
         Supplier<Boolean> climbingSupplier
     ) {
         // Set suppliers
@@ -83,7 +84,7 @@ public class PositionMath {
         this.drivetrainVelocityY = drivetrainVelocityYSupplier;
         this.drivetrainVelocityRotation = drivetrainVelocityRotationSupplier;
         this.turretRotation = turretRotationSupplier;
-        this.shootButton = shootButtonSupplier;
+        this.robotShooting = shootingSupplier;
         this.climbing = climbingSupplier;
 
         this.resetSide();
@@ -139,7 +140,7 @@ public class PositionMath {
         double robotX = this.drivetrainPose.get().getX();
         double blueRatio = Math.abs(FieldConstants.blueHubCenterX - robotX) / FieldConstants.bumpSlowdownDistance;
         double redRatio = Math.abs(FieldConstants.redHubCenterX - robotX) / FieldConstants.bumpSlowdownDistance;
-        double shootMult = this.shootButton.get() ? OperatorConstants.shootVelocityMultiplier : 1.0;
+        double shootMult = this.robotShooting.get() ? OperatorConstants.shootVelocityMultiplier : 1.0;
         return Math.min(shootMult, OperatorConstants.robotBumpSpeed + Math.min(blueRatio, redRatio) * OperatorConstants.variableBumpSpeed);
     }
 
@@ -212,6 +213,10 @@ public class PositionMath {
         // Save compute
         if (!this.lastCalcPose.equals(this.drivetrainPose.get())) {
             this.calculateShootVector();
+        }
+
+        if (!this.robotShooting.get()) {
+            return 0.0;
         }
 
         double dist = this.shootVector.getNorm();

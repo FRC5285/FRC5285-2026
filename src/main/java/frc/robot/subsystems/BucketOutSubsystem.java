@@ -9,15 +9,20 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 import frc.robot.Constants.BucketOutConstants;
+import frc.robot.util.PositionMath;
 
 public class BucketOutSubsystem extends SubsystemBase {
+
+    private final PositionMath positionMath;
 
     private final TalonFX rollerMotor; 
     private final DutyCycleOut dutyCycle = new DutyCycleOut(0);
     private boolean isOn = false;
     private boolean doReverse = false;
     
-    public BucketOutSubsystem() {
+    public BucketOutSubsystem(PositionMath positionMath) {
+        this.positionMath = positionMath;
+
         rollerMotor = new TalonFX(BucketOutConstants.MOTOR_ID);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
@@ -71,7 +76,7 @@ public class BucketOutSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-        if (this.isOn) {
+        if (this.isOn && this.positionMath.shouldShoot()) {
             double currentTime = Timer.getFPGATimestamp() % (BucketOutConstants.forwardSeconds + BucketOutConstants.backwardSeconds);
             if (currentTime < BucketOutConstants.forwardSeconds) {
                 this.spinForward();
