@@ -18,7 +18,7 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     private final TalonFX motor = new TalonFX(TurretIntakeConstants.motorCanId);
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
-    double intakeSpeed = TurretIntakeConstants.intakeSpeed; // radians per sec, target speed
+    double intakeSpeed = 0.0; // radians per sec, target speed
 
     public TurretIntakeSubsystem() {
         TalonFXConfiguration configs = new TalonFXConfiguration();
@@ -68,9 +68,13 @@ public class TurretIntakeSubsystem extends SubsystemBase {
 
     private Command setSpeed(double speed) {
         return runOnce(() -> {
-            this.intakeSpeed = speed;
-            motor.setControl(motionMagicRequest.withVelocity(this.intakeSpeed).withSlot(0));
+            this.setNewSpeed(speed);
         });
+    }
+
+    public void setNewSpeed(double speed) {
+        this.intakeSpeed = speed;
+        motor.setControl(motionMagicRequest.withVelocity(this.intakeSpeed).withSlot(0));
     }
 
     @Override
@@ -81,7 +85,7 @@ public class TurretIntakeSubsystem extends SubsystemBase {
     @Override
     public void initSendable(SendableBuilder builder) {
         builder.addDoubleProperty("Rotations per second", () -> this.motor.getVelocity().getValueAsDouble(), null);
-        builder.addDoubleProperty("Radians Per Second", () -> this.motor.getVelocity().getValueAsDouble() * 2 * Math.PI, null);
-        builder.addDoubleProperty("Goal", () -> this.intakeSpeed, null);
+        builder.addDoubleProperty("Goal", () -> this.intakeSpeed, (newSpeed) -> this.setNewSpeed(newSpeed));
+        builder.addDoubleProperty("error", () -> Math.abs(this.intakeSpeed - this.motor.getVelocity().getValueAsDouble()), null);
     }
 }
