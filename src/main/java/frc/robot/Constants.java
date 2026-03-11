@@ -311,10 +311,10 @@ public final class Constants {
         public static final int encoderChannel = 2;
         
         /** Encoder value when it is supposed to be at 0 (0 is when the intake is flat) */
-        public static final double encoderStartValue = 5.167; // is raised fully (90 degree) flat?
+        public static final double encoderStartValue = 3.1; // is raised fully (90 degree) flat?
         public static final double intakeLoweredValue = 0.0; // there are a few wires stopping the intake from being fully lowered
 
-        public static final double intakeRaisedValue = 1.386; // flimsy build so its variable
+        public static final double intakeRaisedValue = 1.26; // flimsy build so its variable
 
         public static final double gearRatio = 1.0 / 5.0; // motor -> encoder
 
