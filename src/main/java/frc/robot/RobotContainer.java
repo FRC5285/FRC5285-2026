@@ -126,6 +126,7 @@ public class RobotContainer implements Sendable {
             this.autonSubsystem.shootingOffFull()
         );
 
+        /*
         this.driverController.povLeft().onTrue(
             this.autonSubsystem.climbLeft(true)
             .andThen(this.drivetrain.applyRequest(() ->
@@ -143,6 +144,7 @@ public class RobotContainer implements Sendable {
                     .withRotationalRate(0.0)
             ))
         );
+        */
 
         this.secondController.leftBumper().onTrue(
             this.autonSubsystem.intakeUp()

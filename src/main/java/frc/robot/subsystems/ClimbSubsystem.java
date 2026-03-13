@@ -1,6 +1,6 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.hardware.TalonFX;
+// import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -30,12 +30,19 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
  * 2/19/2026
  * look into the tolerance for both PIDs because they're different from each other
  * enableContinuousOutput method
+ * 
+ * to reenable climber:
+ * uncomment the teleop start command in Robot.java
+ * uncomment the climb commands in RobotContainer.java
+ * uncomment the climb path constraints and the climb commands in AutonSubsystem.java
+ * remove the shootingofffull commands in the climb commands in AutonSubsystem.java
+ * uncomment the climb motor and rotate motor below
  */
 
 public class ClimbSubsystem extends SubsystemBase {
 
-  private TalonFX climbMotor;
-  private TalonFX rotateMotor;
+  // private TalonFX climbMotor;
+  // private TalonFX rotateMotor;
 
   private ProfiledPIDController climbPID;
   private ProfiledPIDController rotatePID;
@@ -47,13 +54,13 @@ public class ClimbSubsystem extends SubsystemBase {
 
   public ClimbSubsystem() {
 
-    climbMotor = new TalonFX(ClimbConstants.climbMotorID);
+    // climbMotor = new TalonFX(ClimbConstants.climbMotorID);
 
     climbPID = new ProfiledPIDController(ClimbConstants.ckP, ClimbConstants.ckI, ClimbConstants.ckD, new TrapezoidProfile.Constraints(ClimbConstants.cmaxA, ClimbConstants.cmaxV));
     climbPID.setGoal(ClimbConstants.maxExtension);
     climbPID.setTolerance(0.025);
 
-    rotateMotor = new TalonFX(ClimbConstants.rotateMotorID);
+    // rotateMotor = new TalonFX(ClimbConstants.rotateMotorID);
 
     rotatePID = new ProfiledPIDController(ClimbConstants.rkP, ClimbConstants.rkI, ClimbConstants.rkD, new TrapezoidProfile.Constraints(ClimbConstants.rmaxA, ClimbConstants.rmaxV));
     rotatePID.setGoal(ClimbConstants.rotateInitialRotations);
@@ -134,6 +141,7 @@ public class ClimbSubsystem extends SubsystemBase {
   //might have to invert 
   @Override
   public void periodic() {
+    /*
     double lidarPosition = getLidarMeters();
     double climbNewMotorSpeed = climbPID.calculate(lidarPosition);
     climbMotor.setVoltage(climbNewMotorSpeed);
@@ -141,6 +149,7 @@ public class ClimbSubsystem extends SubsystemBase {
     double motorPosition = rotateEncoder.get();
     double rotateNewMotorSpeed = rotatePID.calculate(motorPosition);
     rotateMotor.setVoltage(rotateNewMotorSpeed);
+    */
   }
 
   @Override 

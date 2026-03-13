@@ -33,7 +33,7 @@ public class AutonSubsystem extends SubsystemBase {
     private final PositionMath positionMath;
 
     private PathConstraints autonPathConstraints = new PathConstraints(AutoConstants.maxV, AutoConstants.maxA, AutoConstants.maxAngularV, AutoConstants.maxAngularA);
-    private PathConstraints climbPathConstraints = new PathConstraints(AutoConstants.climbMaxV, AutoConstants.climbMaxA, AutoConstants.climbMaxAngularV, AutoConstants.climbMaxAngularA);
+    // private PathConstraints climbPathConstraints = new PathConstraints(AutoConstants.climbMaxV, AutoConstants.climbMaxA, AutoConstants.climbMaxAngularV, AutoConstants.climbMaxAngularA);
 
     private SendableChooser<Integer> startPosition = new SendableChooser<>();
     private SendableChooser<Supplier<Command>> collectLocation = new SendableChooser<>();
@@ -265,16 +265,17 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.climbing = true;
         })
-        .alongWith(this.ledSubsystem.auton())
-        .alongWith(this.intakeUp())
-        .andThen(this.shootingOff())
-        .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerLeftPrepPose, this.climbPathConstraints))
-        .andThen(this.shootingOffStop())
-        .andThen(this.drivetrain.fineTunePID(FieldConstants.towerLeftFinalPose))
-        .andThen(inTeleop ? this.climber.Climb() : this.climber.AutonClimb())
+        // .alongWith(this.ledSubsystem.auton())
+        // .alongWith(this.intakeUp())
+        // .andThen(this.shootingOff())
+        // .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerLeftPrepPose, this.climbPathConstraints))
+        // .andThen(this.shootingOffStop())
+        // .andThen(this.drivetrain.fineTunePID(FieldConstants.towerLeftFinalPose))
+        // .andThen(inTeleop ? this.climber.Climb() : this.climber.AutonClimb())
+        .andThen(this.shootingOffFull())
         .andThen(runOnce(() -> {
             this.climbing = false;
-            this.positionMath.resetLastRotation();
+            // this.positionMath.resetLastRotation();
         }))
         .andThen(this.ledsCommand());
     }
@@ -289,16 +290,17 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.climbing = true;
         })
-        .alongWith(this.ledSubsystem.auton())
-        .alongWith(this.intakeUp())
-        .andThen(this.shootingOff())
-        .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerRightPrepPose, this.climbPathConstraints))
-        .andThen(this.shootingOffStop())
-        .andThen(this.drivetrain.fineTunePID(FieldConstants.towerRightFinalPose))
-        .andThen(inTeleop ? this.climber.Climb() : this.climber.AutonClimb())
+        // .alongWith(this.ledSubsystem.auton())
+        // .alongWith(this.intakeUp())
+        // .andThen(this.shootingOff())
+        // .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.towerRightPrepPose, this.climbPathConstraints))
+        // .andThen(this.shootingOffStop())
+        // .andThen(this.drivetrain.fineTunePID(FieldConstants.towerRightFinalPose))
+        // .andThen(inTeleop ? this.climber.Climb() : this.climber.AutonClimb())
+        .andThen(this.shootingOffFull())
         .andThen(runOnce(() -> {
             this.climbing = false;
-            this.positionMath.resetLastRotation();
+            // this.positionMath.resetLastRotation();
         }))
         .andThen(this.ledsCommand());
     }
