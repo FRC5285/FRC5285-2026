@@ -11,10 +11,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import frc.robot.Constants.ClimbConstants;
-import com.revrobotics.Rev2mDistanceSensor;
-import com.revrobotics.Rev2mDistanceSensor.Port;
-import com.revrobotics.Rev2mDistanceSensor.RangeProfile;
-import com.revrobotics.Rev2mDistanceSensor.Unit;
+// import com.revrobotics.Rev2mDistanceSensor;
+// import com.revrobotics.Rev2mDistanceSensor.Port;
+// import com.revrobotics.Rev2mDistanceSensor.RangeProfile;
+// import com.revrobotics.Rev2mDistanceSensor.Unit;
 
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 
@@ -37,6 +37,7 @@ import edu.wpi.first.wpilibj.DutyCycleEncoder;
  * uncomment the climb path constraints and the climb commands in AutonSubsystem.java
  * remove the shootingofffull commands in the climb commands in AutonSubsystem.java
  * uncomment the climb motor and rotate motor below
+ * uncomment the lidar sensor (3 places)
  */
 
 public class ClimbSubsystem extends SubsystemBase {
@@ -50,7 +51,7 @@ public class ClimbSubsystem extends SubsystemBase {
 
   DutyCycleEncoder rotateEncoder = new DutyCycleEncoder(ClimbConstants.encoderChannel, 1.0, ClimbConstants.encoderStartRotations);
 
-  private Rev2mDistanceSensor lidarSensor = new Rev2mDistanceSensor(Port.kMXP, Unit.kMillimeters, RangeProfile.kHighSpeed);
+  // private Rev2mDistanceSensor lidarSensor = new Rev2mDistanceSensor(Port.kMXP, Unit.kMillimeters, RangeProfile.kHighSpeed);
 
   public ClimbSubsystem() {
 
@@ -67,7 +68,7 @@ public class ClimbSubsystem extends SubsystemBase {
     rotatePID.setTolerance(0.075);
     // rotatePID.enableContinuousInput(0.0, 1.0);
 
-    lidarSensor.setAutomaticMode(true);
+    // lidarSensor.setAutomaticMode(true);
 
     SendableRegistry.add(this, "Climb");
     SmartDashboard.putData(this);
@@ -124,7 +125,8 @@ public class ClimbSubsystem extends SubsystemBase {
   //gets the lidar distance
   public double getLidarMeters() {
 
-    return lidarSensor.getRange() / 1000.0 - ClimbConstants.lidarOffset;
+    // return lidarSensor.getRange() / 1000.0 - ClimbConstants.lidarOffset;
+    return 0.0;
   }
 
   // add new method "public boolean isUnclimbed()" - returns if goal positions are at unclimbed positions and pids are in tolerance
