@@ -230,8 +230,8 @@ public class PositionMath {
      * @return if the error for the shoot on the move calculation is smaller than acceptable and the turret rotation is good
      */
     public boolean shouldShoot() {
-        return this.timeOfFlightTable.getCalcError() < LookupTableConstants.acceptableError
-        && Math.abs(this.turretRotation.get() * 2.0 * Math.PI - this.getTurretRotationTarget()) < TurretConstants.turretTolerance;
+        return this.timeOfFlightTable.getCalcError() < LookupTableConstants.acceptableError;
+        // && Math.abs(this.turretRotation.get() * 2.0 * Math.PI - this.getTurretRotationTarget()) < TurretConstants.turretTolerance;
     }
 
     /**

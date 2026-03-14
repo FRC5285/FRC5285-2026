@@ -83,26 +83,31 @@ public class RobotContainer implements Sendable {
         // Configure controller bindings
         this.configureDrivetrainBinding();
         this.configureBindings();
-        this.configureOtherTriggers();
+        // this.configureOtherTriggers();
+        // this.configureTestBindings();
 
         // Telemetry
         SendableRegistry.add(this, "RobotContainer");
         SmartDashboard.putData(this);
     }
 
+    private void configureTestBindings() {
+        // this.driverController.a().onTrue(this.bucketRollers.startFastCommand().alongWith(this.bucketOuttake.startCommand()));
+        // this.driverController.a().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
+        // this.driverController.x().onTrue(this.bucketRollers.reverseCommand().alongWith(this.bucketOuttake.setReverse()));
+        // this.driverController.x().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
+        this.driverController.a().onTrue(this.groundIntake.lowerIntake());
+        this.driverController.y().onTrue(this.groundIntake.raiseIntake());
+        this.driverController.b().onTrue(this.groundIntake.beginIntake());
+        this.driverController.b().onFalse(this.groundIntake.endIntake());
+        this.driverController.x().onTrue(this.groundIntake.reverseIntake());
+        this.driverController.x().onFalse(this.groundIntake.endIntake());
+    }
+ 
     /** Configures the drivetrain drive commands */
     private void configureDrivetrainBinding() {
         // Default command (auto rotation)
         this.drivetrain.setDefaultCommand(
-            this.drivetrain.applyRequest(() ->
-                this.drive.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
-                    .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
-                    .withTargetDirection(this.positionMath.drivetrainRotationAmount())
-            )
-        );
-
-        // Manual rotation when not over bump and with right bumper button down
-        new Trigger(() -> !this.positionMath.bumpTurn() && this.driverController.leftBumper().getAsBoolean()).whileTrue(
             this.drivetrain.applyRequest(() ->
                 this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
                     .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
@@ -110,10 +115,27 @@ public class RobotContainer implements Sendable {
             )
         );
 
+        // this.drivetrain.setDefaultCommand(
+        //     this.drivetrain.applyRequest(() ->
+        //         this.drive.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
+        //             .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
+        //             .withTargetDirection(this.positionMath.drivetrainRotationAmount())
+        //     )
+        // );
+
+        // Manual rotation when not over bump and with right bumper button down
+        // new Trigger(() -> !this.positionMath.bumpTurn() && this.driverController.leftBumper().getAsBoolean()).whileTrue(
+        //     this.drivetrain.applyRequest(() ->
+        //         this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
+        //             .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
+        //             .withRotationalRate(this.positionMath.driveRotationMath(driverController.getRightX(), driverController.getLeftTriggerAxis()))
+        //     )
+        // );
+
         // Use auto rotation
-        this.driverController.leftBumper().onFalse(
-            this.drivetrain.getDefaultCommand()
-        );
+        // this.driverController.leftBumper().onFalse(
+        //     this.drivetrain.getDefaultCommand()
+        // );
     }
 
     /** Configure controller bindings */
@@ -150,7 +172,7 @@ public class RobotContainer implements Sendable {
             this.autonSubsystem.intakeUp()
         );
 
-        this.secondController.leftBumper().onTrue(
+        this.secondController.rightBumper().onTrue(
             this.autonSubsystem.intakeDown()
         );
 

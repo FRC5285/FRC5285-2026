@@ -132,7 +132,7 @@ public class TurretSubsystem extends SubsystemBase {
         this.shooterTargetRPS = this.positionMath.getFlywheelSpeedTarget();
         this.shooterTargetRPS = Math.min(TurretConstants.shooterMaxSpeed, Math.max(TurretConstants.shooterMinSpeed, this.shooterTargetRPS));
 
-        this.turretTargetPosition = this.positionMath.getTurretRotationTarget() * (180.0 / Math.PI);
+        this.turretTargetPosition = this.positionMath.getTurretRotationTarget() / (2.0 * Math.PI);
         this.turretTargetPosition = Math.min(TurretConstants.turretPIDMax, Math.max(TurretConstants.turretPIDMin, this.turretTargetPosition));
 
         if (!this.easyCrtSolver.getLastStatus().name().equals("OK")) {
@@ -153,6 +153,7 @@ public class TurretSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Encoder A", () -> (this.encoderA.get()), null);
         builder.addDoubleProperty("Encoder B", () -> (this.encoderB.get()), null);
         builder.addDoubleProperty("Turret error", () -> Math.abs(this.turretTargetPosition - this.easyCRT), null);
+        builder.addStringProperty("turret debug", () -> this.easyCrtSolver.getLastStatus().name(), null);
 
         builder.addDoubleProperty("Shooter target RPS", () -> this.shooterTargetRPS, null);   
         builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null); 

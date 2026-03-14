@@ -324,8 +324,8 @@ public final class Constants {
         public static final int channel_a = 0;
         public static final int channel_b = 1;
  
-        public static final double encoderAOffset = -0.746;
-        public static final double encoderBOffset = -0.0439;
+        public static final double encoderAOffset = -0.222;
+        public static final double encoderBOffset = -0.517;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
         public static final double match_tolerance = 0.02; //rotations
@@ -357,7 +357,7 @@ public final class Constants {
         public static final double kS = 0.0;
         public static final double kG = 0.35;
         public static final double kV = 2.5;
-        public static final double kP = 0.0;
+        public static final double kP = 1.0;
         public static final double kI = 0.0;
         public static final double kD = 0.0;
         public static final double maxVel = 2.0; // for trapezoidal profile; max velocity in rotations/second
@@ -401,7 +401,7 @@ public final class Constants {
     /** Constants for the bucket outtake */
     public static class BucketOutConstants {
         public static final int MOTOR_ID = 20;
-        public static final double SPEEDForwards = -0.4; // adjust as needed
+        public static final double SPEEDForwards = -1.0; // adjust as needed
         public static final double SPEEDBackwards = 0.4;
         public static final double forwardSeconds = 5.5;
         public static final double backwardSeconds = 0.0;
