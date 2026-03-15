@@ -80,6 +80,8 @@ public class RobotContainer implements Sendable {
             () -> this.autonSubsystem.isClimbing()
         );
 
+        // TO DO: RECONFIGURE INTAKE CONSTANTS!!!!!
+
         // Configure controller bindings
         this.configureDrivetrainBinding();
         this.configureBindings();

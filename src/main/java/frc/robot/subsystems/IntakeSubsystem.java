@@ -90,16 +90,16 @@ public class IntakeSubsystem extends SubsystemBase {
         double pidCalc = this.lowerPID.calculate(this.getAngleRadians());
         double ffCalc = this.intakeFeedforward.calculate(getAngleRadians(), this.lowerPID.getSetpoint().velocity);
         if (this.getAngleRadians() <= IntakeConstants.intakeLoweredEnoughValue && this.canShutOffLower && this.doingIntake) {
-            this.lower.setVoltage(1.0);
+            this.lower.setVoltage(0.0); // 0.0
             this.resetPIDs();
         } else if (this.getAngleRadians() <= IntakeConstants.intakeLoweredEnoughValue && this.canShutOffLower && !this.doingIntake) {
             this.lower.setVoltage(0.0);
             this.resetPIDs();
         } else if (this.getAngleRadians() >= 1.15 && this.canShutOffLower) {
-            this.lower.setVoltage(9.0);
+            this.lower.setVoltage(0.0); // 9.0
             this.resetPIDs();
         } else {
-            this.lower.setVoltage(-(pidCalc + ffCalc));
+            // this.lower.setVoltage((pidCalc + ffCalc));
         }
     }
 

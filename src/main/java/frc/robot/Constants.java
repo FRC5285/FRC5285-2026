@@ -328,8 +328,8 @@ public final class Constants {
         public static final int channel_a = 0;
         public static final int channel_b = 1;
  
-        public static final double encoderAOffset = -0.228;
-        public static final double encoderBOffset = -0.476;
+        public static final double encoderAOffset = -0.487;
+        public static final double encoderBOffset = -0.111;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
         public static final double match_tolerance = 0.03; //rotations
@@ -362,16 +362,16 @@ public final class Constants {
         public static final double gearRatio = 1.0 / 5.0; // motor -> encoder
 
         public static final double kS = 0.0;
-        public static final double kG = 0.35;
-        public static final double kV = 3.5; // 2.5
-        public static final double kP = 1.0;
+        public static final double kG = 0.0; // 0.35
+        public static final double kV = 0.0; // 3.5
+        public static final double kP = 0.0; // 1.0
         public static final double kI = 0.0;
         public static final double kD = 0.0;
         public static final double maxVel = 2.0; // for trapezoidal profile; max velocity in rotations/second
         public static final double maxAcc = 1.0; // max acceleration in rotations/second/second
 
         // intake settings
-        public static final double intakeVolts = 12.0;
+        public static final double intakeVolts = 0.0; // 0.0
 
     }
 
@@ -402,7 +402,7 @@ public final class Constants {
     public static class RollerConstants {
         public static final int ROLLER_MOTOR_ID=19;
         public static final double speed=0.0;
-        public static final double fastSpeed = 0.2;
+        public static final double fastSpeed = 0.0; // 0.2
     }
 
     /** Constants for the bucket outtake */
