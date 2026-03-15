@@ -25,6 +25,8 @@ public class IntakeSubsystem extends SubsystemBase {
     private final ArmFeedforward intakeFeedforward = new ArmFeedforward(IntakeConstants.kS, IntakeConstants.kG, IntakeConstants.kV);
     private final ProfiledPIDController lowerPID = new ProfiledPIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
 
+    private boolean canShutOffLower = false;
+    private boolean doingIntake = false;
     DutyCycleEncoder encoder = new DutyCycleEncoder(IntakeConstants.encoderChannel, 2.0 * Math.PI, IntakeConstants.encoderStartValue);
 
     public IntakeSubsystem() {
@@ -43,6 +45,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command beginIntake() {
         return runOnce(() -> {
             intakeMotor.setVoltage(IntakeConstants.intakeVolts);
+            this.doingIntake = true;
         });
     }
 
@@ -55,18 +58,21 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command endIntake() {
         return runOnce(() -> {
             intakeMotor.stopMotor();
+            this.doingIntake = false;
         });
     }
 
     public Command lowerIntake() {
         return runOnce(() -> {
             this.lowerPID.setGoal(IntakeConstants.intakeLoweredValue);
+            this.canShutOffLower = true;
         });
     }
 
     public Command raiseIntake() {
         return runOnce(() -> {
             this.lowerPID.setGoal(IntakeConstants.intakeRaisedValue);
+            this.canShutOffLower = false;
         });
     }
 
@@ -83,7 +89,18 @@ public class IntakeSubsystem extends SubsystemBase {
     public void periodic() {
         double pidCalc = this.lowerPID.calculate(this.getAngleRadians());
         double ffCalc = this.intakeFeedforward.calculate(getAngleRadians(), this.lowerPID.getSetpoint().velocity);
-        this.lower.setVoltage(-(pidCalc + ffCalc));
+        if (this.getAngleRadians() <= IntakeConstants.intakeLoweredEnoughValue && this.canShutOffLower && this.doingIntake) {
+            this.lower.setVoltage(1.0);
+            this.resetPIDs();
+        } else if (this.getAngleRadians() <= IntakeConstants.intakeLoweredEnoughValue && this.canShutOffLower && !this.doingIntake) {
+            this.lower.setVoltage(0.0);
+            this.resetPIDs();
+        } else if (this.getAngleRadians() >= 1.15 && this.canShutOffLower) {
+            this.lower.setVoltage(9.0);
+            this.resetPIDs();
+        } else {
+            this.lower.setVoltage(-(pidCalc + ffCalc));
+        }
     }
 
     @Override

@@ -362,6 +362,8 @@ public class PositionMath {
 
         double currentRotation = this.drivetrainPose.get().getRotation().getRotations();
         double r = this.shootVector.getAngle().getRotations() - (currentRotation + RobotConstants.turretAddedRotations);
+        if (r > 0.5) r = r - 1.0;
+        if (r < -0.5) r = r + 1.0;
 
         return r * 2 * Math.PI;
     }

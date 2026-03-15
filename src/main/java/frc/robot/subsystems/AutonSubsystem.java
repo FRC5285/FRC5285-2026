@@ -6,6 +6,7 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -102,9 +103,9 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.shooting = false;
         })
-        .andThen(this.bucketRollers.startCommand())
-        .andThen(this.turretIntake.reverseIntake())
-        .andThen(this.bucketOuttake.setReverse());
+        // .andThen(this.turretIntake.reverseIntake())
+        // .andThen(this.bucketOuttake.setReverse())
+        ;
     }
 
     /** Call a couple seconds after shootingOff() */
@@ -116,7 +117,7 @@ public class AutonSubsystem extends SubsystemBase {
     /** Full command to turn off shooting */
     public Command shootingOffFull() {
         return this.shootingOff()
-        .andThen(new WaitCommand(2.0))
+        .andThen(new WaitCommand(0.0))
         .andThen(this.shootingOffStop());
     }
 
@@ -130,16 +131,17 @@ public class AutonSubsystem extends SubsystemBase {
     
     /** command to end regurgitation */
     public Command stopRegurgitate() {
-        return this.groundIntake.beginIntake()
-        .andThen(this.bucketOuttake.stopCommand())
-        .andThen(this.bucketRollers.startCommand());
+        return this.bucketOuttake.stopCommand()
+        // .andThen(this.bucketRollers.startCommand())
+        ;
     }
 
     /** Move the ground intake down (begin intaking) */
     public Command intakeDown() {
         return this.groundIntake.lowerIntake()
-        .andThen(this.groundIntake.beginIntake())
-        .andThen(this.bucketRollers.startCommand());
+        // .andThen(this.groundIntake.beginIntake())
+        // .andThen(this.bucketRollers.startCommand())
+        ;
     }
 
     /** Move the ground intake up (stop intaking) */
@@ -169,9 +171,19 @@ public class AutonSubsystem extends SubsystemBase {
             this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition(this.startPosition.getSelected()));
         })
         .alongWith(this.ledSubsystem.auton())
-        .alongWith(this.intakeDown())
+        .andThen(AutoBuilder.pathfindToPoseFlipped(this.autonInitialShootPose(this.startPosition.getSelected()), this.autonPathConstraints))
+        .andThen(this.shootingOn())
+        .andThen(new WaitCommand(4.0))
+        .andThen(this.shootingOffFull())
+        .andThen(this.intakeDown())
+        .andThen(this.groundIntake.beginIntake())
         .andThen(this.collectLocation.getSelected().get())
+        .andThen(this.groundIntake.endIntake())
         .andThen(this.climbCommand.getSelected().get());
+    }
+
+    private Pose2d autonInitialShootPose(int startPoseNumber) {
+        return startPoseNumber <= 0 ? FieldConstants.blueLeftShootPose : FieldConstants.blueRightShootPose;
     }
 
     /**
@@ -187,6 +199,7 @@ public class AutonSubsystem extends SubsystemBase {
             path = null;
         }
         return AutoBuilder.pathfindThenFollowPath(path, autonPathConstraints)
+        .andThen(this.intakeUp())
         .andThen(this.shootingOn())
         .andThen(new WaitCommand(AutoConstants.shootTime));
     }
@@ -200,6 +213,7 @@ public class AutonSubsystem extends SubsystemBase {
         return AutoBuilder.pathfindToPoseFlipped(FieldConstants.blueOutpostParkPose, autonPathConstraints)
         .andThen(new WaitCommand(AutoConstants.outpostWaitTime))
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.blueOutpostShootPose, autonPathConstraints))
+        .andThen(this.intakeUp())
         .andThen(this.shootingOn())
         .andThen(new WaitCommand(AutoConstants.shootTime));
     }
@@ -242,6 +256,7 @@ public class AutonSubsystem extends SubsystemBase {
      */
     public Command neutralZoneCollection(PathPlannerPath path) {
         return AutoBuilder.pathfindThenFollowPath(path, autonPathConstraints)
+        .andThen(this.intakeUp())
         .andThen(this.shootingOn())
         .andThen(new WaitCommand(AutoConstants.shootMoreTime));
     }

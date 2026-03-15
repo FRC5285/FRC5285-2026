@@ -96,14 +96,14 @@ public class RobotContainer implements Sendable {
         // this.driverController.a().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
         // this.driverController.x().onTrue(this.bucketRollers.reverseCommand().alongWith(this.bucketOuttake.setReverse()));
         // this.driverController.x().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
-        this.driverController.a().onTrue(this.groundIntake.lowerIntake());
-        this.driverController.y().onTrue(this.groundIntake.raiseIntake());
+        this.driverController.a().onTrue(this.autonSubsystem.intakeDown());
+        this.driverController.y().onTrue(this.autonSubsystem.intakeUp());
         this.driverController.b().onTrue(this.groundIntake.beginIntake());
         this.driverController.b().onFalse(this.groundIntake.endIntake());
         this.driverController.x().onTrue(this.groundIntake.reverseIntake());
         this.driverController.x().onFalse(this.groundIntake.endIntake());
     }
- 
+
     /** Configures the drivetrain drive commands */
     private void configureDrivetrainBinding() {
         // Default command (auto rotation)
@@ -182,6 +182,14 @@ public class RobotContainer implements Sendable {
         
         this.secondController.rightTrigger().onFalse(
             this.autonSubsystem.stopRegurgitate()
+        );
+
+        this.secondController.leftTrigger().onTrue(
+            this.groundIntake.beginIntake()
+        );
+
+        this.secondController.leftTrigger().onFalse(
+            this.groundIntake.endIntake()
         );
     }
 

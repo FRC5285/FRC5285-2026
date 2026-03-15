@@ -137,10 +137,13 @@ public class TurretSubsystem extends SubsystemBase {
 
         if (!this.easyCrtSolver.getLastStatus().name().equals("OK")) {
             this.turretTargetPosition = this.easyCRT;
+            this.resetPIDs();
+            turretMotor.setVoltage(0.0);
+        } else {
+            double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
+            double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
+            turretMotor.setVoltage(-(turretPIDCalc + turretFFCalc));
         }
-        double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
-        double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
-        turretMotor.setVoltage(-(turretPIDCalc + turretFFCalc));
 
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1));
         shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));        

@@ -57,7 +57,7 @@ public final class Constants {
         public static final double robotBumpSpeed = 0.15;
 
         /** Robot speed multiplier when shooting */
-        public static final double shootVelocityMultiplier = 0.2;
+        public static final double shootVelocityMultiplier = 0.5;
 
         /** Changeable speed for speed over bump */
         public static final double variableBumpSpeed = 1.0 - robotBumpSpeed;
@@ -96,10 +96,10 @@ public final class Constants {
         public static final double outpostWaitTime = 3.0;
 
         /** How long to shoot */
-        public static final double shootTime = 5.0;
+        public static final double shootTime = 10.0;
 
         /** How long to shoot when there is more fuel */
-        public static final double shootMoreTime = 6.0;
+        public static final double shootMoreTime = 10.0;
 
         /** Max time to wait for turret intake to get up to speed */
         public static final double turretIntakeMaxWaitTime = 1.0;
@@ -183,7 +183,11 @@ public final class Constants {
         public static final Pose2d blueOutpostParkPose = new Pose2d(blueOutpostTag.getX() + bumperOutpostDistance + (RobotConstants.robotWidthBumpers / 2.0), blueOutpostTag.getY(), new Rotation2d(Math.PI));
 
         /** Pose of the robot when shooting after getting fuel from the blue outpost */
-        public static final Pose2d blueOutpostShootPose = new Pose2d(2.0, 2.5, new Rotation2d(Math.PI));
+        public static final Pose2d blueOutpostShootPose = new Pose2d(2.5, 2.5, new Rotation2d(-3.0 * Math.PI / 4.0));
+
+        public static final Pose2d blueLeftShootPose = new Pose2d(2.5, 5.5, new Rotation2d(3.0 * Math.PI / 4.0));
+
+        public static final Pose2d blueRightShootPose = new Pose2d(2.5, 2.5, new Rotation2d(-3.0 * Math.PI / 4.0));
 
         /** The pose between the apriltags on the blue tower */
         public static final Pose2d blueTowerTags = new Pose2d(0.0080772, 3.9616126, new Rotation2d());
@@ -304,8 +308,8 @@ public final class Constants {
         public static final double kp = 80.0;
         public static final double ki = 0.0;
         public static final double kd = 0.0;
-        public static final double turretMaxV = 3.0;
-        public static final double turretMaxA = 5.0;
+        public static final double turretMaxV = 2.0;
+        public static final double turretMaxA = 2.0;
         
         public static final double S_ACceleration = 320;
         public static final double S_Jerk = 420.69;
@@ -324,11 +328,11 @@ public final class Constants {
         public static final int channel_a = 0;
         public static final int channel_b = 1;
  
-        public static final double encoderAOffset = -0.222;
-        public static final double encoderBOffset = -0.517;
+        public static final double encoderAOffset = -0.228;
+        public static final double encoderBOffset = -0.476;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
-        public static final double match_tolerance = 0.02; //rotations
+        public static final double match_tolerance = 0.03; //rotations
 
         public static final double turretPIDMin = -0.25;
         public static final double turretPIDMax = 0.25;
@@ -350,21 +354,24 @@ public final class Constants {
         public static final double encoderStartValue = 3.1; // is raised fully (90 degree) flat?
         public static final double intakeLoweredValue = 0.205; // there are a few wires stopping the intake from being fully lowered
 
-        public static final double intakeRaisedValue = 1.4; // flimsy build so its variable
+        public static final double intakeRaisedValue = 1.15; // flimsy build so its variable
+
+        public static final double intakeLowerLowerValue = 0.12;
+        public static final double intakeLoweredEnoughValue = 0.35;
 
         public static final double gearRatio = 1.0 / 5.0; // motor -> encoder
 
         public static final double kS = 0.0;
         public static final double kG = 0.35;
-        public static final double kV = 2.5;
+        public static final double kV = 3.5; // 2.5
         public static final double kP = 1.0;
         public static final double kI = 0.0;
         public static final double kD = 0.0;
         public static final double maxVel = 2.0; // for trapezoidal profile; max velocity in rotations/second
-        public static final double maxAcc = 0.5; // max acceleration in rotations/second/second
+        public static final double maxAcc = 1.0; // max acceleration in rotations/second/second
 
         // intake settings
-        public static final double intakeVolts = 8.0;
+        public static final double intakeVolts = 12.0;
 
     }
 
