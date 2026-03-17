@@ -33,10 +33,10 @@ public final class Constants {
         public static final double S_ACceleration = 320;
         public static final double S_Jerk = 420.69;
 
-        public static final double S_kS = 0.0; //shooter
-        public static final double S_kV = 0.12;
-        public static final double S_kA = 0.0;
-        public static final double S_kp = 0.1;
+        public static final double S_kS = 0.17255; //shooter
+        public static final double S_kV = 0.11311;
+        public static final double S_kA = 0.0050611;
+        public static final double S_kp = 0.10589;
         public static final double S_ki = 0.0;
         public static final double S_kd = 0.0;
         /** The CAN ID for the motor */
