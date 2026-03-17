@@ -67,10 +67,10 @@ public final class Constants {
         public static final int motorCanId = 18;
 
         // arbitrary values (for now)
-        public static final double kS = 0.0;
-        public static final double kV = 0.1;
-        public static final double kA = 0.0;
-        public static final double kP = 0.0;
+        public static final double kS = 0.13514;
+        public static final double kV = 0.093187;
+        public static final double kA = 0.00075853;
+        public static final double kP = 0.035319;
         public static final double kI = 0.0;
         public static final double kD = 0.0;
 
