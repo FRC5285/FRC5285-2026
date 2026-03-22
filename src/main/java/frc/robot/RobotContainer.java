@@ -86,7 +86,7 @@ public class RobotContainer implements Sendable {
         this.configureDrivetrainBinding();
         this.configureBindings();
         // this.configureOtherTriggers();
-        // this.configureTestBindings();
+        this.configureTestBindings();
 
         // Telemetry
         SendableRegistry.add(this, "RobotContainer");
@@ -94,12 +94,12 @@ public class RobotContainer implements Sendable {
     }
 
     private void configureTestBindings() {
-        // this.driverController.a().onTrue(this.bucketRollers.startFastCommand().alongWith(this.bucketOuttake.startCommand()));
-        // this.driverController.a().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
-        // this.driverController.x().onTrue(this.bucketRollers.reverseCommand().alongWith(this.bucketOuttake.setReverse()));
-        // this.driverController.x().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
-        this.driverController.a().onTrue(this.autonSubsystem.intakeDown());
-        this.driverController.y().onTrue(this.autonSubsystem.intakeUp());
+        this.driverController.a().onTrue(this.bucketRollers.startFastCommand().alongWith(this.bucketOuttake.startCommand()));
+        this.driverController.a().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
+        //this.driverController.x().onTrue(this.bucketRollers.reverseCommand().alongWith(this.bucketOuttake.setReverse()));
+        //this.driverController.x().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
+        // this.driverController.a().onTrue(this.autonSubsystem.intakeDown());
+        // this.driverController.y().onTrue(this.autonSubsystem.intakeUp());
         this.driverController.b().onTrue(this.groundIntake.beginIntake());
         this.driverController.b().onFalse(this.groundIntake.endIntake());
         this.driverController.x().onTrue(this.groundIntake.reverseIntake());
@@ -111,11 +111,22 @@ public class RobotContainer implements Sendable {
         // Default command (auto rotation)
         this.drivetrain.setDefaultCommand(
             this.drivetrain.applyRequest(() ->
-                this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
-                    .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
-                    .withRotationalRate(this.positionMath.driveRotationMath(driverController.getRightX(), driverController.getLeftTriggerAxis()))
+                this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTriggerAxis()))
+                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTriggerAxis()))
+                    .withRotationalRate(this.positionMath.driveRotationMath(this.positionMath.calcRotLimit(driverController.getRightX()), driverController.getLeftTriggerAxis()))
             )
         );
+
+        // Auto bump rotation
+        new Trigger(() -> this.positionMath.bumpTurn()).whileTrue(
+            this.drivetrain.applyRequest(() ->
+                this.drive.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTriggerAxis()))
+                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTriggerAxis()))
+                    .withTargetDirection(this.positionMath.drivetrainRotationAmount())
+            )
+        );
+
+        // to do: new autorotate on bump command
 
         // this.drivetrain.setDefaultCommand(
         //     this.drivetrain.applyRequest(() ->
@@ -226,6 +237,7 @@ public class RobotContainer implements Sendable {
     /** Resets the PIDs. Runs when robot is enabled. */
     public void resetPIDs() {
         this.positionMath.resetLastRotation();
+        this.positionMath.resetControllerLimiters();
         this.drive.HeadingController.reset();
         this.groundIntake.resetPIDs();
         this.climber.resetPID();

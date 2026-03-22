@@ -33,7 +33,13 @@ public final class Constants {
         public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
         
         /** Max robot rotation rate, in radians per second (not the real one, just the driver limit) */
-        public static final double maxAngularRate = 2 * Math.PI;
+        public static final double maxAngularRate = 4 * Math.PI;
+
+        /** Gets to max speed in 1/driverAccelLimit seconds */
+        public static final double driverAccelLimit = 2.0;
+
+        /** Gets to max rotation speed in 1/driverRotAccelLimit seconds */
+        public static final double driverRotAccelLimit = 2.0;
 
         /** The P value for the auton drive PID */
         public static final double driveP = 10.0;
@@ -41,7 +47,7 @@ public final class Constants {
         public static final double driveI = 0.0;
         /** The D value for the auton drive PID */
         public static final double driveD = 0.0;
-        
+
         /** The P value for the rotation PID */
         public static final double rotationP = 5.0;
         /** The I value for the rotation PID */
@@ -371,7 +377,7 @@ public final class Constants {
         public static final double maxAcc = 1.0; // max acceleration in rotations/second/second
 
         // intake settings
-        public static final double intakeVolts = 0.0; // 0.0
+        public static final double intakeVolts = -12.0; // 12.0
 
     }
 
@@ -402,7 +408,7 @@ public final class Constants {
     public static class RollerConstants {
         public static final int ROLLER_MOTOR_ID=19;
         public static final double speed=0.0;
-        public static final double fastSpeed = 0.0; // 0.2
+        public static final double fastSpeed = 1.0; // 0.2
     }
 
     /** Constants for the bucket outtake */

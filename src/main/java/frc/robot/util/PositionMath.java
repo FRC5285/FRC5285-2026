@@ -3,6 +3,7 @@ package frc.robot.util;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -14,7 +15,6 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.LookupTableConstants;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.Constants.RobotConstants;
-import frc.robot.Constants.TurretConstants;
 
 public class PositionMath {
 
@@ -36,6 +36,10 @@ public class PositionMath {
 
     private Pose2d lastCalcPose;
 
+    private final SlewRateLimiter xLimiter;
+    private final SlewRateLimiter yLimiter;
+    private final SlewRateLimiter rLimiter;
+
     public PositionMath() {
         this.speedTable = new LookupTable(LookupTableConstants.distanceSpeedTable, "Speed Table");
         this.timeOfFlightTable = new LookupTable(LookupTableConstants.distanceTimeOfFlightTable, "Time of Flight Table");
@@ -50,6 +54,10 @@ public class PositionMath {
         this.turretRotation = () -> 0.0;
         this.robotShooting = () -> false;
         this.climbing = () -> false;
+
+        this.xLimiter = new SlewRateLimiter(OperatorConstants.driverAccelLimit);
+        this.yLimiter = new SlewRateLimiter(OperatorConstants.driverAccelLimit);
+        this.rLimiter = new SlewRateLimiter(OperatorConstants.driverRotAccelLimit);
 
         // Set previous drivetrain rotation target
         this.resetLastRotation();
@@ -193,6 +201,7 @@ public class PositionMath {
      * @return the rotation rate for drivetrain rotation
      */
     public Rotation2d drivetrainRotationAmount() {
+        this.rLimiter.reset(0.0);
         if (this.bumpTurn()) {
             this.lastRotation = new Rotation2d((Math.floor(Math.abs(this.lastRotation.getRadians()) / (Math.PI / 2)) * (Math.PI / 2) + (Math.PI / 4)) * Math.signum(this.lastRotation.getRadians()));
         } else if (Math.abs(this.drivetrainVelocityX.get()) + Math.abs(this.drivetrainVelocityY.get()) > 0.8) {
@@ -202,6 +211,18 @@ public class PositionMath {
             }
         }
         return this.lastRotation;
+    }
+
+    public double calcXLimit(double inputX) {
+        return this.xLimiter.calculate(inputX);
+    }
+
+    public double calcYLimit(double inputY) {
+        return this.yLimiter.calculate(inputY);
+    }
+
+    public double calcRotLimit(double inputR) {
+        return this.rLimiter.calculate(inputR);
     }
 
     /**
@@ -333,6 +354,13 @@ public class PositionMath {
         } else {
             this.lastRotation = new Rotation2d(this.drivetrainPose.get().getRotation().getRadians() - Math.PI);
         }
+    }
+
+    /** Resets the slew rate limiters for controllers */
+    public void resetControllerLimiters() {
+        this.xLimiter.reset(0.0);
+        this.yLimiter.reset(0.0);
+        this.rLimiter.reset(0.0);
     }
 
     /**

@@ -90,8 +90,8 @@ public class AutonSubsystem extends SubsystemBase {
         })
         .andThen(this.turretIntake.beginIntake())
         .andThen(new WaitUntilCommand(() -> this.turretIntake.atTargetSpeed()).withTimeout(AutoConstants.turretIntakeMaxWaitTime))
-        .andThen(this.bucketRollers.startFastCommand())
-        .andThen(this.bucketOuttake.startCommand());
+        .andThen(this.bucketOuttake.startCommand())
+        .andThen(this.bucketRollers.startFastCommand());
     }
 
     /**
@@ -103,6 +103,7 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.shooting = false;
         })
+        .andThen(this.bucketRollers.stopCommand())
         // .andThen(this.turretIntake.reverseIntake())
         // .andThen(this.bucketOuttake.setReverse())
         ;
