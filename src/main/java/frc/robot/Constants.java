@@ -334,8 +334,8 @@ public final class Constants {
         public static final int channel_a = 0;
         public static final int channel_b = 1;
  
-        public static final double encoderAOffset = -0.487;
-        public static final double encoderBOffset = -0.111;
+        public static final double encoderAOffset = -0.644;
+        public static final double encoderBOffset = -0.264;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
         public static final double match_tolerance = 0.03; //rotations
@@ -353,21 +353,21 @@ public final class Constants {
     /** Constants for intake */
     public static class IntakeConstants {
         public static final int intakeID = 21;
-        public static final int lowerID = 22;
-        public static final int followerId = 24;
+        public static final int lowerID = 25;
+        public static final int followerId = 26;
         public static final int encoderChannel = 2;
         
         /** Encoder value when it is supposed to be at 0 (0 is when the intake is flat) */
-        public static final double intakeLoweredValue = 2.0; // there are a few wires stopping the intake from being fully lowered
-        public static final double intakeRaisedValue = 0.0; // flimsy build so its variable
+        public static final double intakeLoweredValue = 1.84; // there are a few wires stopping the intake from being fully lowered
+        public static final double intakeRaisedValue = 0.085; // flimsy build so its variable
 
         public static final double kS = 0.0;
         public static final double kV = 0.0; // 3.5
         public static final double kP = 0.0; // 1.0
         public static final double kI = 0.0;
         public static final double kD = 0.0;
-        public static final double maxVel = 4.0; // for trapezoidal profile; max velocity in rotations/second
-        public static final double maxAcc = 2.0; // max acceleration in rotations/second/second
+        public static final double maxVel = 1.0; // for trapezoidal profile; max velocity in rotations/second
+        public static final double maxAcc = 0.5; // max acceleration in rotations/second/second
 
         // intake settings
         public static final double intakeVolts = -12.0; // 12.0

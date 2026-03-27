@@ -1,7 +1,7 @@
 package frc.robot.subsystems;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
+// import com.ctre.phoenix6.controls.Follower;
 
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -16,14 +16,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.IntakeConstants;
 
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
+// import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class IntakeSubsystem extends SubsystemBase {
     private final TalonFX intakeMotor = new TalonFX(IntakeConstants.intakeID);
 
     private final TalonFX lower = new TalonFX(IntakeConstants.lowerID);
-    private final TalonFX lowerFollower = new TalonFX(IntakeConstants.followerId);
+    // private final TalonFX lowerFollower = new TalonFX(IntakeConstants.followerId);
 
     // private final  intakeFeedforward = new ArmFeedforward(IntakeConstants.kS, IntakeConstants.kG, IntakeConstants.kV);
     private final SimpleMotorFeedforward intakeFeedforward = new SimpleMotorFeedforward(IntakeConstants.kS, IntakeConstants.kV);
@@ -40,9 +40,9 @@ public class IntakeSubsystem extends SubsystemBase {
         TalonFXConfiguration configs = new TalonFXConfiguration();
         configs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         intakeMotor.getConfigurator().apply(configs);
-        lowerFollower.getConfigurator().apply(configs);
+        // lowerFollower.getConfigurator().apply(configs);
 
-        lowerFollower.setControl(new Follower(intakeMotor.getDeviceID(), MotorAlignmentValue.Opposed));
+        // lowerFollower.setControl(new Follower(intakeMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
         this.encoderPreviousRotations = this.getEncoderPosition();
 
@@ -105,8 +105,8 @@ public class IntakeSubsystem extends SubsystemBase {
         this.encoderTotalRotations = this.encoderAddedRotations + encoderPos;
 
         double pidCalc = this.lowerPID.calculate(this.getExtensionRotations());
-        double ffCalc = this.intakeFeedforward.calculate(getExtensionRotations(), this.lowerPID.getSetpoint().velocity);
-        this.lower.setVoltage((pidCalc + ffCalc));
+        double ffCalc = this.intakeFeedforward.calculate(this.getExtensionRotations(), this.lowerPID.getSetpoint().velocity);
+        this.lower.setVoltage(-(pidCalc + ffCalc));
     }
 
     @Override
@@ -114,6 +114,7 @@ public class IntakeSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Intake Motor Rotations per second",
                 () -> this.intakeMotor.getVelocity().getValueAsDouble(), null);
         builder.addDoubleProperty("Extension Value", () -> this.getExtensionRotations(), null);
+        builder.addDoubleProperty("Extension goal", () -> this.lowerPID.getGoal().position, null);
         builder.addDoubleProperty("Lowering Motor Rotations", () -> this.lower.getPosition().getValueAsDouble(), null);
         // comment out after calibration
         builder.addDoubleProperty("kS", () -> this.intakeFeedforward.getKs(), (newKs) -> {this.intakeFeedforward.setKs(newKs); this.resetPIDs();});

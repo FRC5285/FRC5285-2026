@@ -83,8 +83,8 @@ public class RobotContainer implements Sendable {
         // TO DO: RECONFIGURE INTAKE CONSTANTS!!!!!
 
         // Configure controller bindings
-        this.configureDrivetrainBinding();
-        this.configureBindings();
+        // this.configureDrivetrainBinding();
+        // this.configureBindings();
         // this.configureOtherTriggers();
         this.configureTestBindings();
 
@@ -94,12 +94,12 @@ public class RobotContainer implements Sendable {
     }
 
     private void configureTestBindings() {
-        this.driverController.a().onTrue(this.bucketRollers.startFastCommand().alongWith(this.bucketOuttake.startCommand()));
-        this.driverController.a().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
+        // this.driverController.a().onTrue(this.bucketRollers.startFastCommand().alongWith(this.bucketOuttake.startCommand()));
+        // this.driverController.a().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
         //this.driverController.x().onTrue(this.bucketRollers.reverseCommand().alongWith(this.bucketOuttake.setReverse()));
         //this.driverController.x().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
-        // this.driverController.a().onTrue(this.autonSubsystem.intakeDown());
-        // this.driverController.y().onTrue(this.autonSubsystem.intakeUp());
+        this.driverController.a().onTrue(this.autonSubsystem.intakeDown());
+        this.driverController.y().onTrue(this.autonSubsystem.intakeUp());
         this.driverController.b().onTrue(this.groundIntake.beginIntake());
         this.driverController.b().onFalse(this.groundIntake.endIntake());
         this.driverController.x().onTrue(this.groundIntake.reverseIntake());
