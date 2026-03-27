@@ -23,9 +23,8 @@ public class IntakeSubsystem extends SubsystemBase {
     private final TalonFX intakeMotor = new TalonFX(IntakeConstants.intakeID);
 
     private final TalonFX lower = new TalonFX(IntakeConstants.lowerID);
-    // private final TalonFX lowerFollower = new TalonFX(IntakeConstants.followerId);
+    private final TalonFX lowerFollower = new TalonFX(IntakeConstants.followerId);
 
-    // private final  intakeFeedforward = new ArmFeedforward(IntakeConstants.kS, IntakeConstants.kG, IntakeConstants.kV);
     private final SimpleMotorFeedforward intakeFeedforward = new SimpleMotorFeedforward(IntakeConstants.kS, IntakeConstants.kV);
     private final ProfiledPIDController lowerPID = new ProfiledPIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
 
@@ -33,6 +32,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private double encoderAddedRotations = 0.0;
     private double encoderTotalRotations = 0.0;
     private double encoderPreviousRotations;
+    private double followerMultipler = IntakeConstants.followerMultiplier;
 
     public IntakeSubsystem() {
         this.lowerPID.setGoal(IntakeConstants.intakeRaisedValue);
@@ -40,7 +40,9 @@ public class IntakeSubsystem extends SubsystemBase {
         TalonFXConfiguration configs = new TalonFXConfiguration();
         configs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
         intakeMotor.getConfigurator().apply(configs);
-        // lowerFollower.getConfigurator().apply(configs);
+
+        lower.setPosition(0.0);
+        lowerFollower.setPosition(0.0);
 
         // lowerFollower.setControl(new Follower(intakeMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
@@ -72,12 +74,14 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command lowerIntake() {
         return runOnce(() -> {
             this.lowerPID.setGoal(IntakeConstants.intakeLoweredValue);
+            this.followerMultipler = IntakeConstants.followerMultiplier;
         });
     }
 
     public Command raiseIntake() {
         return runOnce(() -> {
-            this.lowerPID.setGoal(IntakeConstants.intakeRaisedValue);
+            this.lowerPID.setGoal(IntakeConstants.intakeSecondRaisedValue);
+            this.followerMultipler = IntakeConstants.followerMultiplerUp;
         });
     }
 
@@ -107,6 +111,7 @@ public class IntakeSubsystem extends SubsystemBase {
         double pidCalc = this.lowerPID.calculate(this.getExtensionRotations());
         double ffCalc = this.intakeFeedforward.calculate(this.getExtensionRotations(), this.lowerPID.getSetpoint().velocity);
         this.lower.setVoltage(-(pidCalc + ffCalc));
+        this.lowerFollower.setVoltage((pidCalc + ffCalc) * this.followerMultipler);
     }
 
     @Override
@@ -116,10 +121,12 @@ public class IntakeSubsystem extends SubsystemBase {
         builder.addDoubleProperty("Extension Value", () -> this.getExtensionRotations(), null);
         builder.addDoubleProperty("Extension goal", () -> this.lowerPID.getGoal().position, null);
         builder.addDoubleProperty("Lowering Motor Rotations", () -> this.lower.getPosition().getValueAsDouble(), null);
+        builder.addDoubleProperty("amps", () -> this.lower.getSupplyCurrent().getValueAsDouble(), null);
         // comment out after calibration
         builder.addDoubleProperty("kS", () -> this.intakeFeedforward.getKs(), (newKs) -> {this.intakeFeedforward.setKs(newKs); this.resetPIDs();});
         builder.addDoubleProperty("kV", () -> this.intakeFeedforward.getKv(), (newKv) -> {this.intakeFeedforward.setKv(newKv); this.resetPIDs();});
         builder.addDoubleProperty("kP", () -> this.lowerPID.getP(), (newP) -> {this.lowerPID.setP(newP); this.resetPIDs();});
         builder.addDoubleProperty("kD", () -> this.lowerPID.getD(), (newD) -> {this.lowerPID.setD(newD); this.resetPIDs();});
+        builder.addDoubleProperty("follower multiplier", () -> this.followerMultipler, (newMult) -> this.followerMultipler = newMult);
     }
 }

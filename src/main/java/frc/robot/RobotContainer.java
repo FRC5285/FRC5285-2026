@@ -83,10 +83,10 @@ public class RobotContainer implements Sendable {
         // TO DO: RECONFIGURE INTAKE CONSTANTS!!!!!
 
         // Configure controller bindings
-        // this.configureDrivetrainBinding();
-        // this.configureBindings();
+        this.configureDrivetrainBinding();
+        this.configureBindings();
         // this.configureOtherTriggers();
-        this.configureTestBindings();
+        // this.configureTestBindings();
 
         // Telemetry
         SendableRegistry.add(this, "RobotContainer");
@@ -100,8 +100,8 @@ public class RobotContainer implements Sendable {
         //this.driverController.x().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
         this.driverController.a().onTrue(this.autonSubsystem.intakeDown());
         this.driverController.y().onTrue(this.autonSubsystem.intakeUp());
-        this.driverController.b().onTrue(this.groundIntake.beginIntake());
-        this.driverController.b().onFalse(this.groundIntake.endIntake());
+        this.driverController.b().onTrue(this.groundIntake.beginIntake().andThen(bucketRollers.startFastCommand()));
+        this.driverController.b().onFalse(this.groundIntake.endIntake().andThen(bucketRollers.stopCommand()));
         this.driverController.x().onTrue(this.groundIntake.reverseIntake());
         this.driverController.x().onFalse(this.groundIntake.endIntake());
     }

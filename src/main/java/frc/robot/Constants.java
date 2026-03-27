@@ -280,13 +280,13 @@ public final class Constants {
         public static final double camPositionBufferTime = 2.0;
 
         /** Number of cameras on the robot */
-        public static final int numCameras = 4;
+        public static final int numCameras = 3;
 
         /** Camera names */
         public static final String[] cameraNames = {
             "Arducam_OV9281_USB1",
             "Arducam_OV9281_USB2",
-            "Arducam_OV9281_USB3",
+            // "Arducam_OV9281_USB3",
             "Arducam_OV9281_USB4"
         };
 
@@ -294,7 +294,7 @@ public final class Constants {
         public static final Transform3d[] cameraOffsets = {
             new Transform3d(-0.28807, -0.30565, 0.19173, new Rotation3d(0.0, -14.04 * (Math.PI / 180.0), -30.3 * (Math.PI / 180.0))),
             new Transform3d(0.16908 - 0.17455, 0.12833, 0.59485 + 0.12790, new Rotation3d(0.0, 0.0, 15.0 * (Math.PI / 180.0))),
-            new Transform3d(-0.28807, 0.30565, 0.19173, new Rotation3d(0.0, -14.04 * (Math.PI / 180.0), 30.3 * (Math.PI / 180.0))), // cam 3 on opposite side of cam 1
+            // new Transform3d(-0.28807, 0.30565, 0.19173, new Rotation3d(0.0, -14.04 * (Math.PI / 180.0), 30.3 * (Math.PI / 180.0))), // cam 3 on opposite side of cam 1
             new Transform3d(0.17580 - 0.17455, -0.12002, 0.61376 + 0.12790, new Rotation3d(0.0, -17.0 * (Math.PI / 180.0), 0.0))
         };
 
@@ -302,7 +302,7 @@ public final class Constants {
         public static final boolean[] turretMounted = {
             false,
             true,
-            false,
+            // false,
             true
         };
     }
@@ -360,14 +360,23 @@ public final class Constants {
         /** Encoder value when it is supposed to be at 0 (0 is when the intake is flat) */
         public static final double intakeLoweredValue = 1.84; // there are a few wires stopping the intake from being fully lowered
         public static final double intakeRaisedValue = 0.085; // flimsy build so its variable
+        public static final double intakeSecondRaisedValue = intakeRaisedValue;
 
         public static final double kS = 0.0;
         public static final double kV = 0.0; // 3.5
-        public static final double kP = 0.0; // 1.0
+        public static final double kP = 6.0; // 1.0
         public static final double kI = 0.0;
         public static final double kD = 0.0;
-        public static final double maxVel = 1.0; // for trapezoidal profile; max velocity in rotations/second
-        public static final double maxAcc = 0.5; // max acceleration in rotations/second/second
+        public static final double maxVel = 4.0; // for trapezoidal profile; max velocity in rotations/second
+        public static final double maxAcc = 2.5; // max acceleration in rotations/second/second
+
+        public static final double followerMultiplier = 1.1;
+        public static final double followerMultiplerUp = 1.15;
+        public static final double followerS = 0.0;
+        public static final double followerV = 0.0;
+        public static final double followerP = 0.0;
+        public static final double followerI = 0.0;
+        public static final double followerD = 0.0;
 
         // intake settings
         public static final double intakeVolts = -12.0; // 12.0
