@@ -33,13 +33,13 @@ public final class Constants {
         public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
         
         /** Max robot rotation rate, in radians per second (not the real one, just the driver limit) */
-        public static final double maxAngularRate = 4 * Math.PI;
+        public static final double maxAngularRate = 2 * Math.PI;
 
         /** Gets to max speed in 1/driverAccelLimit seconds */
         public static final double driverAccelLimit = 2.0;
 
         /** Gets to max rotation speed in 1/driverRotAccelLimit seconds */
-        public static final double driverRotAccelLimit = 1.2;
+        public static final double driverRotAccelLimit = 1.5;
 
         /** The P value for the auton drive PID */
         public static final double driveP = 10.0;
@@ -334,8 +334,8 @@ public final class Constants {
         public static final int channel_a = 0;
         public static final int channel_b = 1;
 
-        public static final double encoderAOffset = -0.923;
-        public static final double encoderBOffset = -0.0936;
+        public static final double encoderAOffset = -0.0234;
+        public static final double encoderBOffset = -0.2537;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
         public static final double match_tolerance = 0.03; //rotations
@@ -347,7 +347,7 @@ public final class Constants {
         public static final double shooterMinSpeed = 0.0;
 
         /** Tolerance of turret PID, in rotations - used to determine if shooter should shoot */
-        public static final double turretTolerance = 0.03;
+        public static final double turretTolerance = 0.04;
     }
 
     /** Constants for intake */
@@ -363,8 +363,8 @@ public final class Constants {
         public static final double intakeSecondRaisedValue = 0.2;
 
         public static final double kS = 0.0;
-        public static final double kV = 0.0; // 3.5
-        public static final double kP = 6.0; // 1.0
+        public static final double kV = 0.0; // 0.0
+        public static final double kP = 6.0; // 6.0
         public static final double kI = 0.0;
         public static final double kD = 0.0;
         public static final double maxVel = 4.0; // for trapezoidal profile; max velocity in rotations/second
@@ -379,7 +379,7 @@ public final class Constants {
         public static final double followerD = 0.0;
 
         // intake settings
-        public static final double intakeVolts = -12.0; // 12.0
+        public static final double intakeVolts = -12.0; // -12.0
 
     }
 
