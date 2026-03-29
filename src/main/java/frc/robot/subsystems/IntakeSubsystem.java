@@ -33,6 +33,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private double encoderTotalRotations = 0.0;
     private double encoderPreviousRotations;
     private double followerMultipler = IntakeConstants.followerMultiplier;
+    private boolean canFollowerPID = true;
 
     public IntakeSubsystem() {
         this.lowerPID.setGoal(IntakeConstants.intakeRaisedValue);
@@ -85,6 +86,27 @@ public class IntakeSubsystem extends SubsystemBase {
         });
     }
 
+    public Command followerUp() {
+        return runOnce(() -> {
+            this.lowerFollower.setVoltage(-2.0);
+            this.canFollowerPID = false;
+        });
+    }
+
+    public Command followerDown() {
+        return runOnce(() -> {
+            this.lowerFollower.setVoltage(2.0);
+            this.canFollowerPID = false;
+        });
+    }
+
+    public Command followerStop() {
+        return runOnce(() -> {
+            this.lowerFollower.setVoltage(0.0);
+            this.canFollowerPID = true;
+        });
+    }
+
     private double getEncoderPosition() {
         return encoder.get();
     }
@@ -111,7 +133,9 @@ public class IntakeSubsystem extends SubsystemBase {
         double pidCalc = this.lowerPID.calculate(this.getExtensionRotations());
         double ffCalc = this.intakeFeedforward.calculate(this.getExtensionRotations(), this.lowerPID.getSetpoint().velocity);
         this.lower.setVoltage(-(pidCalc + ffCalc));
-        this.lowerFollower.setVoltage((pidCalc + ffCalc) * this.followerMultipler);
+        if (this.canFollowerPID) {
+            this.lowerFollower.setVoltage((pidCalc + ffCalc) * this.followerMultipler);
+        }
     }
 
     @Override

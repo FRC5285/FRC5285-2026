@@ -126,14 +126,16 @@ public class AutonSubsystem extends SubsystemBase {
     public Command regurgitate() {
         return this.turretIntake.reverseIntake()
         .andThen(this.bucketOuttake.setReverse())
-        .andThen(this.bucketRollers.reverseCommand())
-        .andThen(this.groundIntake.reverseIntake());
+        .andThen(this.groundIntake.reverseIntake())
+        .andThen(this.bucketRollers.reverseCommand());
     }
     
     /** command to end regurgitation */
     public Command stopRegurgitate() {
         return this.bucketOuttake.stopCommand()
-        // .andThen(this.bucketRollers.startCommand())
+        .andThen(this.bucketRollers.startCommand())
+        .andThen(turretIntake.endIntake())
+        .andThen(groundIntake.endIntake())
         ;
     }
 
@@ -171,12 +173,11 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition(this.startPosition.getSelected()));
         })
-        .alongWith(this.ledSubsystem.auton())
         .andThen(AutoBuilder.pathfindToPoseFlipped(this.autonInitialShootPose(this.startPosition.getSelected()), this.autonPathConstraints))
         .andThen(this.shootingOn())
         .andThen(new WaitCommand(4.0))
         .andThen(this.shootingOffFull())
-        .andThen(this.intakeDown())
+        .andThen(this.groundIntake.lowerIntake())
         .andThen(this.groundIntake.beginIntake())
         .andThen(this.collectLocation.getSelected().get())
         .andThen(this.groundIntake.endIntake())
@@ -200,7 +201,6 @@ public class AutonSubsystem extends SubsystemBase {
             path = null;
         }
         return AutoBuilder.pathfindThenFollowPath(path, autonPathConstraints)
-        .andThen(this.intakeUp())
         .andThen(this.shootingOn())
         .andThen(new WaitCommand(AutoConstants.shootTime));
     }
@@ -214,7 +214,6 @@ public class AutonSubsystem extends SubsystemBase {
         return AutoBuilder.pathfindToPoseFlipped(FieldConstants.blueOutpostParkPose, autonPathConstraints)
         .andThen(new WaitCommand(AutoConstants.outpostWaitTime))
         .andThen(AutoBuilder.pathfindToPoseFlipped(FieldConstants.blueOutpostShootPose, autonPathConstraints))
-        .andThen(this.intakeUp())
         .andThen(this.shootingOn())
         .andThen(new WaitCommand(AutoConstants.shootTime));
     }
@@ -257,7 +256,6 @@ public class AutonSubsystem extends SubsystemBase {
      */
     public Command neutralZoneCollection(PathPlannerPath path) {
         return AutoBuilder.pathfindThenFollowPath(path, autonPathConstraints)
-        .andThen(this.intakeUp())
         .andThen(this.shootingOn())
         .andThen(new WaitCommand(AutoConstants.shootMoreTime));
     }

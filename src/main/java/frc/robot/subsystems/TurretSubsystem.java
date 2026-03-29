@@ -7,6 +7,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import frc.robot.Constants.TurretConstants;
@@ -53,6 +54,8 @@ public class TurretSubsystem extends SubsystemBase {
 
     private Supplier<Angle> enc1 = () -> { return Rotations.of(encoderA.get()); };
     private Supplier<Angle> enc2 = () -> { return Rotations.of(encoderB.get()); };
+
+    private boolean isDefending = false;
 
     private EasyCRTConfig easyCrt =
         new EasyCRTConfig(enc1, enc2)
@@ -125,6 +128,18 @@ public class TurretSubsystem extends SubsystemBase {
         this.turretPID.reset(this.easyCRT);
     }
 
+    public Command defendBegin() {
+        return runOnce(() -> {
+            this.isDefending = true;
+        });
+    }
+
+    public Command defendEnd() {
+        return runOnce(() -> {
+            this.isDefending = false;
+        });
+    }
+
     @Override
     public void periodic() {
         turretAngle();
@@ -135,7 +150,7 @@ public class TurretSubsystem extends SubsystemBase {
         this.turretTargetPosition = this.positionMath.getTurretRotationTarget() / (2.0 * Math.PI);
         this.turretTargetPosition = Math.min(TurretConstants.turretPIDMax, Math.max(TurretConstants.turretPIDMin, this.turretTargetPosition));
 
-        if (!this.easyCrtSolver.getLastStatus().name().equals("OK")) {
+        if (!this.easyCrtSolver.getLastStatus().name().equals("OK") || this.isDefending) {
             this.turretTargetPosition = this.easyCRT;
             this.resetPIDs();
             turretMotor.setVoltage(0.0);

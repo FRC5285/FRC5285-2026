@@ -39,7 +39,7 @@ public final class Constants {
         public static final double driverAccelLimit = 2.0;
 
         /** Gets to max rotation speed in 1/driverRotAccelLimit seconds */
-        public static final double driverRotAccelLimit = 2.0;
+        public static final double driverRotAccelLimit = 1.2;
 
         /** The P value for the auton drive PID */
         public static final double driveP = 10.0;
@@ -314,8 +314,8 @@ public final class Constants {
         public static final double kp = 80.0;
         public static final double ki = 0.0;
         public static final double kd = 0.0;
-        public static final double turretMaxV = 2.0;
-        public static final double turretMaxA = 2.0;
+        public static final double turretMaxV = 1.0;
+        public static final double turretMaxA = 0.5;
         
         public static final double S_ACceleration = 320;
         public static final double S_Jerk = 420.69;
@@ -333,9 +333,9 @@ public final class Constants {
 
         public static final int channel_a = 0;
         public static final int channel_b = 1;
- 
-        public static final double encoderAOffset = -0.644;
-        public static final double encoderBOffset = -0.264;
+
+        public static final double encoderAOffset = -0.923;
+        public static final double encoderBOffset = -0.0936;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
         public static final double match_tolerance = 0.03; //rotations
@@ -360,7 +360,7 @@ public final class Constants {
         /** Encoder value when it is supposed to be at 0 (0 is when the intake is flat) */
         public static final double intakeLoweredValue = 1.84; // there are a few wires stopping the intake from being fully lowered
         public static final double intakeRaisedValue = 0.085; // flimsy build so its variable
-        public static final double intakeSecondRaisedValue = intakeRaisedValue;
+        public static final double intakeSecondRaisedValue = 0.2;
 
         public static final double kS = 0.0;
         public static final double kV = 0.0; // 3.5

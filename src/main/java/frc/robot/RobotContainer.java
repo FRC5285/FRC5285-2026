@@ -10,6 +10,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -118,7 +119,7 @@ public class RobotContainer implements Sendable {
         );
 
         // Auto bump rotation
-        new Trigger(() -> this.positionMath.bumpTurn()).whileTrue(
+        new Trigger(() -> this.positionMath.bumpTurn() && DriverStation.isAutonomousEnabled() == false).whileTrue(
             this.drivetrain.applyRequest(() ->
                 this.drive.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTriggerAxis()))
                     .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTriggerAxis()))
@@ -203,6 +204,30 @@ public class RobotContainer implements Sendable {
 
         this.secondController.leftTrigger().onFalse(
             this.groundIntake.endIntake()
+        );
+
+        this.secondController.y().onTrue(
+            this.groundIntake.followerUp()
+        );
+
+        this.secondController.a().onTrue(
+            this.groundIntake.followerDown()
+        );
+
+        this.secondController.y().onFalse(
+            this.groundIntake.followerStop()
+        );
+
+        this.secondController.a().onFalse(
+            this.groundIntake.followerStop()
+        );
+
+        this.secondController.x().onTrue(
+            this.turret.defendBegin()
+        );
+
+        this.secondController.x().onFalse(
+            this.turret.defendEnd()
         );
     }
 
