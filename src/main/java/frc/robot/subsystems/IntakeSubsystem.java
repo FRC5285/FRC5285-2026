@@ -27,16 +27,23 @@ public class IntakeSubsystem extends SubsystemBase {
 
     private final SimpleMotorFeedforward intakeFeedforward = new SimpleMotorFeedforward(IntakeConstants.kS, IntakeConstants.kV);
     private final ProfiledPIDController lowerPID = new ProfiledPIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
-
+// tune feedfoward and pid below later!!!!!1
+    private final SimpleMotorFeedforward lowerFeedforward_2 = new SimpleMotorFeedforward(IntakeConstants.kS, IntakeConstants.kV); 
+    private final ProfiledPIDController lowerPID_2 = new ProfiledPIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD, null);
+   
     DutyCycleEncoder encoder = new DutyCycleEncoder(IntakeConstants.encoderChannel);
+    DutyCycleEncoder encoder2 = new DutyCycleEncoder(IntakeConstants.encoderChannel_2);
     private double encoderAddedRotations = 0.0;
     private double encoderTotalRotations = 0.0;
     private double encoderPreviousRotations;
-    private double followerMultipler = IntakeConstants.followerMultiplier;
-    private boolean canFollowerPID = true;
+
+    private double encoder2_AddedRotations = 0.0;
+    private double encoder2_TotalRotatoins = 0.0;
+    private double encoder2_PreviousRotations = 0.0;
 
     public IntakeSubsystem() {
         this.lowerPID.setGoal(IntakeConstants.intakeRaisedValue);
+        this.lowerPID_2.setGoal(IntakeConstants.intakeRaisedValue);
 
         TalonFXConfiguration configs = new TalonFXConfiguration();
         configs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -48,6 +55,7 @@ public class IntakeSubsystem extends SubsystemBase {
         // lowerFollower.setControl(new Follower(intakeMotor.getDeviceID(), MotorAlignmentValue.Opposed));
 
         this.encoderPreviousRotations = this.getEncoderPosition();
+        this.encoder2_PreviousRotations = encoder2.get();
 
         SendableRegistry.add(this, "Ground Intake");
         SmartDashboard.putData(this);
@@ -75,41 +83,39 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command lowerIntake() {
         return runOnce(() -> {
             this.lowerPID.setGoal(IntakeConstants.intakeLoweredValue);
-            this.followerMultipler = IntakeConstants.followerMultiplier;
+            this.lowerPID_2.setGoal(IntakeConstants.intakeLoweredValue);
         });
     }
 
     public Command raiseIntake() {
         return runOnce(() -> {
             this.lowerPID.setGoal(IntakeConstants.intakeSecondRaisedValue);
-            this.followerMultipler = IntakeConstants.followerMultiplerUp;
+            this.lowerPID_2.setGoal(IntakeConstants.intakeSecondRaisedValue);
         });
     }
 
     public Command followerUp() {
         return runOnce(() -> {
             this.lowerFollower.setVoltage(-2.0);
-            this.canFollowerPID = false;
         });
     }
 
     public Command followerDown() {
         return runOnce(() -> {
             this.lowerFollower.setVoltage(2.0);
-            this.canFollowerPID = false;
         });
     }
 
     public Command followerStop() {
         return runOnce(() -> {
             this.lowerFollower.setVoltage(0.0);
-            this.canFollowerPID = true;
         });
     }
 
     private double getEncoderPosition() {
         return encoder.get();
     }
+    
 
     public double getExtensionRotations() {
         return this.encoderTotalRotations;
@@ -117,6 +123,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void resetPIDs() {
         this.lowerPID.reset(this.getExtensionRotations());
+        this.lowerPID_2.reset(this.getExtensionRotations());
     }
 
     @Override
@@ -129,13 +136,32 @@ public class IntakeSubsystem extends SubsystemBase {
         }
         this.encoderPreviousRotations = encoderPos;
         this.encoderTotalRotations = this.encoderAddedRotations + encoderPos;
+/* -------------------------------------------------------------------------- */
+        double encoder2_Pos = encoder2.get();
+        if (encoder2_Pos < 0.1 && this.encoder2_PreviousRotations > 0.9) {
+            this.encoder2_AddedRotations += 1.0;
+        }
+        else if (encoder2_Pos > 0.9 && this.encoder2_PreviousRotations < 0.1) {
+            this.encoderAddedRotations -= 1.0;
+        }
+        this.encoder2_PreviousRotations = encoder2_Pos;
+        this.encoder2_TotalRotatoins = this.encoder2_AddedRotations + encoder2_Pos;
+        /* -------------------------------------------------------------------------- */
 
         double pidCalc = this.lowerPID.calculate(this.getExtensionRotations());
         double ffCalc = this.intakeFeedforward.calculate(this.getExtensionRotations(), this.lowerPID.getSetpoint().velocity);
+
+/* -------------------------------------------------------------------------- */
+
+        double pidCalc_2 = this.lowerPID_2.calculate(this.encoder2_TotalRotatoins);
+        double ffCalc_2 = this.lowerFeedforward_2.calculate(this.encoder2_TotalRotatoins, this.lowerPID_2.getSetpoint().velocity);
+        /* -------------------------------------------------------------------------- */
+
         this.lower.setVoltage(-(pidCalc + ffCalc));
-        if (this.canFollowerPID) {
-            this.lowerFollower.setVoltage((pidCalc + ffCalc) * this.followerMultipler);
-        }
+
+        /* -------------------------------------------------------------------------- */
+
+        this.lowerFollower.setVoltage(-(pidCalc_2 + ffCalc_2));
     }
 
     @Override
@@ -151,6 +177,7 @@ public class IntakeSubsystem extends SubsystemBase {
         builder.addDoubleProperty("kV", () -> this.intakeFeedforward.getKv(), (newKv) -> {this.intakeFeedforward.setKv(newKv); this.resetPIDs();});
         builder.addDoubleProperty("kP", () -> this.lowerPID.getP(), (newP) -> {this.lowerPID.setP(newP); this.resetPIDs();});
         builder.addDoubleProperty("kD", () -> this.lowerPID.getD(), (newD) -> {this.lowerPID.setD(newD); this.resetPIDs();});
-        builder.addDoubleProperty("follower multiplier", () -> this.followerMultipler, (newMult) -> this.followerMultipler = newMult);
+
+
     }
 }
