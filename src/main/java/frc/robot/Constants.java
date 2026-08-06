@@ -375,7 +375,7 @@ public final class Constants {
         public static final double followerMultiplerUp = 1.15;
         public static final double followerS = 0.0;
         public static final double followerV = 0.0;
-        public static final double followerP = 0.0;
+        public static final double followerP = 6.3;
         public static final double followerI = 0.0;
         public static final double followerD = 0.0;
 

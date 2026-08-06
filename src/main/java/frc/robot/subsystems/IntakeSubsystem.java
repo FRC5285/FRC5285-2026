@@ -28,8 +28,8 @@ public class IntakeSubsystem extends SubsystemBase {
     private final SimpleMotorFeedforward intakeFeedforward = new SimpleMotorFeedforward(IntakeConstants.kS, IntakeConstants.kV);
     private final ProfiledPIDController lowerPID = new ProfiledPIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
 // tune feedfoward and pid below later!!!!!1
-    private final SimpleMotorFeedforward lowerFeedforward_2 = new SimpleMotorFeedforward(IntakeConstants.kS, IntakeConstants.kV); 
-    private final ProfiledPIDController lowerPID_2 = new ProfiledPIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD, null);
+    private final SimpleMotorFeedforward lowerFeedforward_2 = new SimpleMotorFeedforward(IntakeConstants.followerS, IntakeConstants.followerV); 
+    private final ProfiledPIDController lowerPID_2 = new ProfiledPIDController(IntakeConstants.followerP, IntakeConstants.followerI, IntakeConstants.followerD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
    
     DutyCycleEncoder encoder = new DutyCycleEncoder(IntakeConstants.encoderChannel);
     DutyCycleEncoder encoder2 = new DutyCycleEncoder(IntakeConstants.encoderChannel_2);
@@ -178,6 +178,13 @@ public class IntakeSubsystem extends SubsystemBase {
         builder.addDoubleProperty("kP", () -> this.lowerPID.getP(), (newP) -> {this.lowerPID.setP(newP); this.resetPIDs();});
         builder.addDoubleProperty("kD", () -> this.lowerPID.getD(), (newD) -> {this.lowerPID.setD(newD); this.resetPIDs();});
 
+        builder.addDoubleProperty("Lowering Followre Motor Rotations", () -> this.lowerFollower.getPosition().getValueAsDouble(), null);
+        builder.addDoubleProperty("amps lower follower", () -> this.lowerFollower.getSupplyCurrent().getValueAsDouble(), null);
 
+        builder.addDoubleProperty("kS follower", () -> this.lowerFeedforward_2.getKs(), (newKs) -> {this.lowerFeedforward_2.setKs(newKs); this.resetPIDs();});
+        builder.addDoubleProperty("kV follower", () -> this.lowerFeedforward_2.getKv(), (newKv) -> {this.lowerFeedforward_2.setKv(newKv); this.resetPIDs();});
+        builder.addDoubleProperty("kP follower", () -> this.lowerPID_2.getP(), (newP) -> {this.lowerPID_2.setP(newP); this.resetPIDs();});
+        builder.addDoubleProperty("kD follower", () -> this.lowerPID_2.getD(), (newD) -> {this.lowerPID_2.setD(newD); this.resetPIDs();});
     }
 }
+ 
