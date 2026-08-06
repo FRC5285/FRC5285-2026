@@ -371,11 +371,14 @@ public final class Constants {
         public static final double maxVel = 4.0; // for trapezoidal profile; max velocity in rotations/second
         public static final double maxAcc = 2.5; // max acceleration in rotations/second/second
 
+        public static final double maxVel_2 = 4.0 * (5/3); //5cm divided by 3cm extremely bad estimate for 
+        public static final double maxAcc_2 = 2.5 * (5/3); //the gear ratio, just divide the gear diameters later, but i didn't have calipers so i used my fingers
+                                                           //note that the gear ratio will be around this number!
         public static final double followerMultiplier = 1.1;
         public static final double followerMultiplerUp = 1.15;
         public static final double followerS = 0.0;
         public static final double followerV = 0.0;
-        public static final double followerP = 6.3;
+        public static final double followerP = 6.1;
         public static final double followerI = 0.0;
         public static final double followerD = 0.0;
 

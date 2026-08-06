@@ -29,7 +29,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private final ProfiledPIDController lowerPID = new ProfiledPIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
 // tune feedfoward and pid below later!!!!!1
     private final SimpleMotorFeedforward lowerFeedforward_2 = new SimpleMotorFeedforward(IntakeConstants.followerS, IntakeConstants.followerV); 
-    private final ProfiledPIDController lowerPID_2 = new ProfiledPIDController(IntakeConstants.followerP, IntakeConstants.followerI, IntakeConstants.followerD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
+    private final ProfiledPIDController lowerPID_2 = new ProfiledPIDController(IntakeConstants.followerP, IntakeConstants.followerI, IntakeConstants.followerD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel_2, IntakeConstants.maxAcc_2));
    
     DutyCycleEncoder encoder = new DutyCycleEncoder(IntakeConstants.encoderChannel);
     DutyCycleEncoder encoder2 = new DutyCycleEncoder(IntakeConstants.encoderChannel_2);
