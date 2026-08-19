@@ -3,7 +3,6 @@ package frc.robot.util;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -36,9 +35,9 @@ public class PositionMath {
 
     private Pose2d lastCalcPose;
 
-    private final SlewRateLimiter xLimiter;
-    private final SlewRateLimiter yLimiter;
-    private final SlewRateLimiter rLimiter;
+    private final BetterSlewRateLimiter xLimiter;
+    private final BetterSlewRateLimiter yLimiter;
+    private final BetterSlewRateLimiter rLimiter;
 
     public PositionMath() {
         this.speedTable = new LookupTable(LookupTableConstants.distanceSpeedTable, "Speed Table");
@@ -55,9 +54,10 @@ public class PositionMath {
         this.robotShooting = () -> false;
         this.climbing = () -> false;
 
-        this.xLimiter = new SlewRateLimiter(OperatorConstants.driverAccelLimit);
-        this.yLimiter = new SlewRateLimiter(OperatorConstants.driverAccelLimit);
-        this.rLimiter = new SlewRateLimiter(OperatorConstants.driverRotAccelLimit);
+        this.xLimiter = new BetterSlewRateLimiter(OperatorConstants.driverAccelLimit, OperatorConstants.driverDecelLimit, 0.0);
+        this.yLimiter = new BetterSlewRateLimiter(OperatorConstants.driverAccelLimit, OperatorConstants.driverDecelLimit, 0.0);
+        this.rLimiter = new BetterSlewRateLimiter(OperatorConstants.driverRotAccelLimit, OperatorConstants.driverRotDecelLimit, 0.0);
+
 
         // Set previous drivetrain rotation target
         this.resetLastRotation();
@@ -174,8 +174,7 @@ public class PositionMath {
     public double driveJoystickMath(double controllerInput, double throttleAmount) {
         // invert controllerInput (because the default controller direction is stupid)
         return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband)
-                * this.driveSpeedMultiplier() * OperatorConstants.maxSpeed
-                * (1.0 - MathUtil.applyDeadband(throttleAmount, OperatorConstants.driveDeadband) * (1.0 - OperatorConstants.throttleMinMultiplier));
+                * this.driveSpeedMultiplier() * OperatorConstants.maxSpeed * this.driveThrottleMath(throttleAmount);
     }
 
     /**
@@ -190,8 +189,11 @@ public class PositionMath {
 
         // invert controllerInput (because the default controller direction is stupid)
         return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband)
-                * this.driveSpeedMultiplier() * OperatorConstants.maxAngularRate
-                * (1.0 - MathUtil.applyDeadband(throttleAmount, OperatorConstants.driveDeadband) * (1.0 - OperatorConstants.throttleMinMultiplier));
+                * this.driveSpeedMultiplier() * OperatorConstants.maxAngularRate * this.driveThrottleMath(throttleAmount);
+    }
+
+    public double driveThrottleMath(double throttleAmount) {
+        return (1.0 - MathUtil.applyDeadband(throttleAmount, OperatorConstants.driveDeadband) * (1.0 - OperatorConstants.throttleMinMultiplier));
     }
 
     /**
@@ -213,6 +215,7 @@ public class PositionMath {
         return this.lastRotation;
     }
 
+    // PROBLEM: the limiter goes from negative to positive IMMEDIATELY, fix this somehow
     public double calcXLimit(double inputX) {
         return this.xLimiter.calculate(inputX);
     }

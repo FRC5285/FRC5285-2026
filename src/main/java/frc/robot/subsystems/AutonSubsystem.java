@@ -139,6 +139,16 @@ public class AutonSubsystem extends SubsystemBase {
         ;
     }
 
+    public Command unjamBucket() {
+        return this.bucketOuttake.setReverse()
+        .andThen(this.bucketRollers.reverseCommand());
+    }
+
+    public Command unjamBucketStop() {
+        return this.bucketOuttake.stopCommand()
+        .andThen(this.bucketRollers.startCommand());
+    }
+
     /** Move the ground intake down (begin intaking) */
     public Command intakeDown() {
         return this.groundIntake.lowerIntake()

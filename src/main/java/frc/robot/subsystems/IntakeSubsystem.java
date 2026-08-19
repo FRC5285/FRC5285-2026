@@ -157,11 +157,11 @@ public class IntakeSubsystem extends SubsystemBase {
         double ffCalc_2 = this.lowerFeedforward_2.calculate(this.encoder2_TotalRotatoins, this.lowerPID_2.getSetpoint().velocity);
         /* -------------------------------------------------------------------------- */
 
-        this.lower.setVoltage(-(pidCalc + ffCalc));
+        // this.lower.setVoltage(-(pidCalc + ffCalc));
 
         /* -------------------------------------------------------------------------- */
 
-        this.lowerFollower.setVoltage(-(pidCalc_2 + ffCalc_2));
+        // this.lowerFollower.setVoltage(-(pidCalc_2 + ffCalc_2));
     }
 
     @Override

@@ -119,7 +119,7 @@ public class RobotContainer implements Sendable {
         );
 
         // Auto bump rotation
-        new Trigger(() -> this.positionMath.bumpTurn() && DriverStation.isAutonomousEnabled() == false).whileTrue(
+        new Trigger(() -> this.positionMath.bumpTurn() && DriverStation.isAutonomousEnabled() == false && this.driverController.leftBumper().getAsBoolean() == false).whileTrue(
             this.drivetrain.applyRequest(() ->
                 this.drive.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTriggerAxis()))
                     .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTriggerAxis()))
@@ -160,6 +160,14 @@ public class RobotContainer implements Sendable {
 
         this.driverController.rightTrigger().or(() -> autonSubsystem.isClimbing()).onFalse(
             this.autonSubsystem.shootingOffFull()
+        );
+
+        this.driverController.rightBumper().onTrue(
+            this.autonSubsystem.unjamBucket()
+        );
+
+        this.driverController.rightBumper().onFalse(
+            this.autonSubsystem.unjamBucketStop()
         );
 
         /*
