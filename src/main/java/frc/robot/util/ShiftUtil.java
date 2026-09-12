@@ -1,7 +1,8 @@
 package frc.robot.util;
 
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.driverstation.Alliance;
 import frc.robot.Constants.LEDConstants;
 
 /** The class to find out if it's our shift. Does not require a constructor. */
@@ -16,7 +17,7 @@ public final class ShiftUtil {
      */
     public static boolean canScore() {
         Alliance activeAlliance = getActiveAlliance();
-        Alliance teamAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        Alliance teamAlliance = MatchState.getAlliance().orElse(Alliance.BLUE);
 
         if (activeAlliance == null) {
             return true;
@@ -32,7 +33,7 @@ public final class ShiftUtil {
      */
     public static boolean beforeShooting() {
         Alliance aboutShootAlliance = getAboutToShootAlliance();
-        Alliance teamAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        Alliance teamAlliance = MatchState.getAlliance().orElse(Alliance.BLUE);
 
         if (aboutShootAlliance == null) {
             return false;
@@ -42,26 +43,26 @@ public final class ShiftUtil {
     }
 
     public static Alliance getActiveAlliance() {
-        if (DriverStation.isAutonomous()) {
-            return DriverStation.getAlliance().orElse(Alliance.Blue);
+        if (RobotState.isAutonomous()) {
+            return MatchState.getAlliance().orElse(Alliance.BLUE);
         }
 
-        var currentTime = DriverStation.getMatchTime();
+        var currentTime = MatchState.getMatchTime();
 
         if (currentGameData.length() == 0) {
-            currentGameData = DriverStation.getGameSpecificMessage();
+            currentGameData = MatchState.getGameData().get();
             if (currentGameData.length() == 0) {
                 return null;
             }
         }
 
-        Alliance initialAlliance = DriverStation.getGameSpecificMessage().charAt(0) == 'R' ? Alliance.Red : Alliance.Blue;
+        Alliance initialAlliance = MatchState.getGameData().get().charAt(0) == 'R' ? Alliance.RED : Alliance.BLUE;
 
         if (currentTime >= 130 || currentTime < 30) {
-            return DriverStation.getAlliance().orElse(Alliance.Blue);
+            return MatchState.getAlliance().orElse(Alliance.BLUE);
         }
         else if (currentTime >= 105 || (currentTime < 80 && currentTime >= 55)) {
-            return initialAlliance == Alliance.Red ? Alliance.Blue : Alliance.Red;
+            return initialAlliance == Alliance.RED ? Alliance.BLUE : Alliance.RED;
         }
         else {
             return initialAlliance;
@@ -69,26 +70,26 @@ public final class ShiftUtil {
     }
 
     public static Alliance getAboutToShootAlliance() {
-        if (DriverStation.isAutonomous()) {
-            return DriverStation.getAlliance().orElse(Alliance.Blue);
+        if (RobotState.isAutonomous()) {
+            return MatchState.getAlliance().orElse(Alliance.BLUE);
         }
 
-        var currentTime = DriverStation.getMatchTime();
+        var currentTime = MatchState.getMatchTime();
 
         if (currentGameData.length() == 0) {
-            currentGameData = DriverStation.getGameSpecificMessage();
+            currentGameData = MatchState.getGameData().get();
             if (currentGameData.length() == 0) {
                 return null;
             }
         }
 
-        Alliance initialAlliance = DriverStation.getGameSpecificMessage().charAt(0) == 'R' ? Alliance.Red : Alliance.Blue;
+        Alliance initialAlliance = MatchState.getGameData().get().charAt(0) == 'R' ? Alliance.RED : Alliance.BLUE;
 
         if (withinSomeNumberLess(130, currentTime)) {
-            return DriverStation.getAlliance().orElse(Alliance.Blue);
+            return MatchState.getAlliance().orElse(Alliance.BLUE);
         }
         else if (withinSomeNumberLess(105, currentTime) || withinSomeNumberLess(55, currentTime)) {
-            return initialAlliance == Alliance.Red ? Alliance.Blue : Alliance.Red;
+            return initialAlliance == Alliance.RED ? Alliance.BLUE : Alliance.RED;
         }
         else {
             return initialAlliance;

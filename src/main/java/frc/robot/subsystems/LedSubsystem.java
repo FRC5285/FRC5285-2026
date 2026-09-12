@@ -1,9 +1,9 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.drivers.motor.Spark;
+import org.wpilib.telemetry.TelemetryTable;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.SubsystemBase;
 import frc.robot.util.ShiftUtil;
 import frc.robot.Constants.LEDConstants;
 
@@ -54,14 +54,14 @@ public class LedSubsystem extends SubsystemBase {
     public void periodic() {
         if (currentPattern != null) {
             ledPattern(currentPattern);
-            LED.set(currentValue);
+            LED.setThrottle(currentValue);
         }
     }
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addBooleanProperty("Can score", ()->ShiftUtil.canScore(), null);
-        builder.addDoubleArrayProperty("Current pattern", ()->this.currentPattern, null);
+    public void logTo(TelemetryTable table) {
+        table.log("Can score", ShiftUtil.canScore());
+        table.log("Current pattern", this.currentPattern);
     }
 
     // ----------------------------------------------------------------------------------------------- //

@@ -2,11 +2,12 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.controls.DutyCycleOut;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.system.Timer;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.SubsystemBase;
 
 import frc.robot.Constants.BucketOutConstants;
 import frc.robot.util.PositionMath;
@@ -23,7 +24,7 @@ public class BucketOutSubsystem extends SubsystemBase {
     public BucketOutSubsystem(PositionMath positionMath) {
         this.positionMath = positionMath;
 
-        rollerMotor = new TalonFX(BucketOutConstants.MOTOR_ID);
+        rollerMotor = new TalonFX(BucketOutConstants.MOTOR_ID, CANBus.systemcore(BucketOutConstants.CANBUS_ID));
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40;
@@ -77,7 +78,7 @@ public class BucketOutSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         if (this.isOn && this.positionMath.shouldShoot()) {
-            double currentTime = Timer.getFPGATimestamp() % (BucketOutConstants.forwardSeconds + BucketOutConstants.backwardSeconds);
+            double currentTime = Timer.getTimestamp() % (BucketOutConstants.forwardSeconds + BucketOutConstants.backwardSeconds);
             if (currentTime < BucketOutConstants.forwardSeconds) {
                 this.spinForward();
             } else {

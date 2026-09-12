@@ -1,21 +1,24 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.SubsystemBase;
+import org.wpilib.telemetry.Telemetry;
+import org.wpilib.telemetry.TelemetryTable;
+import org.wpilib.tunable.ComplexTunable;
+import org.wpilib.tunable.TunableTable;
+import org.wpilib.tunable.Tunables;
 
 import frc.robot.Constants.TurretIntakeConstants;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-public class TurretIntakeSubsystem extends SubsystemBase {
-    private final TalonFX motor = new TalonFX(TurretIntakeConstants.motorCanId);
+public class TurretIntakeSubsystem extends SubsystemBase implements ComplexTunable {
+    private final TalonFX motor = new TalonFX(TurretIntakeConstants.motorCanId, CANBus.systemcore(TurretIntakeConstants.motorCanBus));
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
     double intakeSpeed = 0.0; // radians per sec, target speed
@@ -45,8 +48,7 @@ public class TurretIntakeSubsystem extends SubsystemBase {
         motor.setPosition(0);
         motor.getConfigurator().apply(configs);
 
-        SendableRegistry.add(this, "Turret Intake");
-        SmartDashboard.putData(this);
+        Tunables.publish("Turret Intake/Tunables", this);
     }
 
     // Other methods go here
@@ -79,13 +81,17 @@ public class TurretIntakeSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
-
+        Telemetry.log("Turret Intake", this);
     }
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("Rotations per second", () -> this.motor.getVelocity().getValueAsDouble(), null);
-        builder.addDoubleProperty("Goal", () -> this.intakeSpeed, (newSpeed) -> this.setNewSpeed(newSpeed));
-        builder.addDoubleProperty("error", () -> Math.abs(this.intakeSpeed - this.motor.getVelocity().getValueAsDouble()), null);
+    public void logTo(TelemetryTable table) {
+        table.log("Rotations per second", this.motor.getVelocity().getValueAsDouble());
+        table.log("error", Math.abs(this.intakeSpeed - this.motor.getVelocity().getValueAsDouble()));
+    }
+
+    @Override
+    public void publishTunable(TunableTable table) {
+        table.publishDouble("Goal", () -> this.intakeSpeed, (newSpeed) -> this.setNewSpeed(newSpeed));
     }
 }

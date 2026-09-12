@@ -2,14 +2,14 @@ package frc.robot.util;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import org.wpilib.math.util.MathUtil;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform2d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.driverstation.MatchState;
+import org.wpilib.driverstation.Alliance;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.LookupTableConstants;
 import frc.robot.Constants.OperatorConstants;
@@ -127,7 +127,7 @@ public class PositionMath {
         }
 
         // Side specific transformations
-        if (this.robotAlliance == Alliance.Blue) {
+        if (this.robotAlliance == Alliance.BLUE) {
             robotRotation = new Rotation2d(Math.PI);
             robotX = FieldConstants.blueStartX;
             robotY = -robotY;
@@ -208,7 +208,7 @@ public class PositionMath {
             this.lastRotation = new Rotation2d((Math.floor(Math.abs(this.lastRotation.getRadians()) / (Math.PI / 2)) * (Math.PI / 2) + (Math.PI / 4)) * Math.signum(this.lastRotation.getRadians()));
         } else if (Math.abs(this.drivetrainVelocityX.get()) + Math.abs(this.drivetrainVelocityY.get()) > 0.8) {
             this.lastRotation = new Rotation2d(this.drivetrainVelocityX.get(), this.drivetrainVelocityY.get());
-            if (this.robotAlliance == Alliance.Red) {
+            if (this.robotAlliance == Alliance.RED) {
                 this.lastRotation = new Rotation2d(-this.lastRotation.getCos(), -this.lastRotation.getSin());
             }
         }
@@ -323,10 +323,10 @@ public class PositionMath {
      * @return Whether the robot is in its alliance zone
      */
     public boolean inAllianceZone() {
-        if (this.robotAlliance == Alliance.Blue && this.drivetrainPose.get().getX() < FieldConstants.blueHubCenterX) {
+        if (this.robotAlliance == Alliance.BLUE && this.drivetrainPose.get().getX() < FieldConstants.blueHubCenterX) {
             return true;
         }
-        if (this.robotAlliance == Alliance.Red && this.drivetrainPose.get().getX() > FieldConstants.redHubCenterX) {
+        if (this.robotAlliance == Alliance.RED && this.drivetrainPose.get().getX() > FieldConstants.redHubCenterX) {
             return true;
         }
         return false;
@@ -338,7 +338,7 @@ public class PositionMath {
      * @return the X coordinate
      */
     public double getAllianceLineX() {
-        if (this.robotAlliance == Alliance.Blue) {
+        if (this.robotAlliance == Alliance.BLUE) {
             return FieldConstants.blueHubCenterX;
         }
         return FieldConstants.redHubCenterX;
@@ -346,14 +346,14 @@ public class PositionMath {
 
     /** Resets the robot alliance according to driver station data. Runs whenever robot is enabled. */
     public void resetSide() {
-        this.robotAlliance = DriverStation.getAlliance().orElse(Alliance.Blue);
+        this.robotAlliance = MatchState.getAlliance().orElse(Alliance.BLUE);
         this.hubPose = new Pose2d(this.getAllianceLineX(), FieldConstants.midLineY, new Rotation2d());
     }
 
     /** Resets the last stored robot rotation */
     public void resetLastRotation() {
         // resets rotation for autorotation, weird math because it's stupid
-        if (this.robotAlliance == Alliance.Blue) {
+        if (this.robotAlliance == Alliance.BLUE) {
             this.lastRotation = new Rotation2d(this.drivetrainPose.get().getRotation().getRadians());
         } else {
             this.lastRotation = new Rotation2d(this.drivetrainPose.get().getRotation().getRadians() - Math.PI);
@@ -375,14 +375,14 @@ public class PositionMath {
     public double getTurretRotationTarget() {
         if (this.climbing.get()) {
             Translation2d toTags;
-            if (this.robotAlliance == Alliance.Blue) {
+            if (this.robotAlliance == Alliance.BLUE) {
                 toTags = FieldConstants.blueTowerTags.getTranslation().minus(this.drivetrainPose.get().getTranslation());
             } else {
                 toTags = FieldConstants.redTowerTags.getTranslation().minus(this.drivetrainPose.get().getTranslation());
             }
 
             double currentRotation = this.drivetrainPose.get().getRotation().getRotations();
-            double r = toTags.getAngle().getRotations() - (currentRotation + RobotConstants.turretAddedRotations);
+            double r = toTags.getAngle().get().getRotations() - (currentRotation + RobotConstants.turretAddedRotations);
 
             return r * 2 * Math.PI;
         }
@@ -393,7 +393,7 @@ public class PositionMath {
         }
 
         double currentRotation = this.drivetrainPose.get().getRotation().getRotations();
-        double r = this.shootVector.getAngle().getRotations() - (currentRotation + RobotConstants.turretAddedRotations);
+        double r = this.shootVector.getAngle().get().getRotations() - (currentRotation + RobotConstants.turretAddedRotations);
         if (r > 0.5) r = r - 1.0;
         if (r < -0.5) r = r + 1.0;
 

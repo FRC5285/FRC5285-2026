@@ -1,17 +1,20 @@
 package frc.robot.subsystems;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 // import com.ctre.phoenix6.controls.Follower;
 
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.hardware.rotation.DutyCycleEncoder;
+import org.wpilib.math.controller.ProfiledPIDController;
+import org.wpilib.math.controller.SimpleMotorFeedforward;
+import org.wpilib.math.trajectory.TrapezoidProfile;
+import org.wpilib.telemetry.Telemetry;
+import org.wpilib.telemetry.TelemetryTable;
+import org.wpilib.tunable.ComplexTunable;
+import org.wpilib.tunable.TunableTable;
+import org.wpilib.tunable.Tunables;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.SubsystemBase;
 
 import frc.robot.Constants.IntakeConstants;
 
@@ -19,11 +22,11 @@ import com.ctre.phoenix6.hardware.TalonFX;
 // import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-public class IntakeSubsystem extends SubsystemBase {
-    private final TalonFX intakeMotor = new TalonFX(IntakeConstants.intakeID);
+public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
+    private final TalonFX intakeMotor = new TalonFX(IntakeConstants.intakeID, CANBus.systemcore(IntakeConstants.intakeBus));
 
-    private final TalonFX lower = new TalonFX(IntakeConstants.lowerID);
-    private final TalonFX lowerFollower = new TalonFX(IntakeConstants.followerId);
+    private final TalonFX lower = new TalonFX(IntakeConstants.lowerID, CANBus.systemcore(IntakeConstants.lowerBus));
+    private final TalonFX lowerFollower = new TalonFX(IntakeConstants.followerId, CANBus.systemcore(IntakeConstants.followerBus));
 
     private final SimpleMotorFeedforward intakeFeedforward = new SimpleMotorFeedforward(IntakeConstants.kS, IntakeConstants.kV);
     private final ProfiledPIDController lowerPID = new ProfiledPIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));
@@ -43,7 +46,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public IntakeSubsystem() {
         this.lowerPID.setGoal(IntakeConstants.intakeRaisedValue);
-        this.lowerPID_2.setGoal(IntakeConstants.intakeRaisedValue);
+        this.lowerPID_2.setGoal(IntakeConstants.intakeFollower_RaisedValue);
 
         TalonFXConfiguration configs = new TalonFXConfiguration();
         configs.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -57,8 +60,7 @@ public class IntakeSubsystem extends SubsystemBase {
         this.encoderPreviousRotations = this.getEncoderPosition();
         this.encoder2_PreviousRotations = encoder2.get();
 
-        SendableRegistry.add(this, "Ground Intake");
-        SmartDashboard.putData(this);
+        Tunables.publish("Ground Intake/Tunables", this);
     }
 
     // Other methods go here
@@ -83,14 +85,14 @@ public class IntakeSubsystem extends SubsystemBase {
     public Command lowerIntake() {
         return runOnce(() -> {
             this.lowerPID.setGoal(IntakeConstants.intakeLoweredValue);
-            this.lowerPID_2.setGoal(IntakeConstants.intakeLoweredValue);
+            this.lowerPID_2.setGoal(IntakeConstants.intakeFolllower_LoweredValue);
         });
     }
 
     public Command raiseIntake() {
         return runOnce(() -> {
             this.lowerPID.setGoal(IntakeConstants.intakeSecondRaisedValue);
-            this.lowerPID_2.setGoal(IntakeConstants.intakeSecondRaisedValue);
+            this.lowerPID_2.setGoal(IntakeConstants.intakeFollower_SecondRaisedValue);
         });
     }
 
@@ -121,6 +123,10 @@ public class IntakeSubsystem extends SubsystemBase {
         return this.encoderTotalRotations;
     }
 
+    public double getExtensionRotations_2() {
+        return this.encoder2_TotalRotatoins;
+    }
+
     public void resetPIDs() {
         this.lowerPID.reset(this.getExtensionRotations());
         this.lowerPID_2.reset(this.getExtensionRotations());
@@ -142,7 +148,7 @@ public class IntakeSubsystem extends SubsystemBase {
             this.encoder2_AddedRotations += 1.0;
         }
         else if (encoder2_Pos > 0.9 && this.encoder2_PreviousRotations < 0.1) {
-            this.encoderAddedRotations -= 1.0;
+            this.encoder2_AddedRotations -= 1.0;
         }
         this.encoder2_PreviousRotations = encoder2_Pos;
         this.encoder2_TotalRotatoins = this.encoder2_AddedRotations + encoder2_Pos;
@@ -157,34 +163,37 @@ public class IntakeSubsystem extends SubsystemBase {
         double ffCalc_2 = this.lowerFeedforward_2.calculate(this.encoder2_TotalRotatoins, this.lowerPID_2.getSetpoint().velocity);
         /* -------------------------------------------------------------------------- */
 
-        // this.lower.setVoltage(-(pidCalc + ffCalc));
+        this.lower.setVoltage(-(pidCalc + ffCalc));
 
         /* -------------------------------------------------------------------------- */
 
-        // this.lowerFollower.setVoltage(-(pidCalc_2 + ffCalc_2));
+        this.lowerFollower.setVoltage(-(pidCalc_2 + ffCalc_2));
+
+        Telemetry.log("Ground Intake", this);
     }
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("Intake Motor Rotations per second",
-                () -> this.intakeMotor.getVelocity().getValueAsDouble(), null);
-        builder.addDoubleProperty("Extension Value", () -> this.getExtensionRotations(), null);
-        builder.addDoubleProperty("Extension goal", () -> this.lowerPID.getGoal().position, null);
-        builder.addDoubleProperty("Lowering Motor Rotations", () -> this.lower.getPosition().getValueAsDouble(), null);
-        builder.addDoubleProperty("amps", () -> this.lower.getSupplyCurrent().getValueAsDouble(), null);
-        // comment out after calibration
-        builder.addDoubleProperty("kS", () -> this.intakeFeedforward.getKs(), (newKs) -> {this.intakeFeedforward.setKs(newKs); this.resetPIDs();});
-        builder.addDoubleProperty("kV", () -> this.intakeFeedforward.getKv(), (newKv) -> {this.intakeFeedforward.setKv(newKv); this.resetPIDs();});
-        builder.addDoubleProperty("kP", () -> this.lowerPID.getP(), (newP) -> {this.lowerPID.setP(newP); this.resetPIDs();});
-        builder.addDoubleProperty("kD", () -> this.lowerPID.getD(), (newD) -> {this.lowerPID.setD(newD); this.resetPIDs();});
+    public void logTo(TelemetryTable table) {
+        table.log("Extension Value", this.getExtensionRotations());
+        table.log("Extension goal", this.lowerPID.getGoal().position);
 
-        builder.addDoubleProperty("Lowering Followre Motor Rotations", () -> this.lowerFollower.getPosition().getValueAsDouble(), null);
-        builder.addDoubleProperty("amps lower follower", () -> this.lowerFollower.getSupplyCurrent().getValueAsDouble(), null);
+        table.log("extension value 2", this.getExtensionRotations_2());
+        table.log("second extension goal", this.lowerPID_2.getGoal().position);
 
-        builder.addDoubleProperty("kS follower", () -> this.lowerFeedforward_2.getKs(), (newKs) -> {this.lowerFeedforward_2.setKs(newKs); this.resetPIDs();});
-        builder.addDoubleProperty("kV follower", () -> this.lowerFeedforward_2.getKv(), (newKv) -> {this.lowerFeedforward_2.setKv(newKv); this.resetPIDs();});
-        builder.addDoubleProperty("kP follower", () -> this.lowerPID_2.getP(), (newP) -> {this.lowerPID_2.setP(newP); this.resetPIDs();});
-        builder.addDoubleProperty("kD follower", () -> this.lowerPID_2.getD(), (newD) -> {this.lowerPID_2.setD(newD); this.resetPIDs();});
+        table.log("lower PID", this.lowerPID);
+        table.log("lower PID 2", this.lowerPID_2);
+    }
+
+    @Override
+    public void publishTunable(TunableTable table) {
+        table.publish("lower PID", this.lowerPID);
+        table.publish("lower PID 2", this.lowerPID_2);
+
+        table.publishDouble("kS", () -> this.intakeFeedforward.getKs(), (newKs) -> {this.intakeFeedforward.setKs(newKs); this.resetPIDs();});
+        table.publishDouble("kV", () -> this.intakeFeedforward.getKv(), (newKv) -> {this.intakeFeedforward.setKv(newKv); this.resetPIDs();});
+
+        table.publishDouble("kS follower", () -> this.lowerFeedforward_2.getKs(), (newKs) -> {this.lowerFeedforward_2.setKs(newKs); this.resetPIDs();});
+        table.publishDouble("kV follower", () -> this.lowerFeedforward_2.getKv(), (newKv) -> {this.lowerFeedforward_2.setKv(newKv); this.resetPIDs();});
     }
 }
  

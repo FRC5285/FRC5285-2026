@@ -14,21 +14,18 @@ import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.interpolation.TimeInterpolatableBuffer;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Pose3d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.interpolation.TimeInterpolatableBuffer;
+import org.wpilib.math.numbers.N1;
+import org.wpilib.math.numbers.N3;
+import org.wpilib.system.Timer;
+import org.wpilib.smartdashboard.Field2d;
+import org.wpilib.command2.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.util.PositionMath;
@@ -72,9 +69,6 @@ public class VisionSubsystem extends SubsystemBase {
         if (Robot.isSimulation()) {
             this.simInit();
         }
-
-        SendableRegistry.add(this, "Vision");
-        SmartDashboard.putData(this);
     }
 
     /** Inits simulation variables */
@@ -222,7 +216,7 @@ public class VisionSubsystem extends SubsystemBase {
      * @param cameraIndex the camera
      */
     private void setRobotCameraTransform(int cameraIndex) {
-        this.camTrfMap.get(cameraIndex).addSample(Timer.getFPGATimestamp(), new Pose3d().plus(this.getCurrentRobotCameraTransform(cameraIndex)));
+        this.camTrfMap.get(cameraIndex).addSample(Timer.getTimestamp(), new Pose3d().plus(this.getCurrentRobotCameraTransform(cameraIndex)));
     }
 
     /**
@@ -238,11 +232,6 @@ public class VisionSubsystem extends SubsystemBase {
 
     private void simSetRobotCameraTransform(int cameraIndex) {
         this.visionSim.adjustCamera(this.camerasSim[cameraIndex], this.getCurrentRobotCameraTransform(cameraIndex));
-    }
-
-    @Override
-    public void initSendable(SendableBuilder builder) {
-
     }
 
     @FunctionalInterface

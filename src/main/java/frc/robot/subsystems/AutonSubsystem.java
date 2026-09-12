@@ -6,13 +6,14 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.path.PathConstraints;
 import com.pathplanner.lib.path.PathPlannerPath;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.WaitCommand;
-import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.tunable.Selectable;
+import org.wpilib.tunable.Tunables;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.Commands;
+import org.wpilib.command2.SubsystemBase;
+import org.wpilib.command2.WaitCommand;
+import org.wpilib.command2.WaitUntilCommand;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.PositionMath;
@@ -29,45 +30,48 @@ public class AutonSubsystem extends SubsystemBase {
     private final TurretIntakeSubsystem turretIntake;
     private final RollerSubsystem bucketRollers;
     private final BucketOutSubsystem bucketOuttake;
-    private final ClimbSubsystem climber;
     private final LedSubsystem ledSubsystem;
     private final PositionMath positionMath;
 
     private PathConstraints autonPathConstraints = new PathConstraints(AutoConstants.maxV, AutoConstants.maxA, AutoConstants.maxAngularV, AutoConstants.maxAngularA);
     // private PathConstraints climbPathConstraints = new PathConstraints(AutoConstants.climbMaxV, AutoConstants.climbMaxA, AutoConstants.climbMaxAngularV, AutoConstants.climbMaxAngularA);
 
-    private SendableChooser<Integer> startPosition = new SendableChooser<>();
-    private SendableChooser<Supplier<Command>> collectLocation = new SendableChooser<>();
-    private SendableChooser<Supplier<Command>> climbCommand = new SendableChooser<>();
+    private Selectable<Integer> startPosition = new Selectable<>();
+    private Selectable<Supplier<Command>> collectLocation = new Selectable<>();
+    private Selectable<Supplier<Command>> climbCommand = new Selectable<>();
 
-    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, RollerSubsystem bucketRollers, BucketOutSubsystem bucketOuttake, ClimbSubsystem climber, LedSubsystem ledSubsystem, PositionMath positionMath) {
+    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, RollerSubsystem bucketRollers, BucketOutSubsystem bucketOuttake, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
         this.groundIntake = groundIntake;
         this.turretIntake = turretIntake;
         this.bucketRollers = bucketRollers;
         this.bucketOuttake = bucketOuttake;
-        this.climber = climber;
         this.ledSubsystem = ledSubsystem;
         this.positionMath = positionMath;
 
         // Start position
-        this.startPosition.setDefaultOption("1", -2);
-        for (int i = -1; i <= 2; i ++) this.startPosition.addOption("" + (i + 3), i);
+        for (int i = -2; i <= 2; i ++) this.startPosition.add("" + (i + 3), i);
+
+        this.startPosition.setDefault("2");
 
         // Path
-        this.collectLocation.setDefaultOption("Depot (Left)", () -> this.depotCollection());
-        this.collectLocation.addOption("Outpost (Right)", () -> this.outpostCollection());
-        this.collectLocation.addOption("Left Neutral Zone", () -> this.leftNeutralZoneCollection());
-        this.collectLocation.addOption("Right Neutral Zone", () -> this.rightNeutralZoneCollection());
+        this.collectLocation.add("Depot (Left)", () -> this.depotCollection());
+        this.collectLocation.add("Outpost (Right)", () -> this.outpostCollection());
+        this.collectLocation.add("Left Neutral Zone", () -> this.leftNeutralZoneCollection());
+        this.collectLocation.add("Right Neutral Zone", () -> this.rightNeutralZoneCollection());
+
+        this.collectLocation.setDefault("Depot (Left)");
 
         // Climb location
-        this.climbCommand.setDefaultOption("Left", () -> this.climbLeft(false));
-        this.climbCommand.addOption("Right", () -> this.climbRight(false));
+        this.climbCommand.add("Left", () -> this.climbLeft(false));
+        this.climbCommand.add("Right", () -> this.climbRight(false));
+
+        this.climbCommand.setDefault("Left");
 
         // Puts choosers onto dashboard
-        SmartDashboard.putData("Start Position", this.startPosition);
-        SmartDashboard.putData("Where to get fuel", this.collectLocation);
-        SmartDashboard.putData("Climb Position", this.climbCommand);
+        Tunables.publish("Start Position", this.startPosition);
+        Tunables.publish("Where to get fuel", this.collectLocation);
+        Tunables.publish("Climb Position", this.climbCommand);
     }
 
     /**
@@ -330,6 +334,6 @@ public class AutonSubsystem extends SubsystemBase {
     }
 
     public Command teleopStartCommand() {
-        return this.climber.Unclimb();
+        return Commands.none();
     }
 }

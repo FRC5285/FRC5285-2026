@@ -7,19 +7,16 @@ package frc.robot;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
+import org.wpilib.driverstation.RobotState;
+import org.wpilib.telemetry.TelemetryLoggable;
+import org.wpilib.telemetry.TelemetryTable;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.button.CommandXboxController;
+import org.wpilib.command2.button.Trigger;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.AutonSubsystem;
 import frc.robot.subsystems.BucketOutSubsystem;
-import frc.robot.subsystems.ClimbSubsystem;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
@@ -30,7 +27,7 @@ import frc.robot.subsystems.TurretIntakeSubsystem;
 import frc.robot.util.PositionMath;
 import frc.robot.util.ShiftUtil;
 
-public class RobotContainer implements Sendable {
+public class RobotContainer implements TelemetryLoggable {
 
     private final CommandSwerveDrivetrain drivetrain = TunerConstants.createDrivetrain();
 
@@ -47,13 +44,11 @@ public class RobotContainer implements Sendable {
 
     private final BucketOutSubsystem bucketOuttake = new BucketOutSubsystem(this.positionMath);
 
-    private final ClimbSubsystem climber = new ClimbSubsystem();
-
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
     private final LedSubsystem ledSubsystem = new LedSubsystem();
 
-    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketRollers, this.bucketOuttake, this.climber, this.ledSubsystem, this.positionMath);
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketRollers, this.bucketOuttake, this.ledSubsystem, this.positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -88,12 +83,9 @@ public class RobotContainer implements Sendable {
         this.configureBindings();
         // this.configureOtherTriggers();
         // this.configureTestBindings();
-
-        // Telemetry
-        SendableRegistry.add(this, "RobotContainer");
-        SmartDashboard.putData(this);
     }
 
+    @SuppressWarnings("unused")
     private void configureTestBindings() {
         // this.driverController.a().onTrue(this.bucketRollers.startFastCommand().alongWith(this.bucketOuttake.startCommand()));
         // this.driverController.a().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
@@ -112,17 +104,17 @@ public class RobotContainer implements Sendable {
         // Default command (auto rotation)
         this.drivetrain.setDefaultCommand(
             this.drivetrain.applyRequest(() ->
-                this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTriggerAxis()))
-                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTriggerAxis()))
-                    .withRotationalRate(this.positionMath.driveRotationMath(this.positionMath.calcRotLimit(driverController.getRightX()), driverController.getLeftTriggerAxis()))
+                this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTrigger()))
+                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTrigger()))
+                    .withRotationalRate(this.positionMath.driveRotationMath(this.positionMath.calcRotLimit(driverController.getRightX()), driverController.getLeftTrigger()))
             )
         );
 
         // Auto bump rotation
-        new Trigger(() -> this.positionMath.bumpTurn() && DriverStation.isAutonomousEnabled() == false && this.driverController.leftBumper().getAsBoolean() == false).whileTrue(
+        new Trigger(() -> this.positionMath.bumpTurn() && RobotState.isAutonomousEnabled() == false && this.driverController.leftBumper().getAsBoolean() == false).whileTrue(
             this.drivetrain.applyRequest(() ->
-                this.drive.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTriggerAxis()))
-                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTriggerAxis()))
+                this.drive.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTrigger()))
+                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTrigger()))
                     .withTargetDirection(this.positionMath.drivetrainRotationAmount())
             )
         );
@@ -214,22 +206,6 @@ public class RobotContainer implements Sendable {
             this.groundIntake.endIntake()
         );
 
-        this.secondController.y().onTrue(
-            this.groundIntake.followerUp()
-        );
-
-        this.secondController.a().onTrue(
-            this.groundIntake.followerDown()
-        );
-
-        this.secondController.y().onFalse(
-            this.groundIntake.followerStop()
-        );
-
-        this.secondController.a().onFalse(
-            this.groundIntake.followerStop()
-        );
-
         this.secondController.x().onTrue(
             this.turret.defendBegin()
         );
@@ -240,6 +216,7 @@ public class RobotContainer implements Sendable {
     }
 
     /** Configure the other triggers */
+    @SuppressWarnings("unused")
     private void configureOtherTriggers() {
         new Trigger(() -> ShiftUtil.canScore() && this.ledSubsystem.getCurrentCommand() == null).onTrue(
             this.ledSubsystem.hubActive()
@@ -273,7 +250,6 @@ public class RobotContainer implements Sendable {
         this.positionMath.resetControllerLimiters();
         this.drive.HeadingController.reset();
         this.groundIntake.resetPIDs();
-        this.climber.resetPID();
         this.turret.resetPIDs();
     }
 
@@ -286,11 +262,11 @@ public class RobotContainer implements Sendable {
     }
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("PID Goal", () -> this.drive.HeadingController.getSetpoint(), null);
-        builder.addDoubleProperty("Robot Heading", () -> this.drivetrain.getPose().getRotation().getRadians(), null);
-        builder.addDoubleProperty("Goal Flywheel Speed", () -> this.positionMath.getFlywheelSpeedTarget(), null);
-        builder.addDoubleProperty("Turret X Velocity", () -> this.positionMath.getTurretXVelocity(), null);
-        builder.addDoubleProperty("Turret Y Velocity", () -> this.positionMath.getTurretYVelocity(), null);
+    public void logTo(TelemetryTable table) {
+        table.log("PID Goal", this.drive.HeadingController.getSetpoint());
+        table.log("Robot Heading", this.drivetrain.getPose().getRotation().getRadians());
+        table.log("Goal Flywheel Speed", this.positionMath.getFlywheelSpeedTarget());
+        table.log("Turret X Velocity", this.positionMath.getTurretXVelocity());
+        table.log("Turret Y Velocity", this.positionMath.getTurretYVelocity());
     }
 }

@@ -1,13 +1,12 @@
 package frc.robot.util;
 
-import edu.wpi.first.math.MathSharedStore;
-import edu.wpi.first.math.MathUtil;
+import org.wpilib.math.util.MathSharedStore;
 
 /**
  * A class that limits the rate of change of an input value. Useful for implementing voltage,
  * setpoint, and/or output ramps. A slew-rate limit is most appropriate when the quantity being
  * controlled is a velocity or a voltage; when controlling a position, consider using a {@link
- * edu.wpi.first.math.trajectory.TrapezoidProfile} instead.
+ * org.wpilib.math.trajectory.TrapezoidProfile} instead.
  */
 public class BetterSlewRateLimiter {
   private final double m_positiveRateLimit;
@@ -53,13 +52,13 @@ public class BetterSlewRateLimiter {
     double elapsedTime = currentTime - m_prevTime;
     if (Math.signum(m_prevVal) >= 0.0) {
         m_prevVal +=
-            MathUtil.clamp(
+            Math.clamp(
                 input - m_prevVal,
                 m_negativeRateLimit * elapsedTime,
                 m_positiveRateLimit * elapsedTime);
     } else {
         m_prevVal +=
-            MathUtil.clamp(
+            Math.clamp(
                 input - m_prevVal,
                 -m_positiveRateLimit * elapsedTime,
                 -m_negativeRateLimit * elapsedTime);

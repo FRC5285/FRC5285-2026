@@ -1,14 +1,13 @@
 package frc.robot.util;
 
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.util.sendable.Sendable;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import org.wpilib.math.geometry.Translation2d;
+import org.wpilib.telemetry.TelemetryLoggable;
+import org.wpilib.telemetry.TelemetryTable;
+
 import frc.robot.Constants.LookupTableConstants;
 
 /** Handles lookup table functionality */
-public class LookupTable implements Sendable {
+public class LookupTable implements TelemetryLoggable {
     private double[] tableX, tableY;
 
     private int cachedInd = 0;
@@ -24,9 +23,6 @@ public class LookupTable implements Sendable {
             this.tableX[i] = inputTable[i][0];
             this.tableY[i] = inputTable[i][1];
         }
-
-        SendableRegistry.add(this, tableName);
-        SmartDashboard.putData(this);
     }
 
     /**
@@ -217,10 +213,10 @@ public class LookupTable implements Sendable {
     }
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addDoubleArrayProperty("Table X", () -> this.tableX, (newTableX) -> this.tableX = newTableX);
-        builder.addDoubleArrayProperty("Table Y", () -> this.tableY, (newTableY) -> this.tableY = newTableY);
-        builder.addDoubleProperty("Calculation Error", () -> this.getCalcError(), null);
-        builder.addDoubleProperty("Calculation Distance", () -> this.calcDist, null);
+    public void logTo(TelemetryTable table) {
+        table.log("Calculation Error", this.getCalcError());
+        table.log("Calculation Distance", this.calcDist);
+        table.log("Table X", this.tableX);
+        table.log("Table Y", this.tableY);
     }
 }

@@ -1,17 +1,15 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.MetersPerSecond;
-
-import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
-import edu.wpi.first.math.Matrix;
-import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
+import static org.wpilib.units.Units.MetersPerSecond;
+import org.wpilib.fields.Fields;
+import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
+import org.wpilib.math.geometry.Pose2d;
+import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.geometry.Rotation3d;
+import org.wpilib.math.geometry.Transform3d;
+import org.wpilib.math.numbers.N1;
+import org.wpilib.math.numbers.N3;
 import frc.robot.generated.TunerConstants;
 
 public final class Constants {
@@ -275,7 +273,7 @@ public final class Constants {
     /** Constants for vision */
     public static class VisionConstants {
         /** The field tag layout */
-        public static final AprilTagFieldLayout kTagLayout = AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+        public static final Fields kTagLayout = Fields.FRC_2026_REBUILT_WELDED;
 
         /** Standard deviations for when only one tag is seen */
         public static final Matrix<N3, N1> kSingleTagStdDevs = VecBuilder.fill(0.2, 0.2, 0.5);
@@ -334,8 +332,11 @@ public final class Constants {
         public static final double S_kd = 0.0;
         /** The CAN ID for the motor */
         public static final int motorCanId = 15;
+        public static final int motorCanBus = 0;
         public static final int ShooterMotorCanId = 16;
+        public static final int ShooterMotorCanBus = 0;
         public static final int ShooterMotor2CanId = 17;
+        public static final int ShooterMotor2CanBus = 0;
 
         public static final int channel_a = 0;
         public static final int channel_b = 1;
@@ -359,15 +360,26 @@ public final class Constants {
     /** Constants for intake */
     public static class IntakeConstants {
         public static final int intakeID = 21;
+        public static final int intakeBus = 1;
         public static final int lowerID = 25;
+        public static final int lowerBus = 1;
         public static final int followerId = 26;
+        public static final int followerBus = 1;
         public static final int encoderChannel = 2;
         public static final int encoderChannel_2 = 8;
         
         /** Encoder value when it is supposed to be at 0 (0 is when the intake is flat) */
-        public static final double intakeLoweredValue = 1.84; // there are a few wires stopping the intake from being fully lowered
-        public static final double intakeRaisedValue = 0.085; // flimsy build so its variable
-        public static final double intakeSecondRaisedValue = 0.2;
+        public static final double intakeLoweredValue = 2.1424; // there are a few wires stopping the intake from being fully lowered
+
+        public static final double intakeFolllower_LoweredValue = 2.647;
+
+        public static final double intakeRaisedValue = 0.382; // flimsy build so its variable
+
+        public static final double intakeFollower_RaisedValue = 0.0468;
+
+        public static final double intakeSecondRaisedValue = 0.989;
+
+        public static final double intakeFollower_SecondRaisedValue = 0.776;
 
         public static final double kS = 0.0;
         public static final double kV = 0.0; // 0.0
@@ -382,6 +394,8 @@ public final class Constants {
                                                            //note that the gear ratio will be around this number!
         public static final double followerMultiplier = 1.1;
         public static final double followerMultiplerUp = 1.15;
+
+        // folllowre multpiler and follower multiplier up is not necessary i think i hope
         public static final double followerS = 0.0;
         public static final double followerV = 0.0;
         public static final double followerP = 6.1;
@@ -396,6 +410,7 @@ public final class Constants {
     /** Constants for turret intake */
     public static class TurretIntakeConstants {
         public static final int motorCanId = 18;
+        public static final int motorCanBus = 0;
 
         // arbitrary values (for now)
         public static final double kS = 0.0;
@@ -419,6 +434,7 @@ public final class Constants {
     /** Constants for storage rollers */
     public static class RollerConstants {
         public static final int ROLLER_MOTOR_ID=19;
+        public static final int ROLLER_MOTOR_BUS=1;
         public static final double speed=0.0;
         public static final double fastSpeed = 1.0; // 0.2
     }
@@ -426,6 +442,7 @@ public final class Constants {
     /** Constants for the bucket outtake */
     public static class BucketOutConstants {
         public static final int MOTOR_ID = 20;
+        public static final int CANBUS_ID = 1;
         public static final double SPEEDForwards = -1.0; // adjust as needed
         public static final double SPEEDBackwards = 0.4;
         public static final double forwardSeconds = 5.5;

@@ -1,19 +1,22 @@
 package frc.robot.subsystems;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.util.sendable.SendableRegistry;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj.DutyCycleEncoder;
+import org.wpilib.math.controller.ProfiledPIDController;
+import org.wpilib.math.controller.SimpleMotorFeedforward;
+import org.wpilib.math.trajectory.TrapezoidProfile;
+import org.wpilib.units.measure.Angle;
+import org.wpilib.telemetry.Telemetry;
+import org.wpilib.telemetry.TelemetryTable;
+import org.wpilib.tunable.ComplexTunable;
+import org.wpilib.tunable.TunableTable;
+import org.wpilib.tunable.Tunables;
+import org.wpilib.command2.Command;
+import org.wpilib.command2.SubsystemBase;
+import org.wpilib.hardware.rotation.DutyCycleEncoder;
 import frc.robot.Constants.TurretConstants;
 
 import java.util.function.Supplier;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -25,19 +28,19 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import frc.robot.util.PositionMath;
 
-import static edu.wpi.first.units.Units.Rotations;
+import static org.wpilib.units.Units.Rotations;
 
 import yams.units.EasyCRT;
 import yams.units.EasyCRTConfig;
 
 
-public class TurretSubsystem extends SubsystemBase {
+public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
     // Instance variables go here
 
     private final PositionMath positionMath;
-    private final TalonFX turretMotor = new TalonFX(TurretConstants.motorCanId);
-    private final TalonFX shooterMotor = new TalonFX(TurretConstants.ShooterMotorCanId); 
-    private final TalonFX shooterMotor2 = new TalonFX(TurretConstants.ShooterMotor2CanId);
+    private final TalonFX turretMotor = new TalonFX(TurretConstants.motorCanId, CANBus.systemcore(TurretConstants.motorCanBus));
+    private final TalonFX shooterMotor = new TalonFX(TurretConstants.ShooterMotorCanId, CANBus.systemcore(TurretConstants.ShooterMotorCanBus)); 
+    private final TalonFX shooterMotor2 = new TalonFX(TurretConstants.ShooterMotor2CanId, CANBus.systemcore(TurretConstants.ShooterMotor2CanBus));
 
     private final MotionMagicVelocityVoltage motionMagicRequestShoooter = new MotionMagicVelocityVoltage(0);
 
@@ -105,8 +108,7 @@ public class TurretSubsystem extends SubsystemBase {
         shooterMotor2.setPosition(0);
         shooterMotor2.getConfigurator().apply(ShooterConfigs);
 
-        SendableRegistry.add(this, "Turret");
-        SmartDashboard.putData(this);
+        Tunables.publish("Turret/Tunables", this);
 
         turretAngle();
     }
@@ -162,25 +164,28 @@ public class TurretSubsystem extends SubsystemBase {
 
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1));
         shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));        
+
+        Telemetry.log("Turret", this);
     }
 
     @Override
-    public void initSendable(SendableBuilder builder) {
-        builder.addDoubleProperty("Easycrt output", () -> this.easyCRT, null);
-        builder.addDoubleProperty("Turret target", () -> this.turretTargetPosition,null);
-        builder.addDoubleProperty("Encoder A", () -> (this.encoderA.get()), null);
-        builder.addDoubleProperty("Encoder B", () -> (this.encoderB.get()), null);
-        builder.addDoubleProperty("Turret error", () -> Math.abs(this.turretTargetPosition - this.easyCRT), null);
-        builder.addStringProperty("turret debug", () -> this.easyCrtSolver.getLastStatus().name(), null);
+    public void logTo(TelemetryTable table) {
+        table.log("Easycrt output", this.easyCRT);
+        table.log("Turret target", this.turretTargetPosition);
+        table.log("Encoder A", (this.encoderA.get()));
+        table.log("Encoder B", (this.encoderB.get()));
+        table.log("Turret error", Math.abs(this.turretTargetPosition - this.easyCRT));
+        table.log("turret debug", this.easyCrtSolver.getLastStatus().name());
 
-        builder.addDoubleProperty("Shooter target RPS", () -> this.shooterTargetRPS, null);   
-        builder.addDoubleProperty("Shooter current RPS", () -> this.shooterMotor.getVelocity().getValueAsDouble(), null); 
-        builder.addDoubleProperty("Shooter error", () -> Math.abs(this.shooterTargetRPS + this.shooterMotor.getVelocity().getValueAsDouble()), null);
+        table.log("Shooter target RPS", this.shooterTargetRPS);   
+        table.log("Shooter current RPS", this.shooterMotor.getVelocity().getValueAsDouble()); 
+        table.log("Shooter error", Math.abs(this.shooterTargetRPS + this.shooterMotor.getVelocity().getValueAsDouble()));
+    }
 
-        // builder.addDoubleProperty("kS", () -> this.turretFeedforward.getKs(), (newKs) -> {this.turretFeedforward.setKs(newKs); this.resetPIDs();});
-        // builder.addDoubleProperty("kV", () -> this.turretFeedforward.getKv(), (newKv) -> {this.turretFeedforward.setKv(newKv); this.resetPIDs();});
-        // builder.addDoubleProperty("kP", () -> this.turretPID.getP(), (newP) -> {this.turretPID.setP(newP); this.resetPIDs();});
-        // builder.addDoubleProperty("kI", () -> this.turretPID.getI(), (newI) -> {this.turretPID.setI(newI); this.resetPIDs();});
-        // builder.addDoubleProperty("kD", () -> this.turretPID.getD(), (newD) -> {this.turretPID.setD(newD); this.resetPIDs();});
+    @Override
+    public void publishTunable(TunableTable table) {
+        table.publishDouble("kS", () -> this.turretFeedforward.getKs(), (newKs) -> {this.turretFeedforward.setKs(newKs); this.resetPIDs();});
+        table.publishDouble("kV", () -> this.turretFeedforward.getKv(), (newKv) -> {this.turretFeedforward.setKv(newKv); this.resetPIDs();});
+        table.publish("Turret PID", this.turretPID);
     }
 }
