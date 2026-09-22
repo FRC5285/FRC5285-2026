@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 // import com.ctre.phoenix6.controls.Follower;
 
@@ -23,10 +22,10 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
-    private final TalonFX intakeMotor = new TalonFX(IntakeConstants.intakeID, CANBus.systemcore(IntakeConstants.intakeBus));
+    private final TalonFX intakeMotor = new TalonFX(IntakeConstants.intakeID, IntakeConstants.intakeBus);
 
-    private final TalonFX lower = new TalonFX(IntakeConstants.lowerID, CANBus.systemcore(IntakeConstants.lowerBus));
-    private final TalonFX lowerFollower = new TalonFX(IntakeConstants.followerId, CANBus.systemcore(IntakeConstants.followerBus));
+    private final TalonFX lower = new TalonFX(IntakeConstants.lowerID, IntakeConstants.lowerBus);
+    private final TalonFX lowerFollower = new TalonFX(IntakeConstants.followerId, IntakeConstants.followerBus);
 
     private final SimpleMotorFeedforward intakeFeedforward = new SimpleMotorFeedforward(IntakeConstants.kS, IntakeConstants.kV);
     private final ProfiledPIDController lowerPID = new ProfiledPIDController(IntakeConstants.kP, IntakeConstants.kI, IntakeConstants.kD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel, IntakeConstants.maxAcc));

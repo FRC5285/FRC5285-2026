@@ -1,6 +1,5 @@
 package frc.robot.subsystems;
 
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 
@@ -18,7 +17,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class TurretIntakeSubsystem extends SubsystemBase implements ComplexTunable {
-    private final TalonFX motor = new TalonFX(TurretIntakeConstants.motorCanId, CANBus.systemcore(TurretIntakeConstants.motorCanBus));
+    private final TalonFX motor = new TalonFX(TurretIntakeConstants.motorCanId, TurretIntakeConstants.motorCanBus);
     private final MotionMagicVelocityVoltage motionMagicRequest = new MotionMagicVelocityVoltage(0);
 
     double intakeSpeed = 0.0; // radians per sec, target speed

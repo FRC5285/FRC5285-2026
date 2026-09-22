@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 import frc.robot.Constants.RollerConstants;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import org.wpilib.command2.Command;
@@ -14,7 +13,7 @@ public class RollerSubsystem extends SubsystemBase {
     private final DutyCycleOut dutyCycle = new DutyCycleOut(0); 
     
     public RollerSubsystem() {
-        rollerMotor = new TalonFX(RollerConstants.ROLLER_MOTOR_ID, CANBus.systemcore(RollerConstants.ROLLER_MOTOR_BUS));
+        rollerMotor = new TalonFX(RollerConstants.ROLLER_MOTOR_ID, RollerConstants.ROLLER_MOTOR_BUS);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40;

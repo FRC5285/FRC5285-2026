@@ -2,7 +2,6 @@ package frc.robot.subsystems;
 
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.controls.DutyCycleOut;
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 
 import org.wpilib.system.Timer;
@@ -24,7 +23,7 @@ public class BucketOutSubsystem extends SubsystemBase {
     public BucketOutSubsystem(PositionMath positionMath) {
         this.positionMath = positionMath;
 
-        rollerMotor = new TalonFX(BucketOutConstants.MOTOR_ID, CANBus.systemcore(BucketOutConstants.CANBUS_ID));
+        rollerMotor = new TalonFX(BucketOutConstants.MOTOR_ID, BucketOutConstants.CANBUS_ID);
 
         TalonFXConfiguration config = new TalonFXConfiguration();
         config.CurrentLimits.SupplyCurrentLimit = 40;

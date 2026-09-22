@@ -2,6 +2,7 @@ package frc.robot;
 
 import static org.wpilib.units.Units.MetersPerSecond;
 import org.wpilib.fields.Fields;
+import org.wpilib.hardware.bus.CANPort;
 import org.wpilib.math.linalg.Matrix;
 import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.geometry.Pose2d;
@@ -10,9 +11,32 @@ import org.wpilib.math.geometry.Rotation3d;
 import org.wpilib.math.geometry.Transform3d;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
+
+import com.ctre.phoenix6.CANBus;
+
 import frc.robot.generated.TunerConstants;
 
 public final class Constants {
+
+    /** CAN Buses */
+    public static class CANBusConstants {
+
+        /** CAN bus 0 */
+        public static final CANBus CAN_BUS_0 = new CANBus(CANPort.CAN_S0);
+
+        /** CAN bus 1 */
+        public static final CANBus CAN_BUS_1 = new CANBus(CANPort.CAN_S1);
+
+        // CAN bus 2 is reserved for the drivetrain
+
+        /** CAN bus 3 */
+        public static final CANBus CAN_BUS_3 = new CANBus(CANPort.CAN_S3);
+
+        /** CAN bus 4 */
+        public static final CANBus CAN_BUS_4 = new CANBus(CANPort.CAN_S4);
+
+    }
+
     /** Constants relating to the driver input */
     public static class OperatorConstants {
         /** The driver station port to use as the driver controller port */
@@ -332,11 +356,11 @@ public final class Constants {
         public static final double S_kd = 0.0;
         /** The CAN ID for the motor */
         public static final int motorCanId = 15;
-        public static final int motorCanBus = 0;
+        public static final CANBus motorCanBus = CANBusConstants.CAN_BUS_0;
         public static final int ShooterMotorCanId = 16;
-        public static final int ShooterMotorCanBus = 0;
+        public static final CANBus ShooterMotorCanBus = CANBusConstants.CAN_BUS_0;
         public static final int ShooterMotor2CanId = 17;
-        public static final int ShooterMotor2CanBus = 0;
+        public static final CANBus ShooterMotor2CanBus = CANBusConstants.CAN_BUS_0;
 
         public static final int channel_a = 0;
         public static final int channel_b = 1;
@@ -360,11 +384,11 @@ public final class Constants {
     /** Constants for intake */
     public static class IntakeConstants {
         public static final int intakeID = 21;
-        public static final int intakeBus = 1;
+        public static final CANBus intakeBus = CANBusConstants.CAN_BUS_1;
         public static final int lowerID = 25;
-        public static final int lowerBus = 1;
+        public static final CANBus lowerBus = CANBusConstants.CAN_BUS_1;
         public static final int followerId = 26;
-        public static final int followerBus = 1;
+        public static final CANBus followerBus = CANBusConstants.CAN_BUS_1;
         public static final int encoderChannel = 2;
         public static final int encoderChannel_2 = 8;
         
@@ -410,7 +434,7 @@ public final class Constants {
     /** Constants for turret intake */
     public static class TurretIntakeConstants {
         public static final int motorCanId = 18;
-        public static final int motorCanBus = 0;
+        public static final CANBus motorCanBus = CANBusConstants.CAN_BUS_0;
 
         // arbitrary values (for now)
         public static final double kS = 0.0;
@@ -434,7 +458,7 @@ public final class Constants {
     /** Constants for storage rollers */
     public static class RollerConstants {
         public static final int ROLLER_MOTOR_ID=19;
-        public static final int ROLLER_MOTOR_BUS=1;
+        public static final CANBus ROLLER_MOTOR_BUS=CANBusConstants.CAN_BUS_1;
         public static final double speed=0.0;
         public static final double fastSpeed = 1.0; // 0.2
     }
@@ -442,55 +466,11 @@ public final class Constants {
     /** Constants for the bucket outtake */
     public static class BucketOutConstants {
         public static final int MOTOR_ID = 20;
-        public static final int CANBUS_ID = 1;
+        public static final CANBus CANBUS_ID = CANBusConstants.CAN_BUS_1;
         public static final double SPEEDForwards = -1.0; // adjust as needed
         public static final double SPEEDBackwards = 0.4;
         public static final double forwardSeconds = 5.5;
         public static final double backwardSeconds = 0.0;
-    }
-        
-    
-
-    /** Constants for climber */
-    public static class ClimbConstants {
-    
-        //**************CLIMB MOTOR CONSTANTS************
-        public static final int climbMotorID = 23;
-
-        public static final double ckP = 40.0; //need to calibrate
-        public static final double ckI = 0.0; //need to calibrate
-        public static final double ckD = 0.0; //need to calibrate
-
-        public static final double cmaxV = 1.5; //need to calibrate
-        public static final double cmaxA = 0.5; //need to calibrate
-
-
-        //***************ROTATE MOTOR CONSTANTS***************
-        public static final int rotateMotorID = 24;
-
-        public static final int encoderChannel = 3;
-
-        public static final double encoderStartRotations = 0.867 - 0.3;
-        public static final double rotateInitialRotations = 0.3; //need to calibrate
-        public static final double rotateGoalRotations = 0.8; //need to calibrate
-
-        public static final double rkP = 36.0; //need to calibrate
-        public static final double rkI = 0.0; //need to calibrate
-        public static final double rkD = 0.0; //need to calibrate
-
-        public static final double rmaxV = 4.5; //need to calibrate
-        public static final double rmaxA = 3.5; //need to calibrate
-
-        
-        //**************LIDAR CONSTANTS************************
-        public static final double maxExtension = 0.21; //distance between sensor and plate (meters)
-
-        public static final double middleExtension = 0.06; // auton climb distance
-
-        public static final double minExtension = 0.045; //distance between sensor and plate (meters)
-
-        public static final double lidarOffset = 0.0; // Distance of lidar measurement - real measurement // 0.025
-
     }
 
     /** Constants for LEDs */

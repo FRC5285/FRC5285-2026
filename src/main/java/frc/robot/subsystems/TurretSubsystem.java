@@ -38,9 +38,9 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
     // Instance variables go here
 
     private final PositionMath positionMath;
-    private final TalonFX turretMotor = new TalonFX(TurretConstants.motorCanId, CANBus.systemcore(TurretConstants.motorCanBus));
-    private final TalonFX shooterMotor = new TalonFX(TurretConstants.ShooterMotorCanId, CANBus.systemcore(TurretConstants.ShooterMotorCanBus)); 
-    private final TalonFX shooterMotor2 = new TalonFX(TurretConstants.ShooterMotor2CanId, CANBus.systemcore(TurretConstants.ShooterMotor2CanBus));
+    private final TalonFX turretMotor = new TalonFX(TurretConstants.motorCanId, TurretConstants.motorCanBus);
+    private final TalonFX shooterMotor = new TalonFX(TurretConstants.ShooterMotorCanId, TurretConstants.ShooterMotorCanBus); 
+    private final TalonFX shooterMotor2 = new TalonFX(TurretConstants.ShooterMotor2CanId, TurretConstants.ShooterMotor2CanBus);
 
     private final MotionMagicVelocityVoltage motionMagicRequestShoooter = new MotionMagicVelocityVoltage(0);
 

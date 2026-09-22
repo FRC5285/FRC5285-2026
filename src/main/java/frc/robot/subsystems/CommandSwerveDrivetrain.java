@@ -222,7 +222,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public void resetSide() {
         MatchState.getAlliance().ifPresent(allianceColor -> {
-            setOperatorPerspectiveForward(
+            setOperatorForwardDirection(
                 allianceColor == Alliance.RED
                     ? kRedAlliancePerspectiveRotation
                     : kBlueAlliancePerspectiveRotation
