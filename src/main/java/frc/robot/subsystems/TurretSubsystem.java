@@ -30,8 +30,8 @@ import frc.robot.util.PositionMath;
 
 import static org.wpilib.units.Units.Rotations;
 
-import yams.units.EasyCRT;
-import yams.units.EasyCRTConfig;
+import frc.robot.util.yams.EasyCRT;
+import frc.robot.util.yams.EasyCRTConfig;
 
 
 public class TurretSubsystem extends SubsystemBase implements ComplexTunable{

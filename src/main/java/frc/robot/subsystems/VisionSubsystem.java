@@ -29,7 +29,6 @@ import org.wpilib.command2.SubsystemBase;
 import frc.robot.Robot;
 import frc.robot.Constants.VisionConstants;
 import frc.robot.util.PositionMath;
-
 // "Heavy inspiration" was taken from the following source:
 // https://github.com/PhotonVision/photonvision/blob/main/photonlib-java-examples/poseest/src/main/java/frc/robot/Vision.java
 
@@ -60,7 +59,7 @@ public class VisionSubsystem extends SubsystemBase {
         this.photonEstimators = new PhotonPoseEstimator[VisionConstants.numCameras];
         for (int i = 0; i < VisionConstants.numCameras; i ++) {
             this.cameras[i] = new PhotonCamera(VisionConstants.cameraNames[i]);
-            this.photonEstimators[i] = new PhotonPoseEstimator(VisionConstants.kTagLayout, this.getCurrentRobotCameraTransform(i));
+            this.photonEstimators[i] = new PhotonPoseEstimator(VisionConstants.kTagLayout.loadField(), this.getCurrentRobotCameraTransform(i));
             this.camTrfMap.put(i, TimeInterpolatableBuffer.createBuffer(VisionConstants.camPositionBufferTime));
             this.camTrfMap.get(i).addSample(i, new Pose3d().plus(this.getCurrentRobotCameraTransform(i)));
         }
@@ -76,7 +75,7 @@ public class VisionSubsystem extends SubsystemBase {
         // Create the vision system simulation which handles cameras and targets on the field.
         this.visionSim = new VisionSystemSim("main");
         // Add all the AprilTags inside the tag layout as visible targets to this simulated field.
-        this.visionSim.addAprilTags(VisionConstants.kTagLayout);
+        this.visionSim.addAprilTags(VisionConstants.kTagLayout.loadField());
         // Create simulated camera properties. These can be set to mimic your actual camera.
         var cameraProp = new SimCameraProperties();
         cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(90));
