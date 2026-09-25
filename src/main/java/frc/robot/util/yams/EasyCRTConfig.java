@@ -12,8 +12,6 @@ import java.util.Arrays;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
-import frc.robot.util.yams.GearBox;
-import frc.robot.util.yams.MechanismGearing;
 
 /**
  * Configuration for the EasyCRT solver. Made by team 6911.

@@ -16,7 +16,6 @@ import frc.robot.Constants.TurretConstants;
 
 import java.util.function.Supplier;
 
-import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;

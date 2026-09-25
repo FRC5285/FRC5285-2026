@@ -3,9 +3,6 @@ package frc.robot.util.yams;
 // Copyright (c) 2026 Yet Another Software Suite
 // SPDX-License-Identifier: LGPL-3.0-or-later
 
-import frc.robot.util.yams.InvalidStageGivenException;
-import frc.robot.util.yams.NoStagesGivenException;
-
 /**
  * GearBox class to calculate input and output conversion factors and check if the current
  * configuration is supported.
