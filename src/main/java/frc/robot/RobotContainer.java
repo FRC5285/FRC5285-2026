@@ -79,7 +79,7 @@ public class RobotContainer implements TelemetryLoggable {
         // TO DO: RECONFIGURE INTAKE CONSTANTS!!!!!
 
         // Configure controller bindings
-        this.configureDrivetrainBinding();
+        // this.configureDrivetrainBinding();
         this.configureBindings();
         // this.configureOtherTriggers();
         // this.configureTestBindings();
@@ -91,12 +91,12 @@ public class RobotContainer implements TelemetryLoggable {
         // this.driverController.a().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
         //this.driverController.x().onTrue(this.bucketRollers.reverseCommand().alongWith(this.bucketOuttake.setReverse()));
         //this.driverController.x().onFalse(this.bucketRollers.stopCommand().alongWith(this.bucketOuttake.stopCommand()));
-        this.driverController.a().onTrue(this.autonSubsystem.intakeDown());
-        this.driverController.y().onTrue(this.autonSubsystem.intakeUp());
-        this.driverController.b().onTrue(this.groundIntake.beginIntake().andThen(bucketRollers.startFastCommand()));
-        this.driverController.b().onFalse(this.groundIntake.endIntake().andThen(bucketRollers.stopCommand()));
-        this.driverController.x().onTrue(this.groundIntake.reverseIntake());
-        this.driverController.x().onFalse(this.groundIntake.endIntake());
+        // this.driverController.a().onTrue(this.autonSubsystem.intakeDown());
+        // this.driverController.y().onTrue(this.autonSubsystem.intakeUp());
+        // this.driverController.b().onTrue(this.groundIntake.beginIntake().andThen(bucketRollers.startFastCommand()));
+        // this.driverController.b().onFalse(this.groundIntake.endIntake().andThen(bucketRollers.stopCommand()));
+        // this.driverController.x().onTrue(this.groundIntake.reverseIntake());
+        // this.driverController.x().onFalse(this.groundIntake.endIntake());
     }
 
     /** Configures the drivetrain drive commands */
@@ -190,21 +190,21 @@ public class RobotContainer implements TelemetryLoggable {
             this.autonSubsystem.intakeDown()
         );
 
-        this.secondController.rightTrigger().onTrue(
-            this.autonSubsystem.regurgitate()
-        );
+        //this.secondController.rightTrigger().onTrue(
+          //  this.autonSubsystem.regurgitate()
+        //);
         
-        this.secondController.rightTrigger().onFalse(
-            this.autonSubsystem.stopRegurgitate()
-        );
+        //this.secondController.rightTrigger().onFalse(
+        //    this.autonSubsystem.stopRegurgitate()
+        //);
 
-        this.secondController.leftTrigger().onTrue(
-            this.groundIntake.beginIntake()
-        );
+        //this.secondController.leftTrigger().onTrue(
+          //  this.groundIntake.beginIntake()
+        //);
 
-        this.secondController.leftTrigger().onFalse(
-            this.groundIntake.endIntake()
-        );
+        //this.secondController.leftTrigger().onFalse(
+       //     this.groundIntake.endIntake()
+       // );
 
         this.secondController.x().onTrue(
             this.turret.defendBegin()

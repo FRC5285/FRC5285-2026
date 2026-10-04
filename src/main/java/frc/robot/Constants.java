@@ -365,11 +365,11 @@ public final class Constants {
         public static final int channel_a = 0;
         public static final int channel_b = 1;
 
-        public static final double encoderAOffset = -0.0292;
-        public static final double encoderBOffset = -0.1657;
+        public static final double encoderAOffset = -0.921;
+        public static final double encoderBOffset = -0.590;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
-        public static final double match_tolerance = 0.03; //rotations
+        public static final double match_tolerance = 0.1; //rotations
 
         public static final double turretPIDMin = -0.25;
         public static final double turretPIDMax = 0.25;
@@ -384,13 +384,13 @@ public final class Constants {
     /** Constants for intake */
     public static class IntakeConstants {
         public static final int intakeID = 21;
-        public static final CANBus intakeBus = CANBusConstants.CAN_BUS_1;
+        public static final CANBus intakeBus = CANBusConstants.CAN_BUS_3;
         public static final int lowerID = 25;
         public static final CANBus lowerBus = CANBusConstants.CAN_BUS_1;
         public static final int followerId = 26;
         public static final CANBus followerBus = CANBusConstants.CAN_BUS_1;
         public static final int encoderChannel = 2;
-        public static final int encoderChannel_2 = 8;
+        public static final int encoderChannel_2 = 3;
         
         /** Encoder value when it is supposed to be at 0 (0 is when the intake is flat) */
         public static final double intakeLoweredValue = 2.1424; // there are a few wires stopping the intake from being fully lowered
@@ -475,7 +475,7 @@ public final class Constants {
 
     /** Constants for LEDs */
     public static class LEDConstants {
-        public static final int led_pin = 0;
+        public static final int led_pin = 5;
 
         /** The seconds before the hub activates where the leds do the warning lights */
         public static final double shiftAlmostNum = 3.0;

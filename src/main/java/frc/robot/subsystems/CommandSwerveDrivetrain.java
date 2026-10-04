@@ -143,28 +143,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
     private void configureAutoBuilder() {
         try {
-            var config = RobotConfig.fromGUISettings();
-            AutoBuilder.configure(
-                this::getPose,   // Supplier of current robot pose
-                this::resetPose,         // Consumer for seeding pose against auto
-                () -> this.getState().Velocity, // Supplier of current robot speeds
-                // Consumer of ChassisVelocities and feedforwards to drive the robot
-                (speeds, feedforwards) -> setControl(
-                    m_pathApplyRobotSpeeds.withVelocity(speeds.discretize(0.020)) // ! THIS IS RRLY SHITTY IDK IF IT WORKS CHECK AGAIN111!!!!!11111!!!!!!!1111!
-                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                ),
-                new PPHolonomicDriveController(
-                    // PID constants for translation
-                    new PIDConstants(OperatorConstants.driveP, OperatorConstants.driveI, OperatorConstants.driveD),
-                    // PID constants for rotation
-                    new PIDConstants(OperatorConstants.rotationP, OperatorConstants.rotationI, OperatorConstants.rotationD)
-                ),
-                config,
-                // Assume the path needs to be flipped for Red vs Blue, this is normally the case
-                () -> MatchState.getAlliance().orElse(Alliance.BLUE) == Alliance.RED,
-                this // Subsystem for requirements
-            );
+            // var config = RobotConfig.fromGUISettings();
+            // AutoBuilder.configure(
+            //     this::getPose,   // Supplier of current robot pose
+            //     this::resetPose,         // Consumer for seeding pose against auto
+            //     () -> this.getState().Velocity, // Supplier of current robot speeds
+            //     // Consumer of ChassisVelocities and feedforwards to drive the robot
+            //     (speeds, feedforwards) -> setControl(
+            //         m_pathApplyRobotSpeeds.withVelocity(speeds.discretize(0.020)) // ! THIS IS RRLY SHITTY IDK IF IT WORKS CHECK AGAIN111!!!!!11111!!!!!!!1111!
+            //             .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+            //             .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+            //     ),
+            //     new PPHolonomicDriveController(
+            //         // PID constants for translation
+            //         new PIDConstants(OperatorConstants.driveP, OperatorConstants.driveI, OperatorConstants.driveD),
+            //         // PID constants for rotation
+            //         new PIDConstants(OperatorConstants.rotationP, OperatorConstants.rotationI, OperatorConstants.rotationD)
+            //     ),
+            //     config,
+            //     // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+            //     () -> MatchState.getAlliance().orElse(Alliance.BLUE) == Alliance.RED,
+            //     this // Subsystem for requirements
+            // );
         } catch (Exception ex) {
             DriverStationErrors.reportError("Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
         }
