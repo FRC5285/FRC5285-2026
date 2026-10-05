@@ -79,7 +79,7 @@ public class RobotContainer implements TelemetryLoggable {
         // TO DO: RECONFIGURE INTAKE CONSTANTS!!!!!
 
         // Configure controller bindings
-        // this.configureDrivetrainBinding();
+        this.configureDrivetrainBinding();
         this.configureBindings();
         // this.configureOtherTriggers();
         // this.configureTestBindings();
