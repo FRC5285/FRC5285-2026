@@ -393,17 +393,17 @@ public final class Constants {
         public static final int encoderChannel_2 = 2; //follower
         
         /** Encoder value when it is supposed to be at 0 (0 is when the intake is flat) */
-        public static final double intakeLoweredValue = 2.1424; // there are a few wires stopping the intake from being fully lowered
+        public static final double intakeLoweredValue = -1.3982; // there are a few wires stopping the intake from being fully lowered
 
-        public static final double intakeFolllower_LoweredValue = 2.647;
+        public static final double intakeFolllower_LoweredValue = -1.4543;
 
-        public static final double intakeRaisedValue = 0.2688; // flimsy build so its variable
+        public static final double intakeRaisedValue = 0.30983; // flimsy build so its variable
 
-        public static final double intakeFollower_RaisedValue = 0.0468;
+        public static final double intakeFollower_RaisedValue = 0.2589;
 
-        public static final double intakeSecondRaisedValue = 0.989;
+        public static final double intakeSecondRaisedValue = -0.3872;
 
-        public static final double intakeFollower_SecondRaisedValue = 0.776;
+        public static final double intakeFollower_SecondRaisedValue = -0.3623;
 
         public static final double kS = 0.0;
         public static final double kV = 0.0; // 0.0
