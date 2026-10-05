@@ -365,11 +365,11 @@ public final class Constants {
         public static final int channel_a = 0;
         public static final int channel_b = 1;
 
-        public static final double encoderAOffset = -0.921;
-        public static final double encoderBOffset = -0.590;
+        public static final double encoderAOffset = -0.984526;
+        public static final double encoderBOffset = -0.738916;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
-        public static final double match_tolerance = 0.1; //rotations
+        public static final double match_tolerance = 0.02; //rotations
 
         public static final double turretPIDMin = -0.25;
         public static final double turretPIDMax = 0.25;
@@ -389,15 +389,15 @@ public final class Constants {
         public static final CANBus lowerBus = CANBusConstants.CAN_BUS_1;
         public static final int followerId = 26;
         public static final CANBus followerBus = CANBusConstants.CAN_BUS_1;
-        public static final int encoderChannel = 2;
-        public static final int encoderChannel_2 = 3;
+        public static final int encoderChannel = 3;
+        public static final int encoderChannel_2 = 2; //follower
         
         /** Encoder value when it is supposed to be at 0 (0 is when the intake is flat) */
         public static final double intakeLoweredValue = 2.1424; // there are a few wires stopping the intake from being fully lowered
 
         public static final double intakeFolllower_LoweredValue = 2.647;
 
-        public static final double intakeRaisedValue = 0.382; // flimsy build so its variable
+        public static final double intakeRaisedValue = 0.2688; // flimsy build so its variable
 
         public static final double intakeFollower_RaisedValue = 0.0468;
 
