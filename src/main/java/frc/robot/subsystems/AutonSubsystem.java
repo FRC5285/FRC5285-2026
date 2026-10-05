@@ -28,7 +28,6 @@ public class AutonSubsystem extends SubsystemBase {
     private final CommandSwerveDrivetrain drivetrain;
     private final IntakeSubsystem groundIntake;
     private final TurretIntakeSubsystem turretIntake;
-    private final RollerSubsystem bucketRollers;
     private final BucketOutSubsystem bucketOuttake;
     private final LedSubsystem ledSubsystem;
     private final PositionMath positionMath;
@@ -40,11 +39,10 @@ public class AutonSubsystem extends SubsystemBase {
     private Selectable<Supplier<Command>> collectLocation = new Selectable<>();
     private Selectable<Supplier<Command>> climbCommand = new Selectable<>();
 
-    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, RollerSubsystem bucketRollers, BucketOutSubsystem bucketOuttake, LedSubsystem ledSubsystem, PositionMath positionMath) {
+    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, BucketOutSubsystem bucketOuttake, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
         this.groundIntake = groundIntake;
         this.turretIntake = turretIntake;
-        this.bucketRollers = bucketRollers;
         this.bucketOuttake = bucketOuttake;
         this.ledSubsystem = ledSubsystem;
         this.positionMath = positionMath;
@@ -95,7 +93,8 @@ public class AutonSubsystem extends SubsystemBase {
         .andThen(this.turretIntake.beginIntake())
         .andThen(new WaitUntilCommand(() -> this.turretIntake.atTargetSpeed()).withTimeout(AutoConstants.turretIntakeMaxWaitTime))
         .andThen(this.bucketOuttake.startCommand())
-        .andThen(this.bucketRollers.startFastCommand());
+     //   .andThen(this.bucketRollers.startFastCommand())
+        ;
     }
 
     /**
@@ -107,7 +106,7 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.shooting = false;
         })
-        .andThen(this.bucketRollers.stopCommand())
+        //.andThen(this.bucketRollers.stopCommand())
         // .andThen(this.turretIntake.reverseIntake())
         // .andThen(this.bucketOuttake.setReverse())
         ;
@@ -130,28 +129,28 @@ public class AutonSubsystem extends SubsystemBase {
     public Command regurgitate() {
         return this.turretIntake.reverseIntake()
         .andThen(this.bucketOuttake.setReverse())
-        .andThen(this.groundIntake.reverseIntake())
-        .andThen(this.bucketRollers.reverseCommand());
+        .andThen(this.groundIntake.reverseIntake());
+        //.andThen(this.bucketRollers.reverseCommand());
     }
     
     /** command to end regurgitation */
     public Command stopRegurgitate() {
         return this.bucketOuttake.stopCommand()
-        .andThen(this.bucketRollers.startCommand())
+        //.andThen(this.bucketRollers.startCommand())
         .andThen(turretIntake.endIntake())
         .andThen(groundIntake.endIntake())
         ;
     }
 
-    public Command unjamBucket() {
-        return this.bucketOuttake.setReverse()
-        .andThen(this.bucketRollers.reverseCommand());
-    }
+    // public Command unjamBucket() {
+    //     return this.bucketOuttake.setReverse()
+    //     .andThen(this.bucketRollers.reverseCommand());
+    // }
 
-    public Command unjamBucketStop() {
-        return this.bucketOuttake.stopCommand()
-        .andThen(this.bucketRollers.startCommand());
-    }
+    // public Command unjamBucketStop() {
+    //     return this.bucketOuttake.stopCommand()
+    //     .andThen(this.bucketRollers.startCommand());
+    // }
 
     /** Move the ground intake down (begin intaking) */
     public Command intakeDown() {
@@ -164,7 +163,7 @@ public class AutonSubsystem extends SubsystemBase {
     /** Move the ground intake up (stop intaking) */
     public Command intakeUp() {
         return this.groundIntake.endIntake()
-        .andThen(this.bucketRollers.stopCommand())
+        //.andThen(this.bucketRollers.stopCommand())
         .andThen(this.groundIntake.raiseIntake());
     }
 

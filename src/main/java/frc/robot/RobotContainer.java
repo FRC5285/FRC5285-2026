@@ -40,7 +40,7 @@ public class RobotContainer implements TelemetryLoggable {
 
     private final TurretIntakeSubsystem turretIntake = new TurretIntakeSubsystem();
 
-    private final RollerSubsystem bucketRollers = new RollerSubsystem();
+    //private final RollerSubsystem bucketRollers = new RollerSubsystem();
 
     private final BucketOutSubsystem bucketOuttake = new BucketOutSubsystem(this.positionMath);
 
@@ -48,7 +48,7 @@ public class RobotContainer implements TelemetryLoggable {
 
     private final LedSubsystem ledSubsystem = new LedSubsystem();
 
-    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketRollers, this.bucketOuttake, this.ledSubsystem, this.positionMath);
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketOuttake, this.ledSubsystem, this.positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -154,13 +154,13 @@ public class RobotContainer implements TelemetryLoggable {
             this.autonSubsystem.shootingOffFull()
         );
 
-        this.driverController.rightBumper().onTrue(
-            this.autonSubsystem.unjamBucket()
-        );
+        // this.driverController.rightBumper().onTrue(
+        //     this.autonSubsystem.unjamBucket()
+        // );
 
-        this.driverController.rightBumper().onFalse(
-            this.autonSubsystem.unjamBucketStop()
-        );
+        // this.driverController.rightBumper().onFalse(
+        //     this.autonSubsystem.unjamBucketStop()
+        // );
 
         /*
         this.driverController.povLeft().onTrue(
