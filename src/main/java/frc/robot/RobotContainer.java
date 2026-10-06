@@ -22,7 +22,6 @@ import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
 import frc.robot.subsystems.LedSubsystem;
-import frc.robot.subsystems.RollerSubsystem;
 import frc.robot.subsystems.TurretIntakeSubsystem;
 import frc.robot.util.PositionMath;
 import frc.robot.util.ShiftUtil;
@@ -54,7 +53,7 @@ public class RobotContainer implements TelemetryLoggable {
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
 
     /** The second controller */
-    private final CommandXboxController secondController = new CommandXboxController(OperatorConstants.secondControllerPort);
+    // private final CommandXboxController secondController = new CommandXboxController(OperatorConstants.secondControllerPort);
 
     /** Drive with controller joystick rotation */
     private final SwerveRequest.FieldCentric driveFree = new SwerveRequest.FieldCentric().withDriveRequestType(DriveRequestType.OpenLoopVoltage);
@@ -154,39 +153,19 @@ public class RobotContainer implements TelemetryLoggable {
             this.autonSubsystem.shootingOffFull()
         );
 
-        // this.driverController.rightBumper().onTrue(
-        //     this.autonSubsystem.unjamBucket()
-        // );
-
-        // this.driverController.rightBumper().onFalse(
-        //     this.autonSubsystem.unjamBucketStop()
-        // );
-
-        /*
-        this.driverController.povLeft().onTrue(
-            this.autonSubsystem.climbLeft(true)
-            .andThen(this.drivetrain.applyRequest(() ->
-                this.driveFree.withVelocityX(0.0)
-                    .withVelocityY(0.0)
-                    .withRotationalRate(0.0)
-            ))
+        this.driverController.a().onTrue(
+            this.autonSubsystem.unjamBucket()
         );
 
-        this.driverController.povRight().onTrue(
-            this.autonSubsystem.climbRight(true)
-            .andThen(this.drivetrain.applyRequest(() ->
-                this.driveFree.withVelocityX(0.0)
-                    .withVelocityY(0.0)
-                    .withRotationalRate(0.0)
-            ))
+        this.driverController.a().onFalse(
+            this.autonSubsystem.unjamBucketStop()
         );
-        */
 
-        this.secondController.leftBumper().onTrue(
+        this.driverController.dpadUp().onTrue(
             this.autonSubsystem.intakeUp()
         );
 
-        this.secondController.rightBumper().onTrue(
+        this.driverController.dpadDown().onTrue(
             this.autonSubsystem.intakeDown()
         );
 
@@ -198,21 +177,21 @@ public class RobotContainer implements TelemetryLoggable {
         //    this.autonSubsystem.stopRegurgitate()
         //);
 
-        this.secondController.leftTrigger().onTrue(
+        this.driverController.rightBumper().onTrue(
            this.groundIntake.beginIntake()
         );
 
-        this.secondController.leftTrigger().onFalse(
+        this.driverController.rightBumper().onFalse(
            this.groundIntake.endIntake()
        );
 
-        this.secondController.x().onTrue(
-            this.turret.defendBegin()
-        );
+        // this.secondController.x().onTrue(
+        //     this.turret.defendBegin()
+        // );
 
-        this.secondController.x().onFalse(
-            this.turret.defendEnd()
-        );
+        // this.secondController.x().onFalse(
+        //     this.turret.defendEnd()
+        // );
     }
 
     /** Configure the other triggers */
@@ -268,5 +247,7 @@ public class RobotContainer implements TelemetryLoggable {
         table.log("Goal Flywheel Speed", this.positionMath.getFlywheelSpeedTarget());
         table.log("Turret X Velocity", this.positionMath.getTurretXVelocity());
         table.log("Turret Y Velocity", this.positionMath.getTurretYVelocity());
+        table.log("Robot X", this.drivetrain.getPose().getX());
+        table.log("Robot Y", this.drivetrain.getPose().getY());
     }
 }

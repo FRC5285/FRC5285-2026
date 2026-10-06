@@ -41,7 +41,7 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
 
     private double encoder2_AddedRotations = 0.0;
     private double encoder2_TotalRotatoins = 0.0;
-    private double encoder2_PreviousRotations = 0.0;
+    private double encoder2_PreviousRotations;
 
     public IntakeSubsystem() {
         this.lowerPID.setGoal(IntakeConstants.intakeRaisedValue);
@@ -58,6 +58,8 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
 
         this.encoderPreviousRotations = this.getEncoderPosition();
         this.encoder2_PreviousRotations = encoder2.get();
+        this.encoderTotalRotations = this.getEncoderPosition();
+        this.encoder2_TotalRotatoins = this.encoder2.get();
 
         Tunables.publish("Ground Intake/Tunables", this);
     }
@@ -95,24 +97,6 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
         });
     }
 
-    public Command followerUp() {
-        return runOnce(() -> {
-            this.lowerFollower.setVoltage(-2.0);
-        });
-    }
-
-    public Command followerDown() {
-        return runOnce(() -> {
-            this.lowerFollower.setVoltage(2.0);
-        });
-    }
-
-    public Command followerStop() {
-        return runOnce(() -> {
-            this.lowerFollower.setVoltage(0.0);
-        });
-    }
-
     private double getEncoderPosition() {
         return encoder.get();
     }
@@ -128,25 +112,37 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
 
     public void resetPIDs() {
         this.lowerPID.reset(this.getExtensionRotations());
-        this.lowerPID_2.reset(this.getExtensionRotations());
+        this.lowerPID_2.reset(this.getExtensionRotations_2());
+        this.encoderPreviousRotations = this.getEncoderPosition();
+        this.encoder2_PreviousRotations = encoder2.get();
+        this.encoderTotalRotations = this.getEncoderPosition();
+        this.encoder2_TotalRotatoins = this.encoder2.get();
     }
 
     @Override
     public void periodic() {
         double encoderPos = this.getEncoderPosition();
-        if (encoderPos < 0.1 && this.encoderPreviousRotations > 0.9) {
+        if (Math.abs(encoderPos - this.encoderPreviousRotations) < 0.9 && Math.abs(encoderPos - this.encoderPreviousRotations) > 0.1) {
+            encoderPos = this.encoderPreviousRotations;
+        }
+        if (encoderPos < 0.25 && this.encoderPreviousRotations > 0.75) {
             this.encoderAddedRotations += 1.0;
-        } else if (encoderPos > 0.9 && this.encoderPreviousRotations < 0.1) {
+        }
+        if (encoderPos > 0.75 && this.encoderPreviousRotations < 0.25) {
             this.encoderAddedRotations -= 1.0;
         }
         this.encoderPreviousRotations = encoderPos;
         this.encoderTotalRotations = this.encoderAddedRotations + encoderPos;
+
 /* -------------------------------------------------------------------------- */
         double encoder2_Pos = encoder2.get();
-        if (encoder2_Pos < 0.1 && this.encoder2_PreviousRotations > 0.9) {
+        if (Math.abs(encoder2_Pos - this.encoder2_PreviousRotations) < 0.9 && Math.abs(encoder2_Pos - this.encoder2_PreviousRotations) > 0.1) {
+            encoder2_Pos = this.encoder2_PreviousRotations;
+        }
+        if (encoder2_Pos < 0.25 && this.encoder2_PreviousRotations > 0.75) {
             this.encoder2_AddedRotations += 1.0;
         }
-        else if (encoder2_Pos > 0.9 && this.encoder2_PreviousRotations < 0.1) {
+        if (encoder2_Pos > 0.75 && this.encoder2_PreviousRotations < 0.25) {
             this.encoder2_AddedRotations -= 1.0;
         }
         this.encoder2_PreviousRotations = encoder2_Pos;
@@ -158,8 +154,8 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
 
 /* -------------------------------------------------------------------------- */
 
-        double pidCalc_2 = this.lowerPID_2.calculate(this.encoder2_TotalRotatoins);
-        double ffCalc_2 = this.lowerFeedforward_2.calculate(this.encoder2_TotalRotatoins, this.lowerPID_2.getSetpoint().velocity);
+        double pidCalc_2 = this.lowerPID_2.calculate(this.getExtensionRotations_2());
+        double ffCalc_2 = this.lowerFeedforward_2.calculate(this.getExtensionRotations_2(), this.lowerPID_2.getSetpoint().velocity);
         /* -------------------------------------------------------------------------- */
 
         this.lower.setVoltage((pidCalc + ffCalc));

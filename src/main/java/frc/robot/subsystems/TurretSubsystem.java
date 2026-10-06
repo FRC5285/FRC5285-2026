@@ -127,6 +127,7 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
     public void resetPIDs() {
         this.turretAngle();
         this.turretPID.reset(this.easyCRT);
+        this.turretPID.setGoal(this.easyCRT);
     }
 
     public Command defendBegin() {
@@ -158,7 +159,7 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
         } else {
             double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
             double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
-            turretMotor.setVoltage(-(turretPIDCalc + turretFFCalc));
+            turretMotor.setVoltage((turretPIDCalc + turretFFCalc));
         }
 
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1));

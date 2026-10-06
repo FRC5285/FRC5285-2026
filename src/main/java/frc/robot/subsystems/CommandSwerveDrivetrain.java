@@ -90,6 +90,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         this.yPID.setTolerance(OperatorConstants.pidDistanceTolerance);
 
         Tunables.publish("Drivetrain/Tunables", this);
+        Tunables.publish("Field", this.field2d);
     }
 
     /**
@@ -187,7 +188,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             this.resetSide();
         }
         this.field2d.setRobotPose(this.getPose());
-        Telemetry.log("Field", field2d);
         Telemetry.log("Drivetrain", this);
     }
 

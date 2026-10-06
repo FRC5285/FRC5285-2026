@@ -401,13 +401,13 @@ public final class Constants {
 
         public static final double intakeFollower_RaisedValue = 0.2688;
 
-        public static final double intakeSecondRaisedValue = -0.158;
+        public static final double intakeSecondRaisedValue = -0.429;
 
-        public static final double intakeFollower_SecondRaisedValue = -0.1914;
+        public static final double intakeFollower_SecondRaisedValue = -0.472;
 
         public static final double kS = 0.0;
-        public static final double kV = 0.0; // 0.0
-        public static final double kP = 6.0; // 6.0
+        public static final double kV = 0.8; // 0.0
+        public static final double kP = 1.0; // 6.0
         public static final double kI = 0.0;
         public static final double kD = 0.0;
         public static final double maxVel = 4.0; // for trapezoidal profile; max velocity in rotations/second
@@ -419,8 +419,8 @@ public final class Constants {
 
         // folllowre multpiler and follower multiplier up is not necessary i think i hope
         public static final double followerS = 0.0;
-        public static final double followerV = 0.0;
-        public static final double followerP = 6.0;
+        public static final double followerV = 0.8;
+        public static final double followerP = 1.0;
         public static final double followerI = 0.0;
         public static final double followerD = 0.0;
 
