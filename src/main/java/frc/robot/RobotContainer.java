@@ -103,9 +103,9 @@ public class RobotContainer implements TelemetryLoggable {
         // Default command (auto rotation)
         this.drivetrain.setDefaultCommand(
             this.drivetrain.applyRequest(() ->
-                this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTrigger()))
-                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTrigger()))
-                    .withRotationalRate(this.positionMath.driveRotationMath(this.positionMath.calcRotLimit(driverController.getRightX()), driverController.getLeftTrigger()))
+                this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger())), driverController.getLeftTrigger()))
+                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger())), driverController.getLeftTrigger()))
+                    .withRotationalRate(this.positionMath.driveRotationMath(this.positionMath.calcRotLimit(driverController.getRightX() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger())), driverController.getLeftTrigger()))
             )
         );
 

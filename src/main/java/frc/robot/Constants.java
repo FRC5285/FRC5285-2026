@@ -67,7 +67,7 @@ public final class Constants {
         public static final double driverRotAccelLimit = 1.5;
 
         /** Gets from max rotation speed to stop in 1/-driverRotDecelLimit seconds, value MUST be negative */
-        public static final double driverRotDecelLimit = -0.75;
+        public static final double driverRotDecelLimit = -2.0;
 
         /** The P value for the auton drive PID */
         public static final double driveP = 10.0;

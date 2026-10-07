@@ -174,7 +174,7 @@ public class PositionMath {
     public double driveJoystickMath(double controllerInput, double throttleAmount) {
         // invert controllerInput (because the default controller direction is stupid)
         return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband)
-                * this.driveSpeedMultiplier() * OperatorConstants.maxSpeed * this.driveThrottleMath(throttleAmount);
+                * this.driveSpeedMultiplier() * OperatorConstants.maxSpeed;
     }
 
     /**
@@ -189,7 +189,7 @@ public class PositionMath {
 
         // invert controllerInput (because the default controller direction is stupid)
         return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband)
-                * this.driveSpeedMultiplier() * OperatorConstants.maxAngularRate * this.driveThrottleMath(throttleAmount);
+                * this.driveSpeedMultiplier() * OperatorConstants.maxAngularRate;
     }
 
     public double driveThrottleMath(double throttleAmount) {
