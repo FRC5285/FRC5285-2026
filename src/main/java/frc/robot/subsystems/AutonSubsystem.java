@@ -17,7 +17,6 @@ import org.wpilib.command2.WaitUntilCommand;
 import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.util.PositionMath;
-import frc.robot.util.ShiftUtil;
 
 /** Handles autonomous, aimbot, and other commands */
 public class AutonSubsystem extends SubsystemBase {
@@ -29,7 +28,6 @@ public class AutonSubsystem extends SubsystemBase {
     private final IntakeSubsystem groundIntake;
     private final TurretIntakeSubsystem turretIntake;
     private final BucketOutSubsystem bucketOuttake;
-    private final LedSubsystem ledSubsystem;
     private final PositionMath positionMath;
 
     private PathConstraints autonPathConstraints = new PathConstraints(AutoConstants.maxV, AutoConstants.maxA, AutoConstants.maxAngularV, AutoConstants.maxAngularA);
@@ -39,12 +37,11 @@ public class AutonSubsystem extends SubsystemBase {
     private Selectable<Supplier<Command>> collectLocation = new Selectable<>();
     private Selectable<Supplier<Command>> climbCommand = new Selectable<>();
 
-    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, BucketOutSubsystem bucketOuttake, LedSubsystem ledSubsystem, PositionMath positionMath) {
+    public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, BucketOutSubsystem bucketOuttake, PositionMath positionMath) {
         this.drivetrain = drivetrain;
         this.groundIntake = groundIntake;
         this.turretIntake = turretIntake;
         this.bucketOuttake = bucketOuttake;
-        this.ledSubsystem = ledSubsystem;
         this.positionMath = positionMath;
 
         // Start position
@@ -163,16 +160,6 @@ public class AutonSubsystem extends SubsystemBase {
         return this.groundIntake.endIntake()
         //.andThen(this.bucketRollers.stopCommand())
         .andThen(this.groundIntake.raiseIntake());
-    }
-
-    /** What the LEDs should show when not trying to shoot */
-    private Command ledsCommand() {
-        if (ShiftUtil.canScore()) {
-            return this.ledSubsystem.hubActive();
-        } else if (ShiftUtil.beforeShooting()) {
-            return this.ledSubsystem.preHub();
-        }
-        return this.ledSubsystem.hubInactive();
     }
 
     /**
@@ -302,7 +289,7 @@ public class AutonSubsystem extends SubsystemBase {
             this.climbing = false;
             // this.positionMath.resetLastRotation();
         }))
-        .andThen(this.ledsCommand());
+        ;
     }
 
     /**
@@ -327,7 +314,7 @@ public class AutonSubsystem extends SubsystemBase {
             this.climbing = false;
             // this.positionMath.resetLastRotation();
         }))
-        .andThen(this.ledsCommand());
+        ;
     }
 
     public Command teleopStartCommand() {

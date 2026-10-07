@@ -152,15 +152,19 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
         this.turretTargetPosition = this.positionMath.getTurretRotationTarget() / (2.0 * Math.PI);
         this.turretTargetPosition = Math.min(TurretConstants.turretPIDMax, Math.max(TurretConstants.turretPIDMin, this.turretTargetPosition));
 
-        if (!this.easyCrtSolver.getLastStatus().name().equals("OK") || this.isDefending) {
-            this.turretTargetPosition = this.easyCRT;
-            this.resetPIDs();
-            turretMotor.setVoltage(0.0);
-        } else {
-            double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
-            double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
-            turretMotor.setVoltage((turretPIDCalc + turretFFCalc));
-        }
+        // if (!this.easyCrtSolver.getLastStatus().name().equals("OK") || this.isDefending) {
+        //     this.turretTargetPosition = this.easyCRT;
+        //     this.resetPIDs();
+        //     turretMotor.setVoltage(0.0);
+        // } else {
+        //     double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
+        //     double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
+        //     turretMotor.setVoltage((turretPIDCalc + turretFFCalc));
+        // }
+
+        double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
+        double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
+        turretMotor.setVoltage((turretPIDCalc + turretFFCalc));
 
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1));
         shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));        

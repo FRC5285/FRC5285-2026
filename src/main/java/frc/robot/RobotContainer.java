@@ -21,10 +21,8 @@ import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.IntakeSubsystem;
 import frc.robot.subsystems.TurretSubsystem;
 import frc.robot.subsystems.VisionSubsystem;
-import frc.robot.subsystems.LedSubsystem;
 import frc.robot.subsystems.TurretIntakeSubsystem;
 import frc.robot.util.PositionMath;
-import frc.robot.util.ShiftUtil;
 
 public class RobotContainer implements TelemetryLoggable {
 
@@ -39,15 +37,11 @@ public class RobotContainer implements TelemetryLoggable {
 
     private final TurretIntakeSubsystem turretIntake = new TurretIntakeSubsystem();
 
-    //private final RollerSubsystem bucketRollers = new RollerSubsystem();
-
     private final BucketOutSubsystem bucketOuttake = new BucketOutSubsystem(this.positionMath);
 
     private final VisionSubsystem visionSubsystem = new VisionSubsystem(drivetrain::addVisionMeasurement, () -> this.drivetrain.getPose(), positionMath);
 
-    private final LedSubsystem ledSubsystem = new LedSubsystem();
-
-    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketOuttake, this.ledSubsystem, this.positionMath);
+    private final AutonSubsystem autonSubsystem = new AutonSubsystem(this.drivetrain, this.groundIntake, this.turretIntake, this.bucketOuttake, this.positionMath);
 
     /** The driver controller */
     private final CommandXboxController driverController = new CommandXboxController(OperatorConstants.driverControllerPort);
@@ -80,7 +74,6 @@ public class RobotContainer implements TelemetryLoggable {
         // Configure controller bindings
         this.configureDrivetrainBinding();
         this.configureBindings();
-        // this.configureOtherTriggers();
         // this.configureTestBindings();
     }
 
@@ -117,30 +110,6 @@ public class RobotContainer implements TelemetryLoggable {
                     .withTargetDirection(this.positionMath.drivetrainRotationAmount())
             )
         );
-
-        // to do: new autorotate on bump command
-
-        // this.drivetrain.setDefaultCommand(
-        //     this.drivetrain.applyRequest(() ->
-        //         this.drive.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
-        //             .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
-        //             .withTargetDirection(this.positionMath.drivetrainRotationAmount())
-        //     )
-        // );
-
-        // Manual rotation when not over bump and with right bumper button down
-        // new Trigger(() -> !this.positionMath.bumpTurn() && this.driverController.leftBumper().getAsBoolean()).whileTrue(
-        //     this.drivetrain.applyRequest(() ->
-        //         this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(driverController.getLeftY(), driverController.getLeftTriggerAxis()))
-        //             .withVelocityY(this.positionMath.driveJoystickMath(driverController.getLeftX(), driverController.getLeftTriggerAxis()))
-        //             .withRotationalRate(this.positionMath.driveRotationMath(driverController.getRightX(), driverController.getLeftTriggerAxis()))
-        //     )
-        // );
-
-        // Use auto rotation
-        // this.driverController.leftBumper().onFalse(
-        //     this.drivetrain.getDefaultCommand()
-        // );
     }
 
     /** Configure controller bindings */
@@ -194,22 +163,6 @@ public class RobotContainer implements TelemetryLoggable {
         // );
     }
 
-    /** Configure the other triggers */
-    @SuppressWarnings("unused")
-    private void configureOtherTriggers() {
-        new Trigger(() -> ShiftUtil.canScore() && this.ledSubsystem.getCurrentCommand() == null).onTrue(
-            this.ledSubsystem.hubActive()
-        );
-
-        new Trigger(() -> !ShiftUtil.canScore() && this.ledSubsystem.getCurrentCommand() == null).onTrue(
-            this.ledSubsystem.hubInactive()
-        );
-
-        new Trigger(() -> ShiftUtil.beforeShooting() && this.ledSubsystem.getCurrentCommand() == null).onTrue(
-            this.ledSubsystem.preHub()
-        );
-    }
-
     /** Resets the field side and pose the robot is on. Runs when robot is enabled and auton was not used. */
     public void resetSide() {
         this.positionMath.resetSide();
@@ -217,8 +170,6 @@ public class RobotContainer implements TelemetryLoggable {
 
         this.drivetrain.resetSide();
         this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition());
-
-        ShiftUtil.resetShift();
 
         this.visionSubsystem.resetSimPose(this.drivetrain.getPose());
     }

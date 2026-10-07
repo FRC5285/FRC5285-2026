@@ -14,9 +14,13 @@ import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import com.pathplanner.lib.util.FlippingUtil;
 
 import org.wpilib.math.linalg.Matrix;
+import org.wpilib.math.linalg.VecBuilder;
 import org.wpilib.math.controller.ProfiledPIDController;
+import org.wpilib.math.estimator.SwerveDrivePoseEstimator;
 import org.wpilib.math.geometry.Pose2d;
 import org.wpilib.math.geometry.Rotation2d;
+import org.wpilib.math.kinematics.SwerveDriveKinematics;
+import org.wpilib.math.kinematics.SwerveModulePosition;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 import org.wpilib.math.trajectory.TrapezoidProfile;
@@ -57,6 +61,18 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
+
+    private SwerveDrivePoseEstimator drivetrainPoseEstimator = new SwerveDrivePoseEstimator(
+        new SwerveDriveKinematics(this.getModuleLocations()),
+        this.getPigeon2().getRotation2d(),
+        new SwerveModulePosition[] {
+            this.getModules()[0].getPosition(true),
+            this.getModules()[1].getPosition(true),
+            this.getModules()[2].getPosition(true),
+            this.getModules()[3].getPosition(true)
+        },
+        new Pose2d()
+    );
 
     // Stuff for final climb alignment
     private final SwerveRequest.FieldCentric drivePID = new SwerveRequest.FieldCentric();
@@ -186,6 +202,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if (!this.m_hasAppliedOperatorPerspective || RobotState.isDisabled()) {
             this.resetSide();
         }
+        // this.drivetrainPoseEstimator.updateWithTime(Utils.getMonotonicTimeSeconds(), this.getPigeon2().getRotation2d(), new SwerveModulePosition[] {
+        //     this.getModules()[0].getPosition(true),
+        //     this.getModules()[1].getPosition(true),
+        //     this.getModules()[2].getPosition(true),
+        //     this.getModules()[3].getPosition(true)
+        // });
+        this.drivetrainPoseEstimator.addVisionMeasurement(new Pose2d(this.getPose().getX(), this.getPose().getY(), this.getPigeon2().getRotation2d()), Utils.getMonotonicTimeSeconds(), VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, 0.1));
+        super.resetPose(this.getPose());
         this.field2d.setRobotPose(this.getPose());
         Telemetry.log("Drivetrain", this);
         Telemetry.log("field", this.field2d);
@@ -198,7 +222,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public Pose2d getPose() {
-        return this.getState().Pose;
+        return this.drivetrainPoseEstimator.getEstimatedPosition();
+        // return this.getState().Pose;
     }
 
     /** Returns X velocity of robot, Field-Centric, in meters per second */
@@ -232,6 +257,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         });
     }
 
+    @Override
+    public void resetPose(Pose2d pose) {
+        super.resetPose(pose);
+        this.drivetrainPoseEstimator.resetPose(pose);
+        this.getPigeon2().setYaw(pose.getRotation().getDegrees());
+    }
+
     /**
      * Adds a vision measurement to the Kalman Filter. This will correct the odometry pose estimate
      * while still accounting for measurement noise.
@@ -242,6 +274,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
         super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
+        this.drivetrainPoseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds);
     }
 
     /**
@@ -260,12 +293,15 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     @Override
     public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds, Matrix<N3, N1> visionMeasurementStdDevs) {
         super.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+        this.drivetrainPoseEstimator.addVisionMeasurement(visionRobotPoseMeters, timestampSeconds, visionMeasurementStdDevs);
+        Telemetry.log("added vision time", timestampSeconds);
     }
 
     @Override
     public void logTo(TelemetryTable table) {
         table.log("X Velocity", this.getVelocityX());
         table.log("Y Velocity", this.getVelocityY());
+        table.log("drivetrain timestamp", this.getState().Timestamp);
     }
 
     @Override

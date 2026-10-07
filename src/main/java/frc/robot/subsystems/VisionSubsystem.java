@@ -24,6 +24,10 @@ import org.wpilib.math.interpolation.TimeInterpolatableBuffer;
 import org.wpilib.math.numbers.N1;
 import org.wpilib.math.numbers.N3;
 import org.wpilib.system.Timer;
+import org.wpilib.telemetry.Telemetry;
+
+import com.ctre.phoenix6.Utils;
+
 import org.wpilib.smartdashboard.Field2d;
 import org.wpilib.command2.SubsystemBase;
 import frc.robot.Robot;
@@ -138,6 +142,10 @@ public class VisionSubsystem extends SubsystemBase {
 
             // Apply estimated pose to drivetrain
             visionEst.ifPresent(est -> this.estConsumer.accept(est.estimatedPose.toPose2d(), est.timestampSeconds, this.getEstimationStdDevs()));
+            visionEst.ifPresent(est -> Telemetry.log("vision timestamp", est.timestampSeconds));
+            Telemetry.log("result timestamp", result.getTimestampSeconds());
+            Telemetry.log("monotonic timestamp", Timer.getMonotonicTimestamp());
+            Telemetry.log("robot timestamp", Utils.getMonotonicTimeSeconds());
         }
     }
 
@@ -215,7 +223,7 @@ public class VisionSubsystem extends SubsystemBase {
      * @param cameraIndex the camera
      */
     private void setRobotCameraTransform(int cameraIndex) {
-        this.camTrfMap.get(cameraIndex).addSample(Timer.getTimestamp(), new Pose3d().plus(this.getCurrentRobotCameraTransform(cameraIndex)));
+        this.camTrfMap.get(cameraIndex).addSample(Timer.getMonotonicTimestamp(), new Pose3d().plus(this.getCurrentRobotCameraTransform(cameraIndex)));
     }
 
     /**
