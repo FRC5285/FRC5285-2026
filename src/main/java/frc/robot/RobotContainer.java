@@ -103,17 +103,17 @@ public class RobotContainer implements TelemetryLoggable {
         // Default command (auto rotation)
         this.drivetrain.setDefaultCommand(
             this.drivetrain.applyRequest(() ->
-                this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger())), driverController.getLeftTrigger()))
-                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger())), driverController.getLeftTrigger()))
-                    .withRotationalRate(this.positionMath.driveRotationMath(this.positionMath.calcRotLimit(driverController.getRightX() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger())), driverController.getLeftTrigger()))
+                this.driveFree.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger()))))
+                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger()))))
+                    .withRotationalRate(this.positionMath.driveRotationMath(this.positionMath.calcRotLimit(driverController.getRightX() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger()))))
             )
         );
 
         // Auto bump rotation
         new Trigger(() -> this.positionMath.bumpTurn() && RobotState.isAutonomousEnabled() == false && this.driverController.leftBumper().getAsBoolean() == false).whileTrue(
             this.drivetrain.applyRequest(() ->
-                this.drive.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY()), driverController.getLeftTrigger()))
-                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX()), driverController.getLeftTrigger()))
+                this.drive.withVelocityX(this.positionMath.driveJoystickMath(this.positionMath.calcXLimit(driverController.getLeftY() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger()))))
+                    .withVelocityY(this.positionMath.driveJoystickMath(this.positionMath.calcYLimit(driverController.getLeftX() * this.positionMath.driveThrottleMath(driverController.getLeftTrigger()))))
                     .withTargetDirection(this.positionMath.drivetrainRotationAmount())
             )
         );

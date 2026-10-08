@@ -171,7 +171,7 @@ public class PositionMath {
      * @param throttleAmount the amount of throttle to apply, 0.0 = max speed, 1.0 = least speed
      * @return the velocity output to the drivetrain
      */
-    public double driveJoystickMath(double controllerInput, double throttleAmount) {
+    public double driveJoystickMath(double controllerInput) {
         // invert controllerInput (because the default controller direction is stupid)
         return MathUtil.applyDeadband(-controllerInput, OperatorConstants.driveDeadband)
                 * this.driveSpeedMultiplier() * OperatorConstants.maxSpeed;
@@ -184,7 +184,7 @@ public class PositionMath {
      * @param throttleAmount the amount of throttle to apply, 0.0 = max speed, 1.0 = least speed
      * @return the angular velocity output to the drivetrain
      */
-    public double driveRotationMath(double controllerInput, double throttleAmount) {
+    public double driveRotationMath(double controllerInput) {
         this.resetLastRotation();
 
         // invert controllerInput (because the default controller direction is stupid)
@@ -193,7 +193,7 @@ public class PositionMath {
     }
 
     public double driveThrottleMath(double throttleAmount) {
-        return (1.0 - MathUtil.applyDeadband(throttleAmount, OperatorConstants.driveDeadband) * (1.0 - OperatorConstants.throttleMinMultiplier));
+        return (1.0 - MathUtil.applyDeadband(throttleAmount, OperatorConstants.driveDeadband) * (1.0 - OperatorConstants.throttleMinMultiplier)) + OperatorConstants.throttleMinMultiplier;
     }
 
     /**

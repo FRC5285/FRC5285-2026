@@ -9,7 +9,6 @@ import org.wpilib.telemetry.TelemetryTable;
 import org.wpilib.tunable.ComplexTunable;
 import org.wpilib.tunable.TunableTable;
 import org.wpilib.tunable.Tunables;
-import org.wpilib.command2.Command;
 import org.wpilib.command2.SubsystemBase;
 import org.wpilib.hardware.rotation.DutyCycleEncoder;
 import frc.robot.Constants.TurretConstants;
@@ -49,6 +48,11 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
     private double turretTargetPosition = 0;
     private double shooterTargetRPS = 0;
 
+    private double aAddedRotations = 0.0;
+    private double aTotalRotations = 0.0;
+    private final double aConvertRatio = 19.0 / 200.0;
+    private double aPreviousRotations;
+
     private double easyCRT;
 
     private DutyCycleEncoder encoderA = new DutyCycleEncoder(TurretConstants.channel_a);
@@ -56,8 +60,6 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
 
     private Supplier<Angle> enc1 = () -> { return Rotations.of(encoderA.get()); };
     private Supplier<Angle> enc2 = () -> { return Rotations.of(encoderB.get()); };
-
-    private boolean isDefending = false;
 
     private EasyCRTConfig easyCrt =
         new EasyCRTConfig(enc1, enc2)
@@ -119,8 +121,12 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
      */
     public double turretAngle() {
         easyCrtSolver.getAngleOptional().ifPresent(mechAngle -> {
-            this.easyCRT = mechAngle.in(Rotations);
+            this.easyCRT = -mechAngle.in(Rotations);
+            this.aAddedRotations = (-this.easyCRT / this.aConvertRatio - this.encoderA.get());
         });
+        if (!this.easyCrtSolver.getLastStatus().name().equals("OK") || this.encoderB.get() == 1.0) {
+            this.easyCRT = -this.aTotalRotations * this.aConvertRatio;
+        }
         return this.easyCRT;
     }
 
@@ -128,18 +134,6 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
         this.turretAngle();
         this.turretPID.reset(this.easyCRT);
         this.turretPID.setGoal(this.easyCRT);
-    }
-
-    public Command defendBegin() {
-        return runOnce(() -> {
-            this.isDefending = true;
-        });
-    }
-
-    public Command defendEnd() {
-        return runOnce(() -> {
-            this.isDefending = false;
-        });
     }
 
     @Override
@@ -152,15 +146,28 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
         this.turretTargetPosition = this.positionMath.getTurretRotationTarget() / (2.0 * Math.PI);
         this.turretTargetPosition = Math.min(TurretConstants.turretPIDMax, Math.max(TurretConstants.turretPIDMin, this.turretTargetPosition));
 
-        if (!this.easyCrtSolver.getLastStatus().name().equals("OK") || this.isDefending) {
+        if (!this.easyCrtSolver.getLastStatus().name().equals("OK") || this.encoderB.get() == 1.0) {
             this.turretTargetPosition = this.easyCRT;
             this.resetPIDs();
             turretMotor.setVoltage(0.0);
         } else {
             double turretPIDCalc = this.turretPID.calculate(this.easyCRT, turretTargetPosition);
             double turretFFCalc = this.turretFeedforward.calculate(this.turretPID.getSetpoint().velocity);
-            turretMotor.setVoltage((turretPIDCalc + turretFFCalc));
+            turretMotor.setVoltage(-(turretPIDCalc + turretFFCalc));
         }
+
+        double encoderPos = this.encoderA.get();
+        if (Math.abs(encoderPos - this.aPreviousRotations) < 0.9 && Math.abs(encoderPos - this.aPreviousRotations) > 0.1) {
+            encoderPos = this.aPreviousRotations;
+        }
+        if (encoderPos < 0.25 && this.aPreviousRotations > 0.75) {
+            this.aAddedRotations += 1.0;
+        }
+        if (encoderPos > 0.75 && this.aPreviousRotations < 0.25) {
+            this.aAddedRotations -= 1.0;
+        }
+        this.aPreviousRotations = encoderPos;
+        this.aTotalRotations = this.aAddedRotations + encoderPos;
 
         shooterMotor.setControl(motionMagicRequestShoooter.withVelocity(-shooterTargetRPS).withSlot(1));
         shooterMotor2.setControl(new Follower(shooterMotor.getDeviceID(), MotorAlignmentValue.Opposed));        
@@ -176,6 +183,8 @@ public class TurretSubsystem extends SubsystemBase implements ComplexTunable{
         table.log("Encoder B", (this.encoderB.get()));
         table.log("Turret error", Math.abs(this.turretTargetPosition - this.easyCRT));
         table.log("turret debug", this.easyCrtSolver.getLastStatus().name());
+        table.log("Turret backup measurement", -this.aTotalRotations * this.aConvertRatio);
+        table.log("Turret backup added", this.aAddedRotations);
 
         table.log("Shooter target RPS", this.shooterTargetRPS);   
         table.log("Shooter current RPS", this.shooterMotor.getVelocity().getValueAsDouble()); 

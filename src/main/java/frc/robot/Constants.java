@@ -136,7 +136,7 @@ public final class Constants {
         public static final double shootMoreTime = 10.0;
 
         /** Max time to wait for turret intake to get up to speed */
-        public static final double turretIntakeMaxWaitTime = 1.0;
+        public static final double turretIntakeMaxWaitTime = 2.0;
     }
 
     /** Robot measurements, in METERS */
@@ -401,9 +401,9 @@ public final class Constants {
 
         public static final double intakeFollower_RaisedValue = 0.2688;
 
-        public static final double intakeSecondRaisedValue = -0.429;
+        public static final double intakeSecondRaisedValue = -0.480; //429
 
-        public static final double intakeFollower_SecondRaisedValue = -0.472;
+        public static final double intakeFollower_SecondRaisedValue = -0.511; //472
 
         public static final double kS = 0.0;
         public static final double kV = 0.8; // 0.0
