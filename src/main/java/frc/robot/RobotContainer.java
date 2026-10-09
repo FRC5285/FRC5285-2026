@@ -169,13 +169,13 @@ public class RobotContainer implements TelemetryLoggable {
             this.autonSubsystem.intakeDown()
         );
 
-        //this.secondController.rightTrigger().onTrue(
-          //  this.autonSubsystem.regurgitate()
-        //);
+        this.driverController.b().onTrue(
+           this.autonSubsystem.regurgitate()
+        );
         
-        //this.secondController.rightTrigger().onFalse(
-        //    this.autonSubsystem.stopRegurgitate()
-        //);
+        this.driverController.b().onFalse(
+           this.autonSubsystem.stopRegurgitate()
+        );
 
         this.driverController.rightBumper().onTrue(
            this.groundIntake.beginIntake()

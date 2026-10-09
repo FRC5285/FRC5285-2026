@@ -38,6 +38,7 @@ public class AutonSubsystem extends SubsystemBase {
     private Selectable<Integer> startPosition = new Selectable<>();
     private Selectable<Supplier<Command>> collectLocation = new Selectable<>();
     private Selectable<Supplier<Command>> climbCommand = new Selectable<>();
+    private Selectable<Supplier<Command>> initialShoot = new Selectable<>();
 
     public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, BucketOutSubsystem bucketOuttake, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
@@ -66,10 +67,15 @@ public class AutonSubsystem extends SubsystemBase {
 
         this.climbCommand.setDefault("Left");
 
+        // Shoot initially?
+        this.initialShoot.addDefault("Yes", () -> this.initialShootCommand());
+        this.initialShoot.add("No", () -> Commands.none());
+
         // Puts choosers onto dashboard
         Tunables.publish("Start Position", this.startPosition);
         Tunables.publish("Where to get fuel", this.collectLocation);
         Tunables.publish("Climb Position", this.climbCommand);
+        Tunables.publish("Shoot Initial 8 Fuel?", this.initialShoot);
     }
 
     /**
@@ -93,7 +99,6 @@ public class AutonSubsystem extends SubsystemBase {
         .andThen(this.turretIntake.beginIntake())
         .andThen(new WaitUntilCommand(() -> this.turretIntake.atTargetSpeed()).withTimeout(AutoConstants.turretIntakeMaxWaitTime))
         .andThen(this.bucketOuttake.startCommand())
-     //   .andThen(this.bucketRollers.startFastCommand())
         ;
     }
 
@@ -106,9 +111,7 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.shooting = false;
         })
-        //.andThen(this.bucketRollers.stopCommand())
         // .andThen(this.turretIntake.reverseIntake())
-        // .andThen(this.bucketOuttake.setReverse())
         ;
     }
 
@@ -130,13 +133,11 @@ public class AutonSubsystem extends SubsystemBase {
         return this.turretIntake.reverseIntake()
         .andThen(this.bucketOuttake.setReverse())
         .andThen(this.groundIntake.reverseIntake());
-        //.andThen(this.bucketRollers.reverseCommand());
     }
     
     /** command to end regurgitation */
     public Command stopRegurgitate() {
         return this.bucketOuttake.stopCommand()
-        //.andThen(this.bucketRollers.startCommand())
         .andThen(turretIntake.endIntake())
         .andThen(groundIntake.endIntake())
         ;
@@ -154,14 +155,12 @@ public class AutonSubsystem extends SubsystemBase {
     public Command intakeDown() {
         return this.groundIntake.lowerIntake()
         // .andThen(this.groundIntake.beginIntake())
-        // .andThen(this.bucketRollers.startCommand())
         ;
     }
 
     /** Move the ground intake up (stop intaking) */
     public Command intakeUp() {
         return this.groundIntake.endIntake()
-        //.andThen(this.bucketRollers.stopCommand())
         .andThen(this.groundIntake.raiseIntake());
     }
 
@@ -184,10 +183,7 @@ public class AutonSubsystem extends SubsystemBase {
         return runOnce(() -> {
             this.drivetrain.resetPose(this.positionMath.drivetrainStartPosition(this.startPosition.getSelected()));
         })
-        .andThen(AutoBuilder.pathfindToPoseFlipped(this.autonInitialShootPose(this.startPosition.getSelected()), this.autonPathConstraints))
-        .andThen(this.shootingOn())
-        .andThen(new WaitCommand(4.0))
-        .andThen(this.shootingOffFull())
+        .andThen(this.initialShoot.getSelected().get())
         .andThen(this.groundIntake.lowerIntake())
         .andThen(this.groundIntake.beginIntake())
         .andThen(this.collectLocation.getSelected().get())
@@ -197,6 +193,13 @@ public class AutonSubsystem extends SubsystemBase {
 
     private Pose2d autonInitialShootPose(int startPoseNumber) {
         return startPoseNumber <= 0 ? FieldConstants.blueLeftShootPose : FieldConstants.blueRightShootPose;
+    }
+
+    private Command initialShootCommand() {
+        return AutoBuilder.pathfindToPoseFlipped(this.autonInitialShootPose(this.startPosition.getSelected()), this.autonPathConstraints)
+        .andThen(this.shootingOn())
+        .andThen(new WaitCommand(4.0))
+        .andThen(this.shootingOffFull());
     }
 
     /**

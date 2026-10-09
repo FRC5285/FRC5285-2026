@@ -7,6 +7,7 @@ import org.wpilib.hardware.rotation.DutyCycleEncoder;
 import org.wpilib.math.controller.ProfiledPIDController;
 import org.wpilib.math.controller.SimpleMotorFeedforward;
 import org.wpilib.math.trajectory.TrapezoidProfile;
+import org.wpilib.system.Timer;
 import org.wpilib.telemetry.Telemetry;
 import org.wpilib.telemetry.TelemetryTable;
 import org.wpilib.tunable.ComplexTunable;
@@ -24,6 +25,12 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
     private final TalonFX intakeMotor = new TalonFX(IntakeConstants.intakeID, IntakeConstants.intakeBus);
 
+    private boolean isOn = false;
+    private boolean doReverse = false;
+    private boolean lastCycleReversed = false;
+    private double startTime;
+    private double lastForwardTime = 0.0;
+
     private final TalonFX lower = new TalonFX(IntakeConstants.lowerID, IntakeConstants.lowerBus);
     private final TalonFX lowerFollower = new TalonFX(IntakeConstants.followerId, IntakeConstants.followerBus);
 
@@ -32,7 +39,9 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
 // tune feedfoward and pid below later!!!!!1
     private final SimpleMotorFeedforward lowerFeedforward_2 = new SimpleMotorFeedforward(IntakeConstants.followerS, IntakeConstants.followerV); 
     private final ProfiledPIDController lowerPID_2 = new ProfiledPIDController(IntakeConstants.followerP, IntakeConstants.followerI, IntakeConstants.followerD, new TrapezoidProfile.Constraints(IntakeConstants.maxVel_2, IntakeConstants.maxAcc_2));
-   
+
+    private double pidMult = 1.0;
+
     DutyCycleEncoder encoder = new DutyCycleEncoder(IntakeConstants.encoderChannel);
     DutyCycleEncoder encoder2 = new DutyCycleEncoder(IntakeConstants.encoderChannel_2);
     private double encoderAddedRotations = 0.0;
@@ -67,19 +76,24 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
     // Other methods go here
     public Command beginIntake() {
         return runOnce(() -> {
-            intakeMotor.setVoltage(IntakeConstants.intakeVolts);
+            this.isOn = true;
+            this.doReverse = false;
+            this.startTime = Timer.getTimestamp();
+            this.lastCycleReversed = false;
         });
     }
 
     public Command reverseIntake() {
         return runOnce(() -> {
-            intakeMotor.setVoltage(-IntakeConstants.intakeVolts);
+            this.doReverse = true;
+            this.isOn = false;
         });
     }
 
     public Command endIntake() {
         return runOnce(() -> {
-            intakeMotor.stopMotor();
+            this.isOn = false;
+            this.doReverse = false;
         });
     }
 
@@ -94,6 +108,48 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
         return runOnce(() -> {
             this.lowerPID.setGoal(IntakeConstants.intakeSecondRaisedValue);
             this.lowerPID_2.setGoal(IntakeConstants.intakeFollower_SecondRaisedValue);
+        });
+    }
+
+    /** Non-follower motor, technically right side of the robot */
+    public Command startLeftIntakeReset() {
+        return runOnce(() -> {
+            this.pidMult = 0.0;
+            this.lower.setVoltage(4.0);
+        });
+    }
+
+    public Command endLeftIntakeReset() {
+        return runOnce(() -> {
+            this.encoderAddedRotations = -2.0;
+            this.lower.setVoltage(0.0);
+        });
+    }
+
+    /** Follower motor, technically left side of the robot */
+    public Command startRightIntakeReset() {
+        return runOnce(() -> {
+            this.pidMult = 0.0;
+            this.lowerFollower.setVoltage(-4.0);
+        });
+    }
+
+    public Command endRightIntakeReset() {
+        return runOnce(() -> {
+            this.encoder2_AddedRotations = -2.0;
+            this.lower.setVoltage(0.0);
+        });
+    }
+
+    public Command resetEncoders() {
+        return runOnce(() -> {
+            this.pidMult = 1.0;
+            this.encoderAddedRotations = -2.0;
+            this.encoder2_AddedRotations = -2.0;
+            this.encoderTotalRotations = this.encoderAddedRotations + this.getEncoderPosition();
+            this.encoder2_TotalRotatoins = this.encoder2_AddedRotations + this.encoder2.get();
+            this.lowerPID.setGoal(IntakeConstants.intakeLoweredValue);
+            this.lowerPID_2.setGoal(IntakeConstants.intakeFolllower_LoweredValue);
         });
     }
 
@@ -115,12 +171,41 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
         this.lowerPID_2.reset(this.getExtensionRotations_2());
         this.encoderPreviousRotations = this.getEncoderPosition();
         this.encoder2_PreviousRotations = encoder2.get();
-        this.encoderTotalRotations = this.getEncoderPosition();
-        this.encoder2_TotalRotatoins = this.encoder2.get();
+        this.encoderTotalRotations = this.encoderAddedRotations + this.getEncoderPosition();
+        this.encoder2_TotalRotatoins = this.encoder2_AddedRotations + this.encoder2.get();
     }
 
     @Override
     public void periodic() {
+        if (this.isOn) {
+            double currentTime = Timer.getTimestamp();
+            if ( // less than 0.5 seconds since motor last told to go forward (no more than 0.5 second reverse)
+                currentTime - this.lastForwardTime < 0.5
+                // AND
+                && (
+                    ( // more than 1 second since motor start, and slow motor
+                        currentTime - this.startTime > 1.0
+                        && Math.abs(this.intakeMotor.getVelocity().getValueAsDouble()) < 3.0
+                    ) // OR the last control was to reverse the motor - motor always reverses for set amount of time
+                    || this.lastCycleReversed
+                )
+            ) {
+                this.intakeMotor.setVoltage(-IntakeConstants.intakeVolts);
+                this.lastCycleReversed = true;
+            } else {
+                if (this.lastCycleReversed == true) {
+                    this.lastCycleReversed = false;
+                    this.startTime = currentTime;
+                }
+                this.intakeMotor.setVoltage(IntakeConstants.intakeVolts);
+                this.lastForwardTime = currentTime;
+            }
+        } else if (this.doReverse) {
+            this.intakeMotor.setVoltage(-IntakeConstants.intakeVolts);
+        } else {
+            this.intakeMotor.setVoltage(0.0);
+        }
+
         double encoderPos = this.getEncoderPosition();
         if (Math.abs(encoderPos - this.encoderPreviousRotations) < 0.9 && Math.abs(encoderPos - this.encoderPreviousRotations) > 0.1) {
             encoderPos = this.encoderPreviousRotations;
@@ -158,11 +243,8 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
         double ffCalc_2 = this.lowerFeedforward_2.calculate(this.getExtensionRotations_2(), this.lowerPID_2.getSetpoint().velocity);
         /* -------------------------------------------------------------------------- */
 
-        this.lower.setVoltage((pidCalc + ffCalc));
-
-        /* -------------------------------------------------------------------------- */
-
-        this.lowerFollower.setVoltage(-(pidCalc_2 + ffCalc_2));
+        this.lower.setVoltage((pidCalc + ffCalc) * this.pidMult);
+        this.lowerFollower.setVoltage(-(pidCalc_2 + ffCalc_2) * this.pidMult);
 
         Telemetry.log("Ground Intake", this);
     }

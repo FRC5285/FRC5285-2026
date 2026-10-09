@@ -52,7 +52,7 @@ public final class Constants {
         public static final double throttleMinMultiplier = 0.1;
 
         /** Max robot speed, in meters per second */
-        public static final double maxSpeed = TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+        public static final double maxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
         
         /** Max robot rotation rate, in radians per second (not the real one, just the driver limit) */
         public static final double maxAngularRate = 2 * Math.PI;
