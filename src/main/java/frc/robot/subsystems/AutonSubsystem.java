@@ -39,6 +39,7 @@ public class AutonSubsystem extends SubsystemBase {
     private Selectable<Supplier<Command>> collectLocation = new Selectable<>();
     private Selectable<Supplier<Command>> climbCommand = new Selectable<>();
     private Selectable<Supplier<Command>> initialShoot = new Selectable<>();
+    private Selectable<Supplier<Double>> shootTime = new Selectable<>();
 
     public AutonSubsystem(CommandSwerveDrivetrain drivetrain, IntakeSubsystem groundIntake, TurretIntakeSubsystem turretIntake, BucketOutSubsystem bucketOuttake, LedSubsystem ledSubsystem, PositionMath positionMath) {
         this.drivetrain = drivetrain;
@@ -71,11 +72,17 @@ public class AutonSubsystem extends SubsystemBase {
         this.initialShoot.addDefault("Yes", () -> this.initialShootCommand());
         this.initialShoot.add("No", () -> Commands.none());
 
+        // Shoot time
+        this.shootTime.addDefault("4 seconds", () -> 4.0);
+        this.shootTime.add("6 to 7 seconds", () -> 6.5);
+        this.shootTime.add("12 seconds", () -> 12.0);
+
         // Puts choosers onto dashboard
         Tunables.publish("Start Position", this.startPosition);
         Tunables.publish("Where to get fuel", this.collectLocation);
         Tunables.publish("Climb Position", this.climbCommand);
         Tunables.publish("Shoot Initial 8 Fuel?", this.initialShoot);
+        Tunables.publish("Time to shoot initially", this.shootTime);
     }
 
     /**
@@ -198,7 +205,7 @@ public class AutonSubsystem extends SubsystemBase {
     private Command initialShootCommand() {
         return AutoBuilder.pathfindToPoseFlipped(this.autonInitialShootPose(this.startPosition.getSelected()), this.autonPathConstraints)
         .andThen(this.shootingOn())
-        .andThen(new WaitCommand(4.0))
+        .andThen(new WaitCommand(this.shootTime.getSelected().get()))
         .andThen(this.shootingOffFull());
     }
 

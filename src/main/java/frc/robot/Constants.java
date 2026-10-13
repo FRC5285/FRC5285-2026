@@ -49,7 +49,7 @@ public final class Constants {
         public static final double driveDeadband = 0.1;
 
         /** Minimum speed multiplier for throttle */
-        public static final double throttleMinMultiplier = 0.1;
+        public static final double throttleMinMultiplier = 0.2;
 
         /** Max robot speed, in meters per second */
         public static final double maxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
@@ -312,25 +312,25 @@ public final class Constants {
 
         /** Camera names */
         public static final String[] cameraNames = {
-            "Arducam_OV9281_USB1",
+            // "Arducam_OV9281_USB1",
             "Arducam_OV9281_USB2",
-            // "Arducam_OV9281_USB3",
+            "Arducam_OV9281_USB3",
             "Arducam_OV9281_USB4"
         };
 
         /** Camera positions on the robot */
         public static final Transform3d[] cameraOffsets = {
-            new Transform3d(-0.28807, -0.30565, 0.19173, new Rotation3d(0.0, -14.04 * (Math.PI / 180.0), -30.3 * (Math.PI / 180.0))),
+            // new Transform3d(-0.28807, -0.30565, 0.19173, new Rotation3d(0.0, -14.04 * (Math.PI / 180.0), -30.3 * (Math.PI / 180.0))),
             new Transform3d(0.16908 - 0.17455, 0.12833, 0.59485 + 0.12790, new Rotation3d(0.0, 0.0, 15.0 * (Math.PI / 180.0))),
-            // new Transform3d(-0.28807, 0.30565, 0.19173, new Rotation3d(0.0, -14.04 * (Math.PI / 180.0), 30.3 * (Math.PI / 180.0))), // cam 3 on opposite side of cam 1
+            new Transform3d(-0.28807, -0.30565, 0.19173, new Rotation3d(0.0, -14.04 * (Math.PI / 180.0), -30.3 * (Math.PI / 180.0))), // cam 3 on opposite side of cam 1
             new Transform3d(0.17580 - 0.17455, -0.12002, 0.61376 + 0.12790, new Rotation3d(0.0, -17.0 * (Math.PI / 180.0), 0.0))
         };
 
         /** If a camera is mounted on the turret - the camera offset should be relative to the turret center when turret rotation is 0 if true */
         public static final boolean[] turretMounted = {
-            false,
-            true,
             // false,
+            true,
+            false,
             true
         };
     }
@@ -365,8 +365,8 @@ public final class Constants {
         public static final int channel_a = 0;
         public static final int channel_b = 1;
 
-        public static final double encoderAOffset = -0.984526;
-        public static final double encoderBOffset = -0.738916;
+        public static final double encoderAOffset = -0.888;
+        public static final double encoderBOffset = -0.751;
         public static final double max_range = 0.5; //rotations
         public static final double min_range = -0.5; //rotaitons
         public static final double match_tolerance = 0.02; //rotations

@@ -144,10 +144,10 @@ public class IntakeSubsystem extends SubsystemBase implements ComplexTunable {
     public Command resetEncoders() {
         return runOnce(() -> {
             this.pidMult = 1.0;
-            this.encoderAddedRotations = -2.0;
-            this.encoder2_AddedRotations = -2.0;
-            this.encoderTotalRotations = this.encoderAddedRotations + this.getEncoderPosition();
-            this.encoder2_TotalRotatoins = this.encoder2_AddedRotations + this.encoder2.get();
+            // this.encoderAddedRotations = -2.0;
+            // this.encoder2_AddedRotations = -2.0;
+            // this.encoderTotalRotations = this.encoderAddedRotations + this.getEncoderPosition();
+            // this.encoder2_TotalRotatoins = this.encoder2_AddedRotations + this.encoder2.get();
             this.lowerPID.setGoal(IntakeConstants.intakeLoweredValue);
             this.lowerPID_2.setGoal(IntakeConstants.intakeFolllower_LoweredValue);
         });
